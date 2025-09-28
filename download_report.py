@@ -3,9 +3,9 @@ from datetime import datetime
 from pathlib import Path
 from playwright.async_api import async_playwright
 
-BASE_URL = "https://example.com"  # <-- site base
+BASE_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"  # <-- site base
 REPORT_URL = (
-    "https://example.com/reports"  # <-- direct URL to the report page if possible
+    "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/DeviceList.aspx"  # <-- direct URL to the report page if possible
 )
 DOWNLOAD_DIR = Path("downloads")  # where files land
 DOWNLOAD_DIR.mkdir(exist_ok=True)

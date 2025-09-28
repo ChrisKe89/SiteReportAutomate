@@ -10,7 +10,7 @@ git clone [text](https://github.com/ChrisKe89/SITEREPORTBOT.git)
 2. **Install Requirments**
 
 ```powershell
-py -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install playwright python-dotenv keyring
