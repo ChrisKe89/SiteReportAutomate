@@ -1,0 +1,6 @@
+2025/09/29-04:33:40.464 14cc4 Reusing MANIFEST C:\Dev\SiteReportAutomate\user-data\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2025/09/29-04:33:40.468 14cc4 Recovering log #4
+2025/09/29-04:33:40.469 14cc4 Reusing old log C:\Dev\SiteReportAutomate\user-data\Default\EdgeCoupons/coupons_data.db/000004.log 
+2025/09/29-04:33:41.102 9e28 Level-0 table #8: started
+2025/09/29-04:33:41.109 9e28 Level-0 table #8: 672300 bytes OK
+2025/09/29-04:33:41.111 9e28 Delete type=0 #4

@@ -1,0 +1,5 @@
+2025/09/29-04:29:59.657 779c Creating DB C:\Dev\SiteReportAutomate\user-data\Default\EdgeCoupons/coupons_data.db since it was missing.
+2025/09/29-04:29:59.671 779c Reusing MANIFEST C:\Dev\SiteReportAutomate\user-data\Default\EdgeCoupons/coupons_data.db/MANIFEST-000001
+2025/09/29-04:30:00.093 f678 Level-0 table #5: started
+2025/09/29-04:30:00.101 f678 Level-0 table #5: 672197 bytes OK
+2025/09/29-04:30:00.104 f678 Delete type=0 #3
