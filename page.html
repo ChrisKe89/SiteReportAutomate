@@ -1,0 +1,2752 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head id="Head1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>
+        Gateway
+    </title>
+    <link href="../css/global.css" rel="stylesheet" type="text/css">
+    <link href="../css/expand.css" rel="stylesheet" type="text/css">
+
+    <script src="../Scripts/jquery-1.7.2.min.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery.tools-tab.min.js" type="text/javascript"></script>
+    <script src="../Scripts/menu.js" type="text/javascript"></script>
+    <script src="../Scripts/global.js" type="text/javascript"></script>
+    <script src="../Scripts/dragtable.js" type="text/javascript"></script>
+    <script src="../Scripts/jquery-ui-1.8.23.custom.min.js" type="text/javascript"></script>
+    <script src="../Scripts/common.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        function openPopUp() {
+            myWindow = window.open('Matrix.xlsx', 'calWindow', 'width=500,height=500');
+            myWindow.focus();
+        }
+        function openHelp() {
+            myWindow = window.open('../help.aspx', 'gatewayhelp', 'width=1100,height=900,top=10,left=100');
+            myWindow.focus();
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Begin changes for CR#2115639
+            $("#MainContent_ddlChainLink").live("change", function (e) {
+                var txtChain = $("#MainContent_txtChainLink");
+                var lblChain = $("#MainContent_lblChainLink");
+                if (this.selectedIndex === 0) {
+                    txtChain.val('').hide();
+                    lblChain.html('').hide();
+
+                }
+                else if (this.selectedIndex === 1) {
+                    txtChain.val('').show().attr("maxlength", "50");
+                    if ($("#MainContent_ddlAlertType").val() == '9') {  // Added changes for CR#2115639
+                        lblChain.html('Enter five-digit Chain-Link in nnnnn format GCT-10000').show();
+                    }
+                    else {
+                        lblChain.html('Enter six-digit Chain-Link in nnn-nnn  format(Multiple code separate by comma)').show();
+                    }
+                    txtChain.val('').show();
+                }
+                else if (this.selectedIndex === 2) {
+                    txtChain.val('').show().attr("maxlength", "50");
+                    if ($("#MainContent_ddlAlertType").val() == '9') { // Added changes for CR#2115639
+                        lblChain.html('Enter five-digit Chain-Link in nnnnn   format GCT-10000').show();
+                    }
+                    else {
+                        lblChain.html('Enter six-digit Chain-Link in nnn-nnn format(Multiple code separate by comma)').show();
+                    }
+                    txtChain.val('').show();
+                }
+                else if (this.selectedIndex === 3) {
+                    txtChain.val('').show().attr("maxlength", "3");
+                    lblChain.html('Enter first 3 digit Code').show();
+                    txtChain.val('').show();
+                }
+                else if (this.selectedIndex === 4) {
+                    txtChain.val('').show().attr("maxlength", "3");
+                    lblChain.html('Enter last 3 digit Code').show();
+                    txtChain.val('').show();
+                }
+
+            });
+
+
+            // begin changes for CR 1708023
+            $("#MainContent_txtconsolidate").live("click", function (e) {
+                var txtConsolida = $("#MainContent_txtconsolidate");
+                var lblhold = $("#MainContent_lblconsolidate");
+
+                txtConsolida.show().attr("maxlength", "2");
+                //lblhold.html('Enter upto 3 digits').show();
+            });
+            //Added changes for CR#2229613
+            $("#MainContent_rbconsolidate").live("change", function (e) {
+                if ($("#MainContent_ddlAlertType").val() == '8') {
+                    $("#MainContent_cblconsolidationweekdays > tbody > tr > td > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = true;
+                    });
+                    var txtconsolidate = $("#MainContent_txtconsolidate");
+                    txtconsolidate.attr('disabled', false);
+                }
+            });
+            //Added changes for CR#2229613
+            $("#MainContent_rbconsolidateweekday").live("change", function (e) {
+                if ($("#MainContent_ddlAlertType").val() == '8') {
+                    var txtconsolidate = $("#MainContent_txtconsolidate");
+                    txtconsolidate.attr('disabled', true);
+                    $("#MainContent_txtconsolidate").val('');
+                    $("#MainContent_cblconsolidationweekdays > tbody > tr > td > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = false;
+                    });
+                }
+            });
+
+
+
+            //Added changes for CR#2229613
+            var weekday;
+
+            $("#MainContent_tblconsolidation > tbody > tr > td > table > tbody > tr > td > input[type=checkbox]").live("click", function () {
+                if ($("#MainContent_ddlAlertType").val() == '8') {
+                    var rbconsoliweekday = $("#MainContent_rbconsolidateweekday");
+                    if (this.checked) {
+                        //  debugger;
+                        $("#MainContent_tblconsolidation > tbody > tr > td > table > tbody > tr > td > input[type=checkbox]").each(function () {
+                            $(this).attr('checked', false);
+                            $(this).attr('disabled', true);
+                        });
+                        $(this).attr('checked', true);
+                        $(this).attr('disabled', false);
+                        rbconsoliweekday.attr('checked', true);
+                    }
+                    else {
+                        $("#MainContent_tblconsolidation > tbody > tr > td > table > tbody > tr > td > input[type=checkbox]").each(function () {
+                            $(this).attr('checked', false);
+                            $(this).attr('disabled', false);
+                        });
+                        $(this).attr('checked', false);
+                        $(this).attr('disabled', false);
+                        rbconsoliweekday.attr('checked', false);
+                    }
+                }
+            });
+
+            //  end changes for CR 1708023
+
+            $(".expand_all").live("click", function (e) {
+
+                var isShow = $("#MainContent_hdnShowHide").val();
+
+                if ($(this).hasClass("expanded")) {
+                    $(".toggle_container").hide("slow");
+                    $(this).removeClass('expanded');
+                    $("#MainContent_hdnShowHide").val(0);
+                }
+                else {
+                    $(".toggle_container").show("slow");
+                    $(this).addClass('expanded');
+                    $("#MainContent_hdnShowHide").val(1);
+                }
+
+
+            });
+
+            $("#MainContent_ddlOpCo").live("change", function (e) {
+                //added above by richa to get the opco id
+                var opco = $("#MainContent_ddlOpCo").val();
+                //added below by richa to get the opco id594
+                var ddlAlertType = $("#MainContent_ddlAlertType");
+
+                if (ddlAlertType[0].selectedIndex === 0) {
+
+                    this.selectedIndex = 0;
+                }
+
+
+
+            });
+
+
+            $("#MainContent_cblTonner > tbody > tr > td > input[type=checkbox]").live("click", function (e) {
+                var span = $(this).parent().children("label");
+                var ctrl = this;
+                if (span.html().trim().toLowerCase() === "all") {
+                    $("#MainContent_cblTonner > tbody > tr > td > input[type=checkbox]").each(function () {
+                        this.checked = ctrl.checked;
+                    });
+                    // code start for all button for both toner list.
+                    // BEGIN other Toner CR#1121956 
+                    //                    if ($("#btnHideShowOtherTonerList").val() == "-") {
+                    //                        debugger;
+                    //                        $("#MainContent_cblothertonner > tbody > tr > td > input[type=checkbox]").each(function () {
+                    //                            this.checked = ctrl.checked;
+                    //                        });
+                    //                    }
+                    //                    if ($("#btnHideShowOtherTonerList").val() == "+") {
+                    //                        $("#MainContent_cblothertonner > tbody > tr > td > input[type=checkbox]").each(function () {
+                    //                            this.checked = false;
+                    //                        });
+                    //                    }
+                    // END other Toner CR#1121956 
+                }
+                else {
+                    if (!this.checked) {
+                        $("#MainContent_cblTonner > tbody > tr:eq(0) > td:eq(0) > input[type=checkbox]")[0].checked = false;
+
+                    }
+                }
+
+            });
+
+            // BEGIN other Toner CR#1121956 
+            // Other toner CR All button  fucntionality  in other toner list.
+            $("#MainContent_cblothertonner > tbody > tr > td > input[type=checkbox]").live("click", function (e) {
+                var span = $(this).parent().children("label");
+                var ctrl = this;
+                if (span.html().trim().toLowerCase() === "all") {
+                    $("#MainContent_cblothertonner > tbody > tr > td > input[type=checkbox]").each(function () {
+                        this.checked = ctrl.checked;
+                    });
+                }
+                else {
+                    if (!this.checked) {
+                        $("#MainContent_cblothertonner > tbody > tr:eq(0) > td:eq(0) > input[type=checkbox]")[0].checked = false;
+                    }
+                }
+
+            });
+            // END other Toner CR#1121956 
+
+            //For anyday/time radio button
+            $("#MainContent_rbAnyDayTime").live("click", function (e) {
+
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+                ddlFromHour[0].selectedIndex = 0;
+                ddlFromMinute[0].selectedIndex = 0;
+                ddlToHour[0].selectedIndex = 0;
+                ddlToMinute[0].selectedIndex = 0;
+
+
+            });
+            // for day of month
+            $("#MainContent_rbDayofMonth").live("click", function (e) {
+
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', false);
+
+                ddlFromHour[0].selectedIndex = 0;
+                ddlFromMinute[0].selectedIndex = 0;
+                ddlToHour[0].selectedIndex = 0;
+                ddlToMinute[0].selectedIndex = 0;
+            });
+
+            //For week days
+            $("#MainContent_rbDayOfWeek").live("click", function (e) {
+
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = false;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+                ddlFromHour[0].selectedIndex = 0;
+                ddlFromMinute[0].selectedIndex = 0;
+                ddlToHour[0].selectedIndex = 0;
+                ddlToMinute[0].selectedIndex = 0;
+            });
+            //for From date
+            $("#MainContent_rbFromDate").live("click", function (e) {
+
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+                ddlFromHour[0].selectedIndex = 0;
+                ddlFromMinute[0].selectedIndex = 0;
+                ddlToHour[0].selectedIndex = 0;
+                ddlToMinute[0].selectedIndex = 0;
+            });
+
+            var txtHierarchy = null;
+            $(".hvalue").live("change", function (e) {
+
+                var txtHierarchy = $(this);
+                var lblHierarchy = $(this).parent().parent().find(".lvalue").text();
+                var ddlopco = $("#MainContent_ddlOpCo");
+                var opco = ddlopco.val();
+                var strvalidate = opco + ";" + lblHierarchy.substring(0, lblHierarchy.length - 3) + ";" + txtHierarchy.val().trim();
+                var IsValid = false;
+                var url = "addbusinessRule.aspx";
+
+                $.ajax(
+                    {
+                        type: "POST",
+                        url: url,
+                        data: { msg: strvalidate },
+                        async: true,
+                        cache: false,
+                        success: function (data) {
+                            if (data === "success") {
+                                IsValid = true;
+                                $('.messageBody').removeClass('error').removeClass('accept').hide();
+                            }
+                            else {
+                                $(".messageBody").children("div").html("<ul><li>" + data + "</li></ul>").show();
+                                $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                                scroll(0, 0);
+                                txtHierarchy.focus();
+
+                            }
+
+                        }
+                    });
+
+
+
+            });
+
+
+            $("#MainContent_btnAddNewTemplate").live("click", function () {
+
+                var isChecked = false;
+                var checkedCount = 0;
+                var isLastOptionChecked = false;
+                var action = "";
+                var actionName = "";
+                var selectedTemplate = "";
+                var isCancelnClose = false; // FIX- CR cancel n close
+
+                $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    if (this.checked) {
+                        isChecked = true;
+                        ++checkedCount;
+                        action = $(this).parent().attr("action");
+
+                        actionName = $(this).parent().children("label").html().trim();
+
+                        if (action != undefined) {
+                            if (actionName.toLowerCase() === "send to alert queue") {
+                                isLastOptionChecked = true;
+                            }
+                            if (action === 77) {
+                                isLastOptionChecked = true;
+                            }
+                            // FIX- CR cancel n close
+                            if (actionName.toLowerCase() === "cancel and close") {
+                                isCancelnClose = true;
+                            }
+                            if (action === 99) {
+                                isCancelnClose = true;
+                            }
+                            //end
+                            $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                                if (this.checked) {
+                                    selectedTemplate += $(this).parent().attr("childtemplate") + ",";
+
+                                }
+                            });
+
+                        }
+                    }
+                });
+
+                if (!isChecked) {
+                    $(".messageBody").children("div").html("<ul><li>Please select an action to add new template.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                if (checkedCount > 1) {
+                    $(".messageBody").children("div").html("<ul><li>Please select only one Action when adding a new Template.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                if (isLastOptionChecked) {
+                    $(".messageBody").children("div").html("<ul><li>Template does not apply to the selected Action.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                // FIX- CR cancel n close
+                if (isCancelnClose) {
+                    $(".messageBody").children("div").html("<ul><li>Template does not apply to the selected Action.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                //end
+                if (action === undefined || action.trim() === "") {
+                    $(".messageBody").children("div").html("<ul><li>action not found.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+                var checkedday = false;
+                var rbconsoliweekday = $("#MainContent_rbconsolidateweekday");
+                if (rbconsoliweekday.attr("checked") != "undefined" && rbconsoliweekday.attr("checked") === "checked") {
+                    $("#MainContent_tblconsolidation > tbody > tr > td > table > tbody > tr > td > input[type=checkbox]").each(function () {
+                        if (this.checked) {
+                            checkedday = true;
+                            var consoweekday = $(this).parent().children("label").html().trim();
+                            $("#MainContent_hdnweekday").val(consoweekday);
+                        }
+                    });
+                }
+                $("#MainContent_hdnAction").val(action);
+                $("#MainContent_hdnActionName").val(actionName);
+                $("#MainContent_hdnTemplateIds").val(selectedTemplate);
+                return true;
+            });
+            $("#MainContent_btnDelete").live("click", function () {
+
+                ShowModalPopUp('');
+                scroll(0, 0);
+                return false;
+            });
+
+
+            $("#MainContent_btnSave").live("click", function () {
+
+                //check date 
+                if (Page_Validators != undefined && Page_Validators != null) {
+                    for (var i = 0; i < Page_Validators.length; i++) {
+                        if (!Page_Validators[i].isvalid) {
+                            return false;
+                        }
+                    }
+                }
+
+                var rbFromDate = $("#MainContent_rbFromDate");
+
+                if (rbFromDate.attr("checked") != "undefined" && rbFromDate.attr("checked") === "checked") {
+
+                    var fromDate = $("#MainContent_txtFromDate").val();
+                    var toDate = $("#MainContent_txtToDate").val();
+
+                    if (fromDate === "") {
+                        $(".messageBody").children("div").html("<ul><li> Please specify From Date. </li></ul>").show();
+                        $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                        scroll(0, 0);
+                        return false;
+                    }
+                    if (toDate === "") {
+                        $(".messageBody").children("div").html("<ul><li> Please specify To date. </li></ul>").show();
+                        $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                        scroll(0, 0);
+                        return false;
+                    }
+                    if (!CompareDates()) {
+                        $(".messageBody").children("div").html("<ul><li> From date cannot be greater than To date. </li></ul>").show();
+                        $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                        scroll(0, 0);
+                        return false;
+                    }
+
+                }
+
+
+
+
+
+                var message = "";
+                var isFlag = false;
+                var ddlChain = $("#MainContent_ddlChainLink");
+                var txtChain = $("#MainContent_txtChainLink");
+                if (ddlChain[0] != undefined && ddlChain[0].selectedIndex > 0 && !isFlag) {
+                    if (ddlChain[0].selectedIndex == 1) {
+                        //2115639
+                        if ($("#MainContent_ddlAlertType").val() == '9') { // Added changes for CR#2115639
+                            var isValid = new RegExp("^\([A-Z]{3}-[0-9]{5})(,([A-Z]{3}-[0-9]{5}))*\$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid GCC Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+                        else {
+                            var isValid = new RegExp("^\([0-9]{3}-[0-9]{3})(,([0-9]{3}-[0-9]{3}))*\$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+                    }
+                    else if (ddlChain[0].selectedIndex == 2) {
+                        if ($("#MainContent_ddlAlertType").val() == '9') { // Added changes for CR#2115639
+                            var isValid = new RegExp("^\([A-Z]{3}-[0-9]{5})(,([A-Z]{3}-[0-9]{5}))*\$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid GCC Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+                        else {
+                            var isValid = new RegExp("^\([0-9]{3}-[0-9]{3})(,([0-9]{3}-[0-9]{3}))*\$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+
+                    }
+                    else if (ddlChain[0].selectedIndex == 3) {
+                        if (txtChain.val().length != 3) {
+                            message = "Please enter 3 digit code.";
+                            isFlag = true;
+                            var isValid = new RegExp("^\([0-9]{3})$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+                    } else if (ddlChain[0].selectedIndex == 4) {
+                        if (txtChain.val().length != 3) {
+                            message = "Please enter 3 digit code.";
+                            isFlag = true;
+                            var isValid = new RegExp("^\([0-9]{3})$", "m").test(txtChain.val());
+                            if (!isValid) {
+                                message = "Please enter a valid Chain-Link.";
+                                isFlag = true;
+                            }
+                        }
+                    }
+                }
+                //1708023
+                //Added changes for CR#2229613
+                var rbconsolidation = $("#MainContent_rbconsolidate");
+                var rbconsoliweekday = $("#MainContent_rbconsolidateweekday");
+                if ($("#MainContent_ddlAlertType").val() == '8') {
+                    if (rbconsolidation.attr("checked") != "undefined" && rbconsolidation.attr("checked") === "checked") {
+                        var txtconso = $("#MainContent_txtconsolidate");
+                        if (txtconso.val() != "" && txtconso.val() != null) {
+                            // var isValid = new RegExp("([0-190])$", "m").test(txtconso.val());
+                            if (txtconso.val().match(/[^0-9]/g, '')) {
+                                message = "Please enter a numeric value for Consolidation.";
+                                isFlag = true;
+                            }
+                        }
+                    }
+                }
+                //1708023  
+
+                //Added changes for CR#2229613
+                var checkedday = false;
+                if (rbconsoliweekday.attr("checked") != "undefined" && rbconsoliweekday.attr("checked") === "checked") {
+                    $("#MainContent_tblconsolidation > tbody > tr > td > table > tbody > tr > td > input[type=checkbox]").each(function () {
+                        if (this.checked) {
+                            checkedday = true;
+                            var consoweekday = $(this).parent().children("label").html().trim();
+                            $("#MainContent_hdnweekday").val(consoweekday);
+                        }
+                    });
+                    if (checkedday) {
+                        isFlag = false;
+                    }
+                    else {
+                        message = "Please select at least one weekday for Consolidation.";
+                        isFlag = true;
+                    }
+                }
+
+
+                if (isFlag) {
+                    $(".messageBody").children("div").html("<ul><li>" + message + "</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+                var selectedTemplate = "";
+                var TemplateIdQty = "";
+                var action = "";
+                var actionIds = "";
+                var isValideQty = true;
+                var IsCreateSo = false;
+                var IswithSRChecked = false;
+
+                var IswithSOChecked = false;
+
+                var IswithSRNoChecked = false;
+
+                var IswithSONoChecked = false;
+                var IsMultipleTemplateSelected = false;
+                var IsTemplateSelected = true;
+                var IsQtyNull = true;
+
+                $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    action = $(this).parent().attr("action");
+                    var ActionName = $(this).parent().children("label").html().trim();
+                    if (this.checked) {
+                        actionIds += action + ",";
+                        var counter = 0;
+                        $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                            if (this.checked) {
+                                //By Amitendra for cancel n close
+                                if (action != "99") {
+                                    selectedTemplate += $(this).parent().attr("childtemplate") + ",";
+                                    counter++;
+                                }
+                                else {
+                                    var cncValue = $("#MainContent_tblApplyAction > tbody > tr[traction='99'] > td > table > tbody > tr > td > select");
+
+                                    selectedTemplate = cncValue.val() + ",";
+                                }
+                                //
+                                if (counter > 1) {
+                                    IsMultipleTemplateSelected = true;
+                                }
+
+                                if (ActionName.toLowerCase() === "create so") {
+                                    var Quantity = $(this).parent().parent().parent().find("input[type=text]");
+
+                                    IswithSOChecked = true;
+                                    if (Quantity != undefined && Quantity.val().trim() != "" && !Quantity.val().trim().isInteger()) {
+                                        isValideQty = false;
+                                        IsCreateSo = true;
+
+                                    }
+                                    else if (Quantity != undefined && Quantity.val().trim() != "" && parseInt(Quantity.val()) <= 0) {
+                                        isValideQty = false;
+                                        IsCreateSo = true;
+                                    }
+
+                                    if (Quantity != undefined && (Quantity.val().trim() == "" || Quantity.val().trim() == null)) {
+                                        IsQtyNull = false;
+
+                                    }
+                                    TemplateIdQty += action + "," + $(this).parent().attr("childtemplate") + "," + Quantity.val() + ";";
+
+                                }
+                                else {
+
+                                    if (ActionName.toLowerCase() === "create sr") {
+                                        IswithSRChecked = true;
+                                    }
+
+
+                                    if (ActionName.indexOf("w/SO #") !== -1) {
+                                        IswithSONoChecked = true;
+                                    }
+
+
+                                    if (ActionName.indexOf("w/SR #") !== -1) {
+                                        IswithSRNoChecked = true;
+                                    }
+
+
+
+                                    TemplateIdQty += action + "," + $(this).parent().attr("childtemplate") + ",;";
+
+                                }
+
+                            }
+
+                        });
+
+
+                        //In case of send email for FXAU
+                        if (counter === 0 && action != "88") {  //Added code for issue no 371 to restrict user to save BR without selecting template
+                            // if (counter === 0 && action != "88" && action != "77") {   //Commented code for issue no 371 to restrict user to save BR without selecting template
+                            IsTemplateSelected = false;
+                        }
+
+
+
+                        if (action === "88") {
+                            TemplateIdQty += action + ",," + ";";
+                        }
+
+                        // By Amitendra for cancel N close CR
+                        if (counter === 0 && action != "99" && $("#MainContent_ddlAlertType").val() != '8') {  //changes for CR 1708023
+                            IsTemplateSelected = false;
+                            var cancelandclose = $("#MainContent_tblApplyAction > tbody > tr > td > span[action='99'] > input[type=checkbox]");
+                            cancelandclose[0].checked = false;
+                            //cancelandclose[0].disabled = true;
+                            cancelandclose.removeClass("hideColumn").next("label").removeClass("hideColumn");
+                            cancelandclose.parent().parent().parent().removeClass("hideColumn");
+
+                        }
+
+                        if (counter === 0 && action === "99") {
+                            IsTemplateSelected = true;
+
+                            var cncValue = $("#MainContent_tblApplyAction > tbody > tr[traction='99'] > td > table > tbody > tr > td > select");
+
+                            TemplateIdQty += action + "," + cncValue.val() + "," + ";";
+                            selectedTemplate = cncValue.val() + ",";
+                        }
+                        //Commented code for issue no 371
+                        /* if (action === "77") {
+                        TemplateIdQty += action + ",," + ";";
+                        } */
+                        //Commented code for issue no 371
+                    }
+
+                });
+
+                if (!isValideQty && IsCreateSo || !IsQtyNull) {
+                    $(".messageBody").children("div").html("<ul><li>Please enter a quantity that is greater than zero.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+                if (TemplateIdQty.trim() === "") {
+                    $(".messageBody").children("div").html("<ul><li>Please apply at least one action template.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+
+                if (IswithSONoChecked && !IswithSOChecked) {
+                    $(".messageBody").children("div").html("<ul><li>Please apply at least one action template in Create SO.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+
+                if (IswithSRNoChecked && !IswithSRChecked) {
+                    $(".messageBody").children("div").html("<ul><li>Please apply at least one action template in Create SR.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                if (IsMultipleTemplateSelected) {
+                    $(".messageBody").children("div").html("<ul><li>Please apply only one action template under an action.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+                if (!IsTemplateSelected) {
+                    $(".messageBody").children("div").html("<ul><li>Please specify a Template for the selected Action.</li></ul>").show();
+                    $('.messageBody').removeClass('error').removeClass('accept').addClass('error').show();
+                    scroll(0, 0);
+                    return false;
+                }
+
+
+                $("#MainContent_hdnAction").val(actionIds);
+                $("#MainContent_hdnTemplateQty").val(TemplateIdQty);
+                $("#MainContent_hdnTemplateIds").val(selectedTemplate);
+                $("#MainContent_hdnSOTemplateQty").val(TemplateIdQty);
+
+            });
+
+
+
+
+            // BEGIN other Toner CR#1121956 
+            $("#btnHideShowOtherTonerList").live("click", function () {
+                if ($(this).val() == "+") {
+                    $(this).val('-');
+                    $("#divOtherTonerList").show();
+                    $('#MainContent_lblother').html('Others'); // label change CR#1121956
+                }
+                else {
+                    $(this).val('+');
+                    $("#divOtherTonerList").hide();
+                    $('#MainContent_lblother').html('Others (Click to expand)'); // label change CR#1121956
+                    // code for all checked false
+                    $("#MainContent_cblothertonner > tbody > tr > td > input[type=checkbox]").each(function () {
+                        var ctrl = this;
+                        ctrl.checked = false;
+                    });
+                    // code for all 
+                }
+            });
+
+            // code for SNEF and SEF at load event start CR#1121956 at edit
+            if ($("#MainContent_ddlAlertType").val() == '4' || $("#MainContent_ddlAlertType").val() == '5' || $("#MainContent_ddlAlertType").val() == '10') { // Added changes for CR#2115639
+                //   $("#btnHideShowOtherTonerList").prop('disabled', true);
+                var chks = $("#MainContent_cblothertonner input:checkbox");
+                var hasChecked = false;
+                for (var i = 0; i < chks.length; i++) {
+                    if (chks[i].checked) {
+                        hasChecked = true;
+                        break;
+                    }
+                }
+
+                // Other toner CR end CR#1121956
+                if (window.location.href.indexOf("CopyTo=Y") >= 0 && window.location.href.indexOf("BusinessRuleId") >= 0) {
+                    //$("#btnHideShowOtherTonerList").prop('disabled', false); //button1121956
+                    if (hasChecked) {
+                        $("#btnHideShowOtherTonerList").val('-');
+                        $("#divOtherTonerList").show();
+                        $('#MainContent_lblother').html('Others'); // label change CR#1121956
+                    }
+                    else {
+                        $("#btnHideShowOtherTonerList").val('+');
+                        $("#divOtherTonerList").hide();
+                    }
+                }
+                else if (window.location.href.indexOf("BusinessRuleId") >= 0 || hasChecked) {
+                    if (hasChecked) {
+                        if (window.location.href.indexOf("BusinessRuleId") >= 0) {
+                            $("#btnHideShowOtherTonerList").prop('disabled', true);
+                        } //button1121956
+                        $("#btnHideShowOtherTonerList").val('-');
+                        $("#divOtherTonerList").show();
+                        $('#MainContent_lblother').html('Others'); // label change CR#1121956                        
+                    }
+                    else {
+                        $("#btnHideShowOtherTonerList").prop('disabled', true);
+                        $("#btnHideShowOtherTonerList").val('+');
+                        $("#divOtherTonerList").hide();
+                    }
+                }
+                else {
+                    $("#btnHideShowOtherTonerList").val('+');
+                    $("#divOtherTonerList").hide();
+                }
+
+            }
+            else {
+                $("#btnHideShowOtherTonerList").val('+');
+                $("#divOtherTonerList").hide();
+                //$("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+            }
+            // code for SNEF and SEF at load event END CR#1121956
+        });
+
+        function ShowOtherTonerList() {
+            $("#btnHideShowOtherTonerList").val('-');
+            $("#divOtherTonerList").show();
+            $('#MainContent_lblother').html('Others'); // label change CR#1121956
+        }
+
+        function HideOtherTonerList() {
+            $("#btnHideShowOtherTonerList").val('+');
+            $("#divOtherTonerList").hide();
+        }
+
+        // Other toner CR start for ADD new fix CR#1121956
+        function hideshowotherTonerlist() {
+            //*****
+            if ($("#MainContent_ddlAlertType").val() == '4' || $("#MainContent_ddlAlertType").val() == '5' || $("#MainContent_ddlAlertType").val() == '10') { // Added changes for CR#2115639
+                // Other toner CR start CR#1121956
+                $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+                var chks = $("#MainContent_cblothertonner input:checkbox");
+                var hasChecked = false;
+                for (var i = 0; i < chks.length; i++) {
+                    if (chks[i].checked) {
+                        hasChecked = true;
+                        break;
+                    }
+                }
+
+                // Other toner CR end CR#1121956
+                if (hasChecked) {
+                    $("#btnHideShowOtherTonerList").val('-');
+                    $("#divOtherTonerList").show();
+                    $('#MainContent_lblother').html('Others'); // label change CR#1121956
+                    //  $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+                }
+                else {
+                    $("#btnHideShowOtherTonerList").val('+');
+                    $("#divOtherTonerList").hide();
+                    $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+                }
+            }
+            else {
+                $("#btnHideShowOtherTonerList").val('+');
+                $("#divOtherTonerList").hide();
+                // $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+            }
+            ///******
+        }
+
+        // CR#1121956 code for add button in add business rule 
+        function Addlist() {
+            //*****
+            if ($("#MainContent_ddlAlertType").val() == '4' || $("#MainContent_ddlAlertType").val() == '5' || $("#MainContent_ddlAlertType").val() == '10') { // Added changes for CR#2115639
+                // Other toner CR start CR#1121956
+                var chks = $("#MainContent_cblothertonner input:checkbox");
+                var hasChecked = false;
+                for (var i = 0; i < chks.length; i++) {
+                    if (chks[i].checked) {
+                        hasChecked = true;
+                        break;
+                    }
+                }
+                // Other toner CR end CR#1121956
+                if (hasChecked) {
+                    $("#btnHideShowOtherTonerList").val('-');
+                    $("#divOtherTonerList").show();
+                    $('#MainContent_lblother').html('Others'); // label change CR#1121956
+                    //  $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+                }
+                else {
+                    $("#btnHideShowOtherTonerList").val('+');
+                    $("#divOtherTonerList").hide();
+                    // $("#btnHideShowOtherTonerList").prop('disabled', true); //button1121956
+                }
+            }
+            else {
+                $("#btnHideShowOtherTonerList").val('+');
+                $("#divOtherTonerList").hide();
+            }
+            ///******
+        }
+        //*************************
+
+        // other toner CR End ADD new fix CR#1121956
+        // END other Toner CR#1121956
+
+        //Added changes for CR#2229613
+        function checkWeekday() {
+            var rbconsolidation = $("#MainContent_rbconsolidate");
+            var rbconsolweekday = $("#MainContent_rbconsolidateweekday");
+            var cblconsolweekday = $("#MainContent_cblconsolidationweekdays");
+            var txtconsolidate = $("#MainContent_txtconsolidate");
+            if ($("#MainContent_ddlAlertType").val() == '8') {
+                if (rbconsolidation.attr("checked") != "undefined" && rbconsolidation.attr("checked") === "checked") {
+                    $("#MainContent_cblconsolidationweekdays > tbody > tr > td > input[type=checkbox]").each(function () {
+                        //  debugger;
+                        this.checked = false;
+                        this.disabled = true;
+                    });
+                    txtconsolidate.attr('disabled', false);
+                }
+                else {
+                    txtconsolidate.attr('disabled', true);
+                }
+            }
+        }
+        // 1708023
+        function HideCancel() {
+            if ($("#MainContent_ddlAlertType").val() == '8') {
+                var cancelandclose = $("#MainContent_tblApplyAction > tbody > tr > td > span[action='99'] > input[type=checkbox]");
+                cancelandclose.addClass("hideColumn").next("label").addClass("hideColumn");
+                cancelandclose.parent().parent().parent().addClass("hideColumn");
+                $("#MainContent_tblApplyAction > tbody > tr[traction='99']").addClass("hideColumn");
+                cancelandclose.removeClass("hideColumn").next("label").removeClass("hideColumn");
+            }
+        } //1708023
+
+
+
+
+        $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").live("click", function () {
+            var action = $(this).parent().attr("action");
+            var ActionName = $(this).parent().children("label").html().trim();
+            var isFxa = false; // Changes For Non ITSS Opco and changes for CR#1299959
+            // Begin Changes For Non ITSS Opco and changes for CR#1299959
+            if ($("#MainContent_hdnIsITSS").val() === "False") {
+                isFxa = true;
+            }
+            // End Changes For Non ITSS Opco and changes for CR#1299959
+
+            if (this.checked) {
+
+                // By Amitendra for cancel n close
+                if (action !== "99") {
+
+                    var cancelandclose = $("#MainContent_tblApplyAction > tbody > tr > td > span[action='99'] > input[type=checkbox]");
+                    cancelandclose[0].checked = false;
+                    cancelandclose.addClass("hideColumn").next("label").addClass("hideColumn");
+                    cancelandclose.parent().parent().parent().addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr[traction='99']").addClass("hideColumn");
+                }
+                //end
+                if (action === "88") {
+
+                    //                    $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                    //                        var childAction = $(this).parent().attr("action");
+                    //                        $("#MainContent_tblApplyAction > tbody > tr[traction=" + childAction + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    //                            $(this).attr('checked', false);
+                    //                            $(this).attr('disabled', true);
+                    //                        });
+                    //                        $(this).attr('checked', false);
+                    //                        $(this).attr('disabled', true);
+
+                    //                    });
+
+                    //                    this.checked = true;
+                    //                    this.disabled = false;
+                }
+                else {
+
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "]").removeClass("hideColumn");
+
+                    $(".tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").live("each", function () {
+                        $(this).attr('checked', false);
+                        $(this).attr('disabled', false);
+                    });
+                }
+                if (ActionName.indexOf("w/SO #") !== -1) {
+                    $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                        var ActionName2 = $(this).parent().children("label").html().trim();
+                        if (ActionName2.toLowerCase() === "create so" || ActionName2.toLowerCase() === "create sr") {   /// added by richa 
+                            $(this).attr('checked', true);
+                            $("#MainContent_tblApplyAction > tbody > tr[traction='" + $(this).parent().attr("action") + "']").removeClass("hideColumn");
+                        }
+
+                    });
+                }
+
+                else if (ActionName.indexOf("w/SR #") !== -1) {
+                    $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                        var ActionName2 = $(this).parent().children("label").html().trim();
+                        if (ActionName2.toLowerCase() === "create sr") {
+                            $(this).attr('checked', true);
+                            $("#MainContent_tblApplyAction > tbody > tr[traction='" + $(this).parent().attr("action") + "']").removeClass("hideColumn");
+                        }
+
+                    });
+                }
+                //added below by richa to make create SO/SR linkage SR will be select on the basis of SO
+                else if (ActionName.indexOf("SO") !== -1) {
+                    //if ($("#MainContent_ddlOpCo").val() !== "FXAU" || !isFxa)
+                    if (isFxa == false) //Changes For Non ITSS Opco and changes for CR#1299959
+                    {
+                        $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                            var ActionName2 = $(this).parent().children("label").html().trim();
+                            if (ActionName2.toLowerCase() === "create sr") {
+                                $(this).attr('checked', true);
+                                $("#MainContent_tblApplyAction > tbody > tr[traction='" + $(this).parent().attr("action") + "']").removeClass("hideColumn");
+                            }
+
+                            $(".tblApplyAction > tbody > tr[traction=4] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+
+                                $(this).attr('checked', false);
+                                $(this).attr('disabled', false);
+                            });
+
+                        });
+                    }
+                }
+                //added above by richa to make create SO/SR linkage SR will be select on the basis of SO
+
+                //                if (action === "77") {
+                //                    $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                //                        var ActionName2 = $(this).parent().children("label").html().trim();
+                //                        if (ActionName2.toLowerCase() === "create so" || ActionName2.toLowerCase() === "create sr") {
+                //                            $(this).attr('checked', true);
+                //                            $("#MainContent_tblApplyAction > tbody > tr[traction='" + $(this).parent().attr("action") + "']").removeClass("hideColumn");
+                //                        }
+
+                //                    });
+                //                }
+
+                // Code added on 5th March RT
+                if (action == 4) {
+                    // alert(action);
+                    $(".tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                        $(this).attr('checked', false);
+                        $(this).attr('disabled', false);
+                    });
+                }
+                // Code added on 5th March over
+
+            }
+            else {
+                if (action === "88") {
+
+                    //                    $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function (index) {
+                    //                        var childAction = $(this).parent().attr("action");
+                    //                        $("#MainContent_tblApplyAction > tbody > tr[traction=" + childAction + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    //                            $(this).attr('checked', false);
+                    //                            $(this).attr('disabled', false);
+                    //                        });
+                    //                        $(this).attr('checked', false);
+                    //                        $(this).attr('disabled', false);
+
+                    //                    });
+
+                }
+                // Code added by RT
+                else if (action == 1 && isFxa == false) { //Changes For Non ITSS Opco and changes for CR#1299959            
+                    $("#MainContent_tblApplyAction > tbody > tr[traction='4']").addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr > td > span[action='4'] > input[type=checkbox]").attr('checked', false);
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "]").addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = false; // added by richa to disable checkbox while doing uncheck parent action.
+                    });
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=4] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = false; // added by richa to disable checkbox while doing uncheck parent action.
+                    });
+                }
+                // Code addition done by RT
+
+                // Code added by RT
+                else if (action == 4) {
+                    $("#MainContent_tblApplyAction > tbody > tr[traction='4']").addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr > td > span[action='4'] > input[type=checkbox]").attr('checked', false);
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "]").addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = false; // added by richa to disable checkbox while doing uncheck parent action.
+                    });
+                }
+                // Code addition done by RT
+                else {
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "]").addClass("hideColumn");
+                    $("#MainContent_tblApplyAction > tbody > tr[traction=" + action + "] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                        this.checked = false;
+                        this.disabled = false; // added by richa to disable checkbox while doing uncheck parent action.
+                    });
+                }
+
+                // By Amitendra for Cancel n Close CR
+                var counterAction = 0;
+                var action1 = 0;
+
+                $("#MainContent_tblApplyAction > tbody > tr > td > span > input[type=checkbox]").each(function () {
+
+                    action1 = $(this).parent().attr("action");
+                    var ActionName = $(this).parent().children("label").html().trim();
+                    if (this.checked) {
+                        if (action1 != "99") {
+
+                            counterAction++;
+                        }
+                    }
+                });
+
+                if (counterAction == 0 && $("#MainContent_ddlAlertType").val() != '8') {
+
+                    var cancelandclose = $("#MainContent_tblApplyAction > tbody > tr > td > span[action='99'] > input[type=checkbox]");
+                    $("#MainContent_tblApplyAction > tbody > tr > td > span[action='99']").removeClass("hideColumn");
+                    cancelandclose[0].checked = false;
+                    cancelandclose.removeClass("hideColumn").next("label").removeClass("hideColumn");
+                    cancelandclose.parent().parent().parent().removeClass("hideColumn");
+                }
+                //end
+            }
+
+        });
+
+        // Added below by richa to select only one template for create SR 
+        $("#MainContent_tblApplyAction > tbody > tr[traction=1] > td > table > tbody > tr > td > span > input[type=checkbox]").live("click", function () {
+            if (this.checked) {
+
+                $("#MainContent_tblApplyAction > tbody > tr[traction=1] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', true);
+                });
+                $(this).attr('checked', true);
+                $(this).attr('disabled', false);
+            }
+            else {
+                $("#MainContent_tblApplyAction > tbody > tr[traction=1] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', false);
+                });
+                $(this).attr('checked', false);
+                $(this).attr('disabled', false);
+            }
+        });
+
+        // Begin Changes For Non ITSS Opco and changes for CR#1299959
+        $("#MainContent_tblApplyAction > tbody > tr[traction=77] > td > table > tbody > tr > td > span > input[type=checkbox]").live("click", function () {
+            if (this.checked) {
+                $("#MainContent_tblApplyAction > tbody > tr[traction=77] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', true);
+                });
+                $(this).attr('checked', true);
+                $(this).attr('disabled', false);
+            }
+            else {
+                $("#MainContent_tblApplyAction > tbody > tr[traction=77] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', false);
+                });
+                $(this).attr('checked', false);
+                $(this).attr('disabled', false);
+            }
+        });
+        // End Changes For Non ITSS Opco and changes for CR#1299959
+
+        $("#MainContent_tblApplyAction > tbody > tr[traction=4] > td > table > tbody > tr > td > span > input[type=checkbox]").live("click", function () {
+            if (this.checked) {
+
+                $("#MainContent_tblApplyAction > tbody > tr[traction=4] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', true);
+                });
+                $(this).attr('checked', true);
+                $(this).attr('disabled', false);
+            }
+            else {
+                $("#MainContent_tblApplyAction > tbody > tr[traction=4] > td > table > tbody > tr > td > span > input[type=checkbox]").each(function () {
+                    $(this).attr('checked', false);
+                    $(this).attr('disabled', false);
+
+                });
+                $(this).attr('checked', false);
+                $(this).attr('disabled', false);
+            }
+        });
+        // Added above by richa to select only one template for create SO
+
+
+
+
+        //To check date from current date.
+        // created by amitendra kumar srivastava
+        function CompareDates() {
+            var fromDate = $("#MainContent_txtFromDate").val();
+            var toDate = $("#MainContent_txtToDate").val();
+
+            months = {
+                'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05',
+                'Jun': '06', 'Jul': '07', 'Aug': '08', 'Sep': '09', 'Oct': '10', 'Nov': '11',
+                'Dec': '12'
+            };
+
+            startDate = fromDate.split('-');
+
+            fromDate = [months[startDate[1]], startDate[0], startDate[2]].join('/');
+
+            endDate = toDate.split('-');
+
+            toDate = [months[endDate[1]], endDate[0], endDate[2]].join('/');
+
+            if (Date.parse(fromDate) > Date.parse(toDate)) {
+
+                return false;
+            }
+            else {
+
+                return true;
+            }
+        }
+        function DisableAddConditions() {
+            var rbAnydayTime = $("#MainContent_rbAnyDayTime");
+            var rbDayofMonth = $("#MainContent_rbDayofMonth");
+            var rbDayOfWeek = $("#MainContent_rbDayOfWeek");
+            var rbFromDate = $("#MainContent_rbFromDate");
+
+
+            if (rbAnydayTime[0].checked) {
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+            }
+            if (rbDayofMonth[0].checked) {
+
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+                cblWeekDays.attr('disabled', true);
+                ddlDayOfTheMonth.attr('disabled', false);
+
+
+            }
+            if (rbDayOfWeek[0].checked) {
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+                ddlDayOfTheMonth[0].selectedIndex = 0;
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+
+                    this.disabled = false;
+                });
+                txtFromDate.val('');
+                txtToDate.val('');
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+            }
+            if (rbFromDate[0].checked) {
+                var ddlDayOfTheMonth = $("#MainContent_ddlDayOfTheMonth");
+                var cblWeekDays = $("#MainContent_cblWeekDays");
+                var txtFromDate = $("#MainContent_txtFromDate");
+                var txtToDate = $("#MainContent_txtToDate");
+                var imgFromDate = $("#MainContent_imgFromDate");
+                var imgToDate = $("#MainContent_imgToDate");
+                var imgFromDateInactive = $("#MainContent_imgFromDateInactive");
+                var imgToDateInactive = $("#MainContent_imgToDateInactive");
+                var ddlFromHour = $("#MainContent_ddlFromHour");
+                var ddlFromMinute = $("#MainContent_ddlFromMinute");
+                var ddlToHour = $("#MainContent_ddlToTimeHour");
+                var ddlToMinute = $("#MainContent_ddlToMinute");
+
+                $("#MainContent_cblWeekDays > tbody > tr > td > input[type=checkbox]").each(function () {
+                    this.checked = false;
+                    this.disabled = true;
+                });
+
+                ddlDayOfTheMonth.attr('disabled', true);
+
+            }
+        }
+
+        function ValidateNumber(field, evt) {
+            var charCode = (evt.which) ? evt.which : event.keyCode
+            var keychar = String.fromCharCode(charCode);
+
+            var winEvent = evt || window.event;
+
+
+            if (winEvent.shiftKey) {
+                return false;
+            }
+            if (charCode === 37 || charCode === 38 || charCode === 39 || charCode === 40 || charCode === 8 || charCode === 46) {
+                return true;
+            }
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && (charCode < 96 || charCode > 105)) {
+                return false;
+            }
+
+            return true;
+        }
+
+
+
+
+    </script>
+    <style type="text/css">
+        .style1 {
+            width: 16px;
+            height: 16px;
+        }
+    </style>
+    <style type="text/css">
+        body {
+            background: #ededed !important;
+        }
+    </style>
+
+    <style type="text/css"></style>
+
+    <link
+        href="/WebResource.axd?d=H0762_8Pin4i55mzvdZptIqEN6SV4uU2yP9VtEQogVYzT7QgFNahSkBwB3AAzM3VZ6lTJXWP9Ma9gSCulwA8eLBA2kp0e54ttwp2gnPcNiEaH3lOgJFK0paNBE7HY-_9EnVLG-C14aIqBlitGLORsg2&amp;t=635017225160000000"
+        type="text/css" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="http://epgateway.sgp.xerox.com:8041/AsyncWait/AsyncWait.css">
+    <script type="text/javascript" language="javascript"
+        src="http://epgateway.sgp.xerox.com:8041/AsyncWait/AsyncWait.js"></script>
+    <script type="text/javascript" language="javascript"
+        src="http://epgateway.sgp.xerox.com:8041/AsyncWait/Common.js"></script>
+</head>
+
+<body>
+    <form method="post" action="./AddBusinessRule.aspx" onsubmit="javascript:return WebForm_OnSubmit();"
+        onkeypress="javascript:return WebForm_FireDefaultButton(event, 'MainContent_btnSave')" id="Form1">
+        <div class="aspNetHidden">
+            <input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="">
+            <input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="">
+            <input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="">
+            <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE"
+                value="/wEPDwUKMTIxMTI2NDQwMw8WCh4GSXNTaG93aB4NSXNTaG93QWN0aW9uc2ceDkJ1c2luZXNzUnVsZUlkZh4NT3JkZXJCeVZhbHVlczLhBgABAAAA/////wEAAAAAAAAADAIAAABAR2F0ZVdheUJPLCBWZXJzaW9uPTEuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbAUBAAAAEUdhdGVXYXlCTy5NZXNzYWdlEAAAABs8Um93TnVtRnJvbT5rX19CYWNraW5nRmllbGQZPFJvd051bVRvPmtfX0JhY2tpbmdGaWVsZCI8T3JkZXJCeUNvbHVtbk5hbWU+a19fQmFja2luZ0ZpZWxkHjxPcmRlclJlY29yZEluPmtfX0JhY2tpbmdGaWVsZBw8Q3VycmVudFBhZ2U+a19fQmFja2luZ0ZpZWxkHDxUcmFuc2FjdGlvbj5rX19CYWNraW5nRmllbGQcPHRlbXBsYXRlUXR5PmtfX0JhY2tpbmdGaWVsZBw8TWVzc2FnZVRleHQ+a19fQmFja2luZ0ZpZWxkGDxHcm91cElEPmtfX0JhY2tpbmdGaWVsZBw8QWRkZWRBbGVydHM+a19fQmFja2luZ0ZpZWxkGjxJc1N1Y2Nlc3M+a19fQmFja2luZ0ZpZWxkGjxNZXNzYWdlSWQ+a19fQmFja2luZ0ZpZWxkFzx1c2VyaWQ+a19fQmFja2luZ0ZpZWxkGTxSZWNvcmRJZD5rX19CYWNraW5nRmllbGQlPFRvdGFsTnVtYmVyb2ZSZWNvcmRzPmtfX0JhY2tpbmdGaWVsZC48VG90YWxSZWNvcmRzUmV0dXJuZWRCeVNlcnZpY2U+a19fQmFja2luZ0ZpZWxkAAABBAADAAEBAQAAAQAAAAgIEUdhdGVXYXlCTy5PcmRlckJ5AgAAAAh3U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tHYXRlV2F5Qk8uSWROYW1lLCBHYXRlV2F5Qk8sIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsXV0IAQgICAgCAAAAAAAAAB4AAAAGAwAAAAtCVVNJTkVTU19JRAX8////EUdhdGVXYXlCTy5PcmRlckJ5AQAAAAd2YWx1ZV9fAAgCAAAAAAAAAAAAAAAKAAAAAAoKCgAAAAAACgAAAAAAAAAAAAAAAAseEWdldFVzZXJQZXJtaXNzaW9uMugDAAEAAAD/////AQAAAAAAAAAMAgAAAEBHYXRlV2F5Qk8sIFZlcnNpb249MS4wLjAuMCwgQ3VsdHVyZT1uZXV0cmFsLCBQdWJsaWNLZXlUb2tlbj1udWxsBAEAAAB7U3lzdGVtLkNvbGxlY3Rpb25zLkdlbmVyaWMuTGlzdGAxW1tHYXRlV2F5Qk8uUGVybWlzc2lvbiwgR2F0ZVdheUJPLCBWZXJzaW9uPTEuMC4wLjAsIEN1bHR1cmU9bmV1dHJhbCwgUHVibGljS2V5VG9rZW49bnVsbF1dAwAAAAZfaXRlbXMFX3NpemUIX3ZlcnNpb24EAAAWR2F0ZVdheUJPLlBlcm1pc3Npb25bXQIAAAAICAkDAAAAAQAAAAEAAAAHAwAAAAABAAAABAAAAAQUR2F0ZVdheUJPLlBlcm1pc3Npb24CAAAACQQAAAANAwUEAAAAFEdhdGVXYXlCTy5QZXJtaXNzaW9uBAAAABk8T3BDb05hbWU+a19fQmFja2luZ0ZpZWxkFzxJc1JlYWQ+a19fQmFja2luZ0ZpZWxkGDxJc1dyaXRlPmtfX0JhY2tpbmdGaWVsZBc8SXNJdHNzPmtfX0JhY2tpbmdGaWVsZAEAAAABAQECAAAABgUAAAAERlhBVQEBAAsWAmYPZBYEZg9kFgICBg8WAh4EVGV4dAVGPHN0eWxlIHR5cGUgPSd0ZXh0L2Nzcyc+Ym9keXtiYWNrZ3JvdW5kOiAjZWRlZGVkICFpbXBvcnRhbnQgO308L3N0eWxlPmQCAQ9kFgoCAw8PFgIfBQUrRlVKSUZJTE0gSU5URVJOQUwgVVNFIE9OTFkgPDwgUkVTVFJJQ1RFRCA+PmRkAgUPDxYCHwUFCGF1MDE2MjA3ZGQCCQ8WAh4JaW5uZXJodG1sBdwIPGRpdiBpZD0ic21vb3RobWVudTEiIGNsYXNzPSJkZHNtb290aG1lbnUiPjx1bCBjbGFzcz0ibWVudSI+PGxpIGNsYXNzPSJhY3RpdmUiPjxhIGhyZWY9IiMiIGNsYXNzPSJwYXJlbnQiPjxzcGFuPkRldmljZSBNYW5hZ2VtZW50PC9zcGFuPjwvYT48dWw+PGxpPjxhIGhyZWY9Imh0dHA6Ly9lcGdhdGV3YXkuc2dwLnhlcm94LmNvbTo4MDQxL0RldmljZU1hbmFnZW1lbnQvTWFuYWdlRGV2aWNlLmFzcHgiPjxzcGFuPk1hbmFnZSBEZXZpY2U8L3NwYW4+PC9hPjwvbGk+PC91bD48L2xpPjxsaSBjbGFzcz0iYWN0aXZlIj48YSBocmVmPSIjIiBjbGFzcz0icGFyZW50Ij48c3Bhbj5BbGVydCBNYW5hZ2VtZW50PC9zcGFuPjwvYT48dWw+PGxpPjxhIGhyZWY9Imh0dHA6Ly9lcGdhdGV3YXkuc2dwLnhlcm94LmNvbTo4MDQxL0FsZXJ0TWFuYWdlbWVudC9CdXNpbmVzc1J1bGUuYXNweCI+PHNwYW4+TWFuYWdlIEJ1c2luZXNzIFJ1bGVzPC9zcGFuPjwvYT48L2xpPjxsaT48YSBocmVmPSJodHRwOi8vZXBnYXRld2F5LnNncC54ZXJveC5jb206ODA0MS9BbGVydE1hbmFnZW1lbnQvQ29uZmlndXJlQWN0aW9uVGVtcGxhdGUuYXNweCI+PHNwYW4+Q29uZmlndXJlIEFjdGlvbiBUZW1wbGF0ZTwvc3Bhbj48L2E+PC9saT48bGk+PGEgaHJlZj0iaHR0cDovL2VwZ2F0ZXdheS5zZ3AueGVyb3guY29tOjgwNDEvQWxlcnRNYW5hZ2VtZW50L0FsZXJ0QWN0aW9uTWF0cml4LmFzcHgiPjxzcGFuPk1hbmFnZSBBbGVydC1BY3Rpb24gTWF0cml4PC9zcGFuPjwvYT48L2xpPjwvdWw+PC9saT48bGkgY2xhc3M9ImFjdGl2ZSI+PGEgaHJlZj0iIyIgY2xhc3M9InBhcmVudCI+PHNwYW4+QWxlcnQgUXVldWU8L3NwYW4+PC9hPjx1bD48bGk+PGEgaHJlZj0iaHR0cDovL2VwZ2F0ZXdheS5zZ3AueGVyb3guY29tOjgwNDEvTWFuYWdlQWxlcnQvTWFuYWdlQWxlcnQuYXNweCI+PHNwYW4+TWFuYWdlIEFsZXJ0czwvc3Bhbj48L2E+PC9saT48L3VsPjwvbGk+PGxpPjxhIGhyZWY9ImphdmFzY3JpcHQ6b3BlbkhlbHAoKTsiIGNsYXNzPSJwYXJlbnQiPjxzcGFuPkhlbHA8L3NwYW4+PC9hPjwvbGk+PC91bD48YiBjbGFzcz0ibWVudUxmdFJuZCI+PC9iPjxiIGNsYXNzPSJtZW51Umd0Um5kIj48L2I+PC9kaXY+ZAILD2QWBGYPZBYCZg9kFioCAQ8WBB4FY2xhc3MFJG1lc3NhZ2VCb2R5IGluZm9ybWF0aW9uQmxvY2sgaW5mb01zZx4Fc3R5bGUFCWRpc3BsYXk6OxYCAgEPDxYCHg9WYWxpZGF0aW9uR3JvdXAFBHNhdmVkZAILDxAPFgYeDURhdGFUZXh0RmllbGQFBE5hbWUeDkRhdGFWYWx1ZUZpZWxkBQROYW1lHgtfIURhdGFCb3VuZGdkEBUCB0VuYWJsZWQIRGlzYWJsZWQVAgdFbmFibGVkCERpc2FibGVkFCsDAmdnZGQCDw8QDxYGHwoFBE5hbWUfCwUCSWQfDGdkEBULBlNlbGVjdAtEYWlseSBNZXRlcgRFWENIBUZhdWx0CUZhdWx0LUdDQw1GaXhlZCBCaWxsaW5nA0tPQwhOb24tQ29tbQRTRS9GBVNORS9GBlNORUZHQxULATABNgE4ATEBOQE3ATMBMgE1ATQCMTAUKwMLZ2dnZ2dnZ2dnZ2cWAWZkAhMPZBYCAgEPZBYCAgEPEA8WBh8KBQROYW1lHwsFBE5hbWUfDGdkEBUFA0FsbAZFcXVhbHMORG9lcyBub3QgRXF1YWwLU3RhcnRzIHdpdGgJRW5kcyB3aXRoFQUDQWxsBkVxdWFscw5Eb2VzIG5vdCBFcXVhbAtTdGFydHMgd2l0aAlFbmRzIHdpdGgUKwMFZ2dnZ2cWAWZkAhcPEA8WBh8KBQtEZXNjcmlwdGlvbh8LBQROYW1lHwxnZBAVEgNBbGwLQmxhY2sgVG9uZXIKQ3lhbiBUb25lcg1NYWdlbnRhIFRvbmVyDFllbGxvdyBUb25lcgpCbGFjayBEcnVtCUN5YW4gRHJ1bQxNYWdlbnRhIERydW0LWWVsbG93IERydW0SV2FzdGUgVG9uZXIgQm90dGxlCkJsdWUgVG9uZXILV2hpdGUgVG9uZXILR3JlZW4gVG9uZXIJUmVkIFRvbmVyCUJsdWUgRHJ1bQpXaGl0ZSBEcnVtCkdyZWVuIERydW0IUmVkIERydW0VEgNBbGwTQmxhY2tUb25lckNhcnRyaWRnZRJDeWFuVG9uZXJDYXJ0cmlkZ2UVTWFnZW50YVRvbmVyQ2FydHJpZGdlFFllbGxvd1RvbmVyQ2FydHJpZGdlEkJsYWNrRHJ1bUNhcnRyaWRnZRFDeWFuRHJ1bUNhcnRyaWRnZRRNYWdlbnRhRHJ1bUNhcnRyaWRnZRNZZWxsb3dEcnVtQ2FydHJpZGdlE1dhc3RlVG9uZXJDb250YWluZXISQmx1ZVRvbmVyQ2FydHJpZGdlE1doaXRlVG9uZXJDYXJ0cmlkZ2UTR3JlZW5Ub25lckNhcnRyaWRnZRFSZWRUb25lckNhcnRyaWRnZRFCbHVlRHJ1bUNhcnRyaWRnZRJXaGl0ZURydW1DYXJ0cmlkZ2USR3JlZW5EcnVtQ2FydHJpZGdlEFJlZERydW1DYXJ0cmlkZ2UUKwMSZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnFgBkAhkPZBYCAgMPEA8WBh8KBQtEZXNjcmlwdGlvbh8LBQROYW1lHwxnZBAVCwNBbGwSQ2xlYW5pbmcgQ2FydHJpZGdlDkZ1c2VyIEFzc2VtYmx5C0Z1c2luZyBVbml0HkZ1c2luZyBVbml0IENsZWFuaW5nIENhcnRyaWRnZQpGdXNpbmcgV2ViA0lCVA9NYWludGVuYW5jZSBLaXQIUEhEIFVuaXQPUHJpbnQgQ2FydHJpZGdlGFNtYXJ0IEtpdCBEcnVtIENhcnRyaWRnZRULA0FsbBFDbGVhbmluZ0NhcnRyaWRnZQ1GdXNlckFzc2VtYmx5CkZ1c2luZ1VuaXQbRnVzaW5nVW5pdENsZWFuaW5nQ2FydHJpZGdlCUZ1c2luZ1dlYgNJQlQOTWFpbnRlbmFuY2VLaXQHUEhEVW5pdA5QcmludENhcnRyaWRnZRVTTWFydEtpdERydW1DYXJ0cmlkZ2UUKwMLZ2dnZ2dnZ2dnZ2cWAGQCHQ8QDxYGHwoFCE9wQ29OYW1lHwsFCE9wQ29OYW1lHwxnZBAVAgZTZWxlY3QERlhBVRUCATAERlhBVRQrAwJnZxYBZmQCTQ8QDxYGHwoFBE5hbWUfCwUCSWQfDGdkEBUgA0RheQExATIBMwE0ATUBNgE3ATgBOQIxMAIxMQIxMgIxMwIxNAIxNQIxNgIxNwIxOAIxOQIyMAIyMQIyMgIyMwIyNAIyNQIyNgIyNwIyOAIyOQIzMAIzMRUgATABMQEyATMBNAE1ATYBNwE4ATkCMTACMTECMTICMTMCMTQCMTUCMTYCMTcCMTgCMTkCMjACMjECMjICMjMCMjQCMjUCMjYCMjcCMjgCMjkCMzACMzEUKwMgZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dkZAJRDxAPFgYfCgUETmFtZR8LBQROYW1lHwxnZBAVBwZNb25kYXkHVHVlc2RheQlXZWRuZXNkYXkIVGh1cnNkYXkGRnJpZGF5CFNhdHVyZGF5BlN1bmRheRUHBk1vbmRheQdUdWVzZGF5CVdlZG5lc2RheQhUaHVyc2RheQZGcmlkYXkIU2F0dXJkYXkGU3VuZGF5FCsDB2dnZ2dnZ2dkZAJlDxAPFgYfCgUETmFtZR8LBQROYW1lHwxnZBAVGQJIUgIwMAIwMQIwMgIwMwIwNAIwNQIwNgIwNwIwOAIwOQIxMAIxMQIxMgIxMwIxNAIxNQIxNgIxNwIxOAIxOQIyMAIyMQIyMgIyMxUZATACMDACMDECMDICMDMCMDQCMDUCMDYCMDcCMDgCMDkCMTACMTECMTICMTMCMTQCMTUCMTYCMTcCMTgCMTkCMjACMjECMjICMjMUKwMZZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2RkAmcPEA8WBh8KBQROYW1lHwsFBE5hbWUfDGdkEBUEAjAwAjE1AjMwAjQ1FQQCMDACMTUCMzACNDUUKwMEZ2dnZ2RkAmkPEA8WBh8KBQROYW1lHwsFBE5hbWUfDGdkEBUZAkhSAjAwAjAxAjAyAjAzAjA0AjA1AjA2AjA3AjA4AjA5AjEwAjExAjEyAjEzAjE0AjE1AjE2AjE3AjE4AjE5AjIwAjIxAjIyAjIzFRkBMAIwMAIwMQIwMgIwMwIwNAIwNQIwNgIwNwIwOAIwOQIxMAIxMQIxMgIxMwIxNAIxNQIxNgIxNwIxOAIxOQIyMAIyMQIyMgIyMxQrAxlnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZGQCaw8QDxYGHwoFBE5hbWUfCwUETmFtZR8MZ2QQFQQCMDACMTUCMzACNDUVBAIwMAIxNQIzMAI0NRQrAwRnZ2dnZGQCbQ8QDxYEHgdDaGVja2VkaB4HRW5hYmxlZGhkZGRkAm8PDxYEHwVlHw5oZGQCcw8QDxYEHw1oHw5oZGRkZAJ1D2QWAmYPZBYCZg9kFgICAQ8QDxYIHwoFBE5hbWUfCwUETmFtZR8MZx8OaGQQFQcGTW9uZGF5B1R1ZXNkYXkJV2VkbmVzZGF5CFRodXJzZGF5BkZyaWRheQhTYXR1cmRheQZTdW5kYXkVBwZNb25kYXkHVHVlc2RheQlXZWRuZXNkYXkIVGh1cnNkYXkGRnJpZGF5CFNhdHVyZGF5BlN1bmRheRQrAwdnZ2dnZ2dnFgBkAncPFgIfCAUOZGlzcGxheTpibG9jazsWCAIBDxAPFgYfCgUETmFtZR8LBQJJZB8MZ2QQFQsGU2VsZWN0C0RhaWx5IE1ldGVyBEVYQ0gFRmF1bHQJRmF1bHQtR0NDDUZpeGVkIEJpbGxpbmcDS09DCE5vbi1Db21tBFNFL0YFU05FL0YGU05FRkdDFQsBMAE2ATgBMQE5ATcBMwEyATUBNAIxMBQrAwtnZ2dnZ2dnZ2dnZxYBZmQCAw8PFgIeB1Zpc2libGVoZBYCAgEPEGRkFgFmZAIFDzwrABEDAA8WBB8MZx4LXyFJdGVtQ291bnRmZAEQFgAWABYADBQrAABkAgcPDxYCHw9oZBYCAgEPEGRkFgFmZAKBAQ8PFgIfD2hkZAKFAQ8PFgIfD2hkZAKHAQ8PFgIfD2hkZAICD2QWBGYPFgIeCkJlaGF2aW9ySUQFCm1vZGFsUG9wdXBkAgEPZBYEAgEPDxYCHwUFDENvbmZpcm1hdGlvbmRkAgMPDxYCHwUFKURvIHlvdSB3YW50IHRvIGRlbGV0ZSB0aGlzIEJ1c2luZXNzIFJ1bGU/ZGQCDw8PFgIfBQVD77+977+9Q29weXJpZ2h0IEZVSklGSUxNIENvLiwgTHRkLiAxOTk1IC0gMjAxMy4gQWxsIFJpZ2h0IFJlc2VydmVkLmRkGAIFHl9fQ29udHJvbHNSZXF1aXJlUG9zdEJhY2tLZXlfXxYXBR5jdGwwMCRNYWluQ29udGVudCRyYkFueURheVRpbWUFHmN0bDAwJE1haW5Db250ZW50JHJiRGF5b2ZNb250aAUeY3RsMDAkTWFpbkNvbnRlbnQkcmJEYXlvZk1vbnRoBR1jdGwwMCRNYWluQ29udGVudCRyYkRheU9mV2VlawUdY3RsMDAkTWFpbkNvbnRlbnQkcmJEYXlPZldlZWsFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDAFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDEFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDIFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDMFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDQFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDUFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDYFH2N0bDAwJE1haW5Db250ZW50JGNibFdlZWtEYXlzJDYFHGN0bDAwJE1haW5Db250ZW50JHJiRnJvbURhdGUFHGN0bDAwJE1haW5Db250ZW50JHJiRnJvbURhdGUFLGN0bDAwJE1haW5Db250ZW50JGNibGNvbnNvbGlkYXRpb253ZWVrZGF5cyQwBSxjdGwwMCRNYWluQ29udGVudCRjYmxjb25zb2xpZGF0aW9ud2Vla2RheXMkMQUsY3RsMDAkTWFpbkNvbnRlbnQkY2JsY29uc29saWRhdGlvbndlZWtkYXlzJDIFLGN0bDAwJE1haW5Db250ZW50JGNibGNvbnNvbGlkYXRpb253ZWVrZGF5cyQzBSxjdGwwMCRNYWluQ29udGVudCRjYmxjb25zb2xpZGF0aW9ud2Vla2RheXMkNAUsY3RsMDAkTWFpbkNvbnRlbnQkY2JsY29uc29saWRhdGlvbndlZWtkYXlzJDUFLGN0bDAwJE1haW5Db250ZW50JGNibGNvbnNvbGlkYXRpb253ZWVrZGF5cyQ2BRljdGwwMCRNYWluQ29udGVudCRidG5CYWNrBSBjdGwwMCRNYWluQ29udGVudCRndkJ1c2luZXNzUnVsZQ88KwAMAQhmZD9zjMvbWFE3SBk95FSZDzdLlicd4WMk1cKqBB/tnWWs">
+        </div>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            var theForm = document.forms['Form1'];
+            if (!theForm) {
+                theForm = document.Form1;
+            }
+            function __doPostBack(eventTarget, eventArgument) {
+                if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+                    theForm.__EVENTTARGET.value = eventTarget;
+                    theForm.__EVENTARGUMENT.value = eventArgument;
+                    theForm.submit();
+                }
+            }
+            //]]>
+        </script>
+
+
+        <script
+            src="/WebResource.axd?d=24yIF7EXXgi6tWyHkYD8KQ2e-xHaiBQj5SUXhXSA314KB10KfmA6vC3XpGbehnGpj8E548-22iQNSWlocl5XzJ94PoIN-c8bwa09MHaFBCw1&amp;t=636765244020000000"
+            type="text/javascript"></script>
+
+
+        <script type="text/javascript">
+            //<![CDATA[
+            setTimeout(function () { DisableAddConditions(); }, 100); setTimeout(function () { MakeTopMenuHeighlight(); }, 10);  //]]>
+        </script>
+
+        <script
+            src="/ScriptResource.axd?d=01cVsG6UyxXTMvgV43Zj05-zy1DQCRlBJGxvnSVdNeOUE5IQeBt2vwKfTEd4Twe8WZlyJGpkOESh6xLoKdgIpXZxj0hpSoUAelMaeOVL1X5nVI2nbOGOlHP6bBcxupc5xIPu1RjPJHLair_fw3LOmijnsPIs_Put-Dv9HepmHaQ1&amp;t=ffffffffe8fd9680"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=oNKjiEFffpohpuRGsfFF1srSrkvAr2Nq_SzjjwKjhS9Djzb9huznbdurhlotgwPgCwAR8T3IwqS1iVwirPflXkKfQZQjDU553YTOzkq9r5x_hgjZezDnCM-YN0RZ98ON0&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=54GFxInD6YGZixEqENrgPwFUeS-dfl6Hb_V_UiecCXfp38UbFYtzoqky7FQQ7h6j7lDhHvWZt-Cp5N6KV_slbVKKDQFDYXr03LCMBV9DZGgicIFoBxoMhfO8ULLOnoKGTKBqqDfbrGJdvFtzEfEiCw2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=Y9Vks_ddBqJVbjy7mqo30ZongMwyscS1PxzUmIfGNBXcf-DxfgMjyv6xAWw34IkGltFVLgSoI5GZV5iMUHvLmQuRyMuan7mXABbWqx1ZzG_DObXicIZcg4Ul9bfw8EsP0&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=2yWgMML3UMip6q2YtR7ZaFOa-R51t6-F3hXiS46BiJ7EU6AbDxoz_nZ384kbpueW9HY5Ayat0EZ_PRGyKntjoczURLR_V5IwPyEPBeuS4g2noTC7V5jSz8kdcgkCwZyb0&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=CgUHtVWCSd00UEzm5kci8q5R2JFNb0cNfQB_ehDLrsB75iYxGaSWwD_GHOOYoTDsV07i9Frc8RKfVNsXy2I8culU7OJTz7qlP4Ym85KV67svQ_244hYxNq8vRl9gLrxhDnDLxUtsxEmZLVYxesk7Vg2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=kcZM0J_4InV4jZUXVhy_CAMEev5p-dTBldHvo9A72xYTmMoIZO-aH_VF9OxNXNG41bUD8ndqKmip9wwWDFh1E_31SU0lmCtFx7swR-Ldpyrb26TP1BZWLsFYFoWiRFfCOIhH4oyHggpwi_kdDO4JUA2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=x8P_xCDclS-cnBMyuCiOU8mr1PLimFN00dNm5OBd2RsQrpEGP9u6RItxOAnRKxe-gUEbVl_sSB_zaa63JIqv-PxuEANV-QwU8MA5ouOQUr6dyRW885MoLpnFvs4gBrk_hM8dQLoepR4jZSgVDmeYTA2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=OmZX2XW4gic2IpKubb-zFq6fguuC3OHzFyw8mqVKDSqXYWAzBQ8ZVuEbyMiVlOO5Bqx1F2___7xYpljRk0yNg8bWskEdMkP7S7lGGDFuhdKDmaAlucOv-5MvzRRJsqkGH_nS8Cpm3sT5UWMxyd45CQ2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=LZXWkmoaCp670JHZicsl4x2lKHY-hGtFPUFrJStwg98EuiLYXW5Hs3WGKhaaAvO_bfojsydzV6SrcMYpJXf-CGrzCM8L_H7MP340wRGRulzTxocd2zt9JlsJ3VWrhd0IKT3y5f4FOUlIeVjFVYFr-A2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=9QQ_h4XUkf6Dop5SK3K8CKJXXUZjko24q8_Z6uqew6FELN9yuGyjcRUj125qytV1mFqV2TPCebvNciRH4fJtiD7qEWChURxDmvq6OFVf9V3gF0q3XyE6GTiIiNeSn3JOonu7TOphm7KUn3iwxmDlSQ2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=1qZMhuM_z0GSD7a6_zsu_8-MJMs21eAvmMYXm0Pwwd92Vx8siGVHAOKxqVO2mVymZMQcPVsj2LkQeNvck76Ie6ttkbsJjfzXE0rN00ZG1yxjvM1_E91Dpz0CAAGRdbboxkKOYm0vnPrB1IDeba0nYw2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=muEWnQNe1Vqd7twvtArqrAhOk-7OhrWe1Rv1mrEx2zIL8V-Yj_zo869exLT6WK-0kn5kp9ebDb2sgl1i7la4zqHCbcWAJxD0tR8IvvjARAiLV28IheqyP8h1Ccd9vBQQLzlkusnSXkZItBadlRF-MKjC9a8Du6Gb55By1IyZWKs1&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=bNpEvA4pcv-55BoBUj_W8WmhhglY5vwFVYHke8NGH01xYmZpR_KZNrye8nqFaXV5FnTChjyPMILaIGfyN9IlYnWta95ph6G2FATdrBnqdU8Okel_9lhcjyrnlcVMytcpHeuO9Ng1kjOMf41i1TNJsA2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=XbRpVCelJawDMw0QyNu1JsIXqqObCmUme6pw3fKbmgqmchAjfvFG5XVqgeoQ1MphNwdkq5j-578laphxZ2z9OXne6d7fHr1hup_QrW-emUFfygb0xMADtzixVzJ-8-CVdgIRB6x0O4i40mNQ__aMmQ2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=31_-V-cb0l8VEO4r0jNR0lQpN8LP2fQAslZq2qMxDhQkKm81OBfdUJNvO9kmW29U9z9DM99GuW1xOQkjNj02Yoglsr_yQgnmvKSD6a8HiUFltfbeGj2M7ekJ2uI7dKP2ufXN2a7COp_WxCIf7a4kwpnxrbqXvCZETaddQUGjSww1&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=1COSWhT4v5p_3Dwg9hW5gBQMASbzTQDr2MCniUW59bxB97defKEB9jRl8oi_zKsvd4wBUBy9a7eynwnDfiEt3vQlGcKbu3v73FFZh8kGb7Z7Imoc1IbNZNmsXnnYL9SSz5V0zj0W1mAyNLPmS02i4g2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script
+            src="/ScriptResource.axd?d=UU100XCJr4g3I7Bw2fi-cU2uNnSkqcW76GabJtOyoCXsP9ZsoPcpaulYO4heTmHU0tWiIib9SuEyumiRmKRDf7nVv9Aey3YDrhab-W3jrPzOiFoobqHB2woh554v4VOxrn6Yx2A6wx4YT58s6to5bA2&amp;t=3a1336b1"
+            type="text/javascript"></script>
+        <script type="text/javascript">
+            //<![CDATA[
+            function WebForm_OnSubmit() {
+                if (typeof (ValidatorOnSubmit) == "function" && ValidatorOnSubmit() == false) return false;
+                return true;
+            }
+            //]]>
+        </script>
+
+        <div class="aspNetHidden">
+
+            <input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="BB3DCC45">
+            <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION"
+                value="/wEdAKYBbEMTcs/8smzcKvP+UzxodIQvBRkUh+nMvU2TXlnl5dZIrNei9cnip2EegXNOF1p+JQr3kWm88Lh2DtasrqW5J6zIFefcUbvk2MQrEUqG5a/zGzNEMJD2iXgns4szlJkNCMwl6pj47/Q/tyHfcDhUDHfw5n4Fx7v/12GSW9LoODEfzM4aCUrKG0n/MhVZsCG859WeNY399QLf36Tyws+AVEPZDXe7owUdwQ+P1GawwUBAeJJXM/Ku4BPqmkM0zmRq67RoGva8HLSrrxzPEa5sNQm4S2lReKNPrK9J6TXVVDzbaqBYBSXcAFw803jaRVeY4YJnU08uj9/8e9lstiKlzIZqaCQ9XbLHHUw3zGURSfFA+toGMx3UTt3Gi0t5AmrsPSDFxi80hHRXj/SLbrETwN1c9vnPdNyRD+DCc+d8mrOSAHKI9HSeX0ykevlTg4gebvpXMKXkCGMZMiJNEi7i4GvnlRagB7ikWbX5LuDruO7jPOUo+BGXBy9nfk/pIJC6fb8ve7g67yt4VdjW5jKuM5quvL8xAUaTsFP2tKO3J8ETHbk/Fpz1lD3kS8Aq5N57z+G0iAj4G+RvUtPWtAXtFU0K40SM/+RbAoT3UbA9ILkifrSAaMyW1R5lywqtW7/SolEMGq6jqpXlHiKoCg0Z9WFZQaiwpiDJmIH/38SljYNFtGj2b0FP1+OKgf0heJ/qLyXnF5ZCui6pu1d05SpvKc+87ACi4+UuHFSIxCeBD7dzSuA6q3h4K53s+xk88aL69plzLlokPqOPl4k7rjfEjssb+RIpiTrTeWtzPVry5mhp6I2b+XH7nn5eTe76ugJMiMAi3mHtTBMMnzNXHWwP7eTwWDO3ZHdlf0GCZNd7Lm+2FJvK8V37KMKZ8wDy1Rs8snbgOGMoNWN9SHdTUyd2X/MP/gjm8HvWLNpTg08mNfe4As4pkJZxQLvL7wd+hUUna+HYi3PbiVXV3P3Ij2Q6UFXXSvuw7d1MmOD2u+nChN2YJ1fMMOC4kRnCVHptDsZ8Dc5ksdgtwapB1aL3smSxeGAry39e13yLoh6f7oZr9DsbZgJ1hzjryTP6mrTP9phEspO4PVALj1TA98LnI9GfJRyaTuYyeCr1NQVJGJi/1PrKDrxskPbhx8dld1TrOHa0GI7x9PnFR5cwPcy6+kTF3qcWZkOudSPox+EWVniy0TjDH02UjHz0Kv8Q9EYV/U4Sc3r+3pc5OJ+dN35A8dJhjnQKqqpF4MJf8gSc+Q9MbiLx/lUyrXnl7uScpEfSY6imd2qF/G8orNlofiQvW79trqIxLrFi9Pv9v+wCMJLxOk3ex7STXj9kJQMx1P1NNBl+UgqSli+a6DknaY3CntFc7YkfRCHGK8qd7nzqsVI+D22yyIHAXRbt4Dtvc13qds0n47YK9x+OS5KZlcOIFFDnAFYVty0gHbHYKgshBcAXwD7glCv8qLwEKt2cGbGwY1rCLiqRj8rQsU/n+caeV8BJYCc6WPPkP9vQsUnhQUJgdJqqS409J0dl2AwvbxtD0mKzhF+U6KEsGugyVNm5b13PapffEnhSvjeO4m30rO4CtAsz60KFj/FshSt3/T5lPrR7nMkr6nFE6yrxPOYlvItUqpsYW066WNFnvaOVWE6NkXFH2QtEE8nbCvXvZ106357d8nRD53rXhmMnfOGzkYYIvhCaB3U+B7n8HG/3RJTWHYH4DljD5KNmmaoXfMPzCNTbDgK7cKxQVq907ViqeoCTRtmSHFtBsaTT082I8YKGMclseAesyZ6Vb2FSxWw3CxkJJOku15AT4i5ARJ0ZuLKMhKzKFdzE/K1EpK/NE/0H/oqFlcfWAVBMfi/c7TqZpd93GzPnUj51QsCiTG3jLN4t+7mFSeSj5O7TLYWTy0QlWtBqv2D2R/2JW9UVUHnRpagbNbgCIOAISP1nslKWXqOiwA+/SOnN9esrglspivluTjoFs/vSDVMeZVBAAoljFHY4T3UKsirSLJxN76dgSVahluwnzLur3X0mvdogQIpcGAVYdCtu7y3XppbkIZDHJCc4Vxx30A2ly8uhYhjgjWtzwxgiIyE95EpAcE0wQ3YiC4pJrNMdgtjbM0U3WY0iGNV3eMLH5+7kJ2lSgY1YZPi0IIHQJil5p2jfuCMLcx97Mx77QmYu+y0n3IJ6nqufzf+1imaVXxU+1CbBsQhEFwIjr4wCbxzyc7NwkaZFSNCS2+k3n0RhZaR+QbKlU/1FR//2Zb+14UmMEXWruBeSIRHh3YYXOrVMIhe7YNM/sDX7qNTOfXJXu6sSqWJ0xjeuxexUOq+3fWk6/V5thucI6hnG06wnEvi1/tG2grmdZd3UMzAt83SWF12pGcvcyFDtJ3YkJPEjRc7b7s9t+rdPxxTowj+8JV70nNeLZylT2AXIypHT7DgbDYQPakpUtRckk/taD3av5MGxCzYrIrD/Te+SaWRLJUD5Xma9z4w/hZKe3NTpUyO5Lc8rWhoi82D1pI0Yz2Xn3S8V4yNTL0nZEr25E5xpLJ3e9An31wAJTIkjrFGdvJdyrP9Q/67MUDXqYcFANlJrpivIgiJCTn56eL9OFVMl01Eq69UW/1WP4PUTOSvy0FdWACtQGg/2p2/xaGNbpGY5a+v0aQf1KNdIOa//b5Q0YHtYNdhnlHa8t6TTiCTXjwIQXF/T86F1ON94WQ+h1O9VkanffZPpucEfkm7cMF42qqqLNKwEDi2RWc7aqIjc937NjPzqQhUsfCyi1hZwER2zX1NvlDygOFHtYm3T0i1VJkFE+jJaUZ27c7LGG96KwH3HWN4bK2VoTAVblPSs/tIZlYTjUVHD7uUbY4C3MbKwk9hfLyQT7BajZR6OBw9QZCLt2njLlHeXjoRgV713zJDQFOmjPicnJiTNVdZ4DmSysmiUk9H9zuuGxEzWjcEDBVOIELKuWbD1mI7X6mFkcdUPB4RxqE3lqxScllI2BzOTsIy5nTQ6ZTZcu383JNLyUfuWKmGP8aXJOMc6dLmE4rlcf7e1rYbwCoq7pE3v3uT5zpCVPC3JUtCmsXt4MCK8HSUj3dFKH1cc7MialtpE4gmA9kEvm0kcuNMc6QgUC/xnvLVMX3hfSb4zMykRUU1KeG7ySV1xBiNbGtDnorLpz0F8OM4O6kfRwRuGhtGC136V5o76TVfADd5NXARU/4iDNehHWFObL9eLrwLxQAtj5dqBenbJr2/k6t0DE0q3026Z2l2c+ZaIijgH/EKej+hBIcKQC+xS+4eVM4UxS5/D1YVmN1BNQfRdW1o2rrdXMwOJAi0oah21csRsMVynrsOoIdLuuN1dcCCNaPe9uPdGprm/GABAVbKYtgEGLcocOVxryVuzNjSBW+8SsJoJHKyNeRB6KBPF3rRfh3Zv/vhHdrees9JbtOMcjLcsb+pUG3eQ0AJ+fawXikvhVpEwfP+1fhuEzJOde09SS0Bw7FAKDRJND048LOeWSorf/sqg6p0BkHK3PifP1u85tuXOVXFdPoeOcZxmFgLtCiTqQe8YkXNbTACFbPAvXHmIJPNRMqLvnGgUJqN/pv9P9ZOGUxdEe0aakXRsqlAzXIocLAUs">
+        </div>
+        <script type="text/javascript">
+            //<![CDATA[
+            Sys.WebForms.PageRequestManager._initialize('ctl00$ScriptManager1', 'Form1', ['tctl00$MainContent$upAddBusinessRule', 'MainContent_upAddBusinessRule'], [], [], 0, 'ctl00');
+            //]]>
+        </script>
+
+        <div id="wrapper">
+            <div class="topSection">
+                <a href="#"></a>
+                <h1>
+                    <img src="../images/epbblogo.png">
+                </h1>
+                <ul>
+
+                    <li>
+                        <span id="lblRightCorneText">FUJIFILM INTERNAL USE ONLY &lt;&lt; RESTRICTED &gt;&gt;</span>
+                    </li><br>
+
+                    <li>Welcome,
+                        <span id="lblUserName">au016207</span>
+                    </li>
+                    <li>|</li>
+                    <li>
+                        <a id="lnkbtnLogOut" title="Log Out" href="javascript:__doPostBack('ctl00$lnkbtnLogOut','')">Log
+                            Out</a>
+                    </li>
+                </ul>
+            </div>
+            <div id="dvTopMenu" class="subHeadSection">
+                <div id="smoothmenu1" class="ddsmoothmenu">
+                    <ul class="menu">
+                        <li class="active" style="z-index: 100;"><a href="#" class="parent" rel=""
+                                style="padding-right: 23px;"><span>Device Management</span><img src="../images/down.gif"
+                                    class="downarrowclass" style="border:0;"></a>
+                            <ul
+                                style="top: 28px; box-shadow: rgb(170, 170, 170) 5px 5px 5px; visibility: visible; left: 0px; width: 179px; display: none;">
+                                <li><a href="http://epgateway.sgp.xerox.com:8041/DeviceManagement/ManageDevice.aspx"><span>Manage
+                                            Device</span></a></li>
+                            </ul>
+                        </li>
+                        <li class="active" style="z-index: 99;"><a href="#" class="parent selected" rel="yes"
+                                style="padding-right: 23px;"><span>Alert Management</span><img src="../images/down.gif"
+                                    class="downarrowclass" style="border:0;"></a>
+                            <ul
+                                style="top: 28px; box-shadow: rgb(170, 170, 170) 5px 5px 5px; visibility: visible; left: 0px; width: 179px; display: none;">
+                                <li><a href="http://epgateway.sgp.xerox.com:8041/AlertManagement/BusinessRule.aspx"><span>Manage
+                                            Business Rules</span></a></li>
+                                <li><a
+                                        href="http://epgateway.sgp.xerox.com:8041/AlertManagement/ConfigureActionTemplate.aspx"><span>Configure
+                                            Action Template</span></a></li>
+                                <li><a
+                                        href="http://epgateway.sgp.xerox.com:8041/AlertManagement/AlertActionMatrix.aspx"><span>Manage
+                                            Alert-Action Matrix</span></a></li>
+                            </ul>
+                        </li>
+                        <li class="active" style="z-index: 98;"><a href="#" class="parent" rel=""
+                                style="padding-right: 23px;"><span>Alert Queue</span><img src="../images/down.gif"
+                                    class="downarrowclass" style="border:0;"></a>
+                            <ul
+                                style="top: 28px; box-shadow: rgb(170, 170, 170) 5px 5px 5px; visibility: visible; left: 0px; width: 179px; display: none;">
+                                <li><a href="http://epgateway.sgp.xerox.com:8041/ManageAlert/ManageAlert.aspx"><span>Manage
+                                            Alerts</span></a></li>
+                            </ul>
+                        </li>
+                        <li><a href="javascript:openHelp();" class="parent" rel=""><span>Help</span></a></li>
+                    </ul><b class="menuLftRnd"></b><b class="menuRgtRnd"></b>
+                </div>
+            </div>
+
+            <div id="MainContent_upAddBusinessRule">
+
+                <div class="container">
+                    <div class="breadcrumb">
+                        <ul>
+                            <li><a href="#">Alert Management</a></li>
+                            <li class="sec"><a href="businessrule.aspx" id="middleBreadCrum">Business Rules
+                                    Definition</a></li>
+                            <li class="last" id="editBreadCrum">Add/ Update Business Rules</li>
+                        </ul>
+                    </div>
+                    <div class="conBox">
+                        <div class="searchForm panes">
+                            <div id="MainContent_showSummary" class="messageBody informationBlock infoMsg error"
+                                style="display:;">
+                                <div id="MainContent_validationSummarySave">
+                                    <ul>
+                                        <li>Please select an action to add new template.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="padMarWid0">
+                                <tbody>
+                                    <tr>
+                                        <td width="15%">
+                                            <span id="MainContent_lblBusinessRule">Business Rule Name</span>
+                                            <span class="star">*</span> :
+                                        </td>
+                                        <td width="15%">
+                                            <input name="ctl00$MainContent$txtBusinessRule" type="text" maxlength="60"
+                                                id="MainContent_txtBusinessRule">
+                                            <span id="MainContent_rqBusinessRule" ele="lblBusinessRule"
+                                                style="display:none;"></span>
+                                        </td>
+                                        <td width="5%">
+                                        </td>
+                                        <td width="15%">
+                                            Business Rule Description
+                                        </td>
+                                        <td width="15%">
+                                            <input name="ctl00$MainContent$txtDescription" type="text" maxlength="150"
+                                                id="MainContent_txtDescription">
+                                        </td>
+                                        <td width="5%">
+                                        </td>
+                                        <td width="15%">
+                                            Business Rule Status :
+                                        </td>
+                                        <td width="15%">
+                                            <select name="ctl00$MainContent$ddlBusinessRuleStatus"
+                                                id="MainContent_ddlBusinessRuleStatus">
+                                                <option value="Enabled">Enabled</option>
+                                                <option value="Disabled">Disabled</option>
+
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="padMarWid0">
+                                <tbody>
+                                    <tr>
+                                        <td width="55%" valign="top">
+                                            <fieldset style="min-height: 119px;">
+                                                <legend>Alert</legend>
+                                                <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                    class="padMarWid0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="30%">
+                                                                <span id="MainContent_lblAlertType">Alert Type</span>
+                                                                <span class="star">*</span> :
+                                                            </td>
+                                                            <td width="35%">
+                                                                <select name="ctl00$MainContent$ddlAlertType"
+                                                                    onchange="javascript:setTimeout('__doPostBack(\'ctl00$MainContent$ddlAlertType\',\'\')', 0)"
+                                                                    id="MainContent_ddlAlertType">
+                                                                    <option selected="selected" value="0">Select
+                                                                    </option>
+                                                                    <option value="6">Daily Meter</option>
+                                                                    <option value="8">EXCH</option>
+                                                                    <option value="1">Fault</option>
+                                                                    <option value="9">Fault-GCC</option>
+                                                                    <option value="7">Fixed Billing</option>
+                                                                    <option value="3">KOC</option>
+                                                                    <option value="2">Non-Comm</option>
+                                                                    <option value="5">SE/F</option>
+                                                                    <option value="4">SNE/F</option>
+                                                                    <option value="10">SNEFGC</option>
+
+                                                                </select>
+                                                                <span id="MainContent_rqAlertType" ele="lblAlertType"
+                                                                    style="display:none;"></span>
+                                                            </td>
+                                                            <td width="30%">
+                                                            </td>
+                                                        </tr>
+
+                                                        <tr>
+                                                            <td valign="top">
+                                                            </td>
+                                                            <td colspan="2">
+                                                                <span id="MainContent_lblChainLink"
+                                                                    class="redText"></span>
+                                                            </td>
+                                                        </tr>
+                                                        <tr class="cyan bgnone">
+                                                            <td align="right">
+                                                            </td>
+                                                            <td colspan="2" valign="top" class="pad0 cyanCheckBoxes">
+                                                                <table width="98%" cellpadding="0" cellspacing="0"
+                                                                    border="0" class="pad0 mar0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="checkBoxList2">
+
+                                                                            </td>
+                                                                        </tr>
+                                                                        <tr>
+                                                                            <td>
+
+
+
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </fieldset>
+                                            <fieldset class="addBussiness">
+                                                <legend>Hierarchy</legend>
+                                                <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                    class="padMarWid0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="30%">
+                                                                <span id="MainContent_lblOpCo">OpCo(1)</span>
+                                                                <span class="star">*</span> :
+                                                            </td>
+                                                            <td width="35%">
+                                                                <select name="ctl00$MainContent$ddlOpCo"
+                                                                    onchange="javascript:setTimeout('__doPostBack(\'ctl00$MainContent$ddlOpCo\',\'\')', 0)"
+                                                                    id="MainContent_ddlOpCo">
+                                                                    <option selected="selected" value="0">Select
+                                                                    </option>
+                                                                    <option value="FXAU">FXAU</option>
+
+                                                                </select>
+                                                                <span id="MainContent_rqOpCo" ele="lblOpCo"
+                                                                    style="display:none;"></span>
+                                                            </td>
+                                                            <td width="30%">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <span id="MainContent_lblHierarchyLevel1"
+                                                                    class="lvalue"></span>
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+
+                                                            </td>
+                                                            <td>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </fieldset>
+                                        </td>
+                                        <td width="1%">
+                                            &nbsp;
+                                        </td>
+                                        <td width="44%" valign="top">
+                                            <fieldset style="min-height: 282px;">
+                                                <legend>Additional Conditions</legend>
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                                    class="padMarWid0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="1%">
+                                                                <input id="MainContent_rbAnyDayTime" type="radio"
+                                                                    name="ctl00$MainContent$AdditionalConditions"
+                                                                    value="rbAnyDayTime" checked="checked">
+                                                            </td>
+                                                            <td width="23%">
+                                                                Any Day
+                                                            </td>
+                                                            <td width="75%">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <input id="MainContent_rbDayofMonth" type="radio"
+                                                                    name="ctl00$MainContent$AdditionalConditions"
+                                                                    value="rbDayofMonth">
+                                                            </td>
+                                                            <td>
+                                                                Day of Month :
+                                                            </td>
+                                                            <td>
+                                                                <select name="ctl00$MainContent$ddlDayOfTheMonth"
+                                                                    id="MainContent_ddlDayOfTheMonth" style="width:30%;"
+                                                                    disabled="disabled">
+                                                                    <option value="0">Day</option>
+                                                                    <option value="1">1</option>
+                                                                    <option value="2">2</option>
+                                                                    <option value="3">3</option>
+                                                                    <option value="4">4</option>
+                                                                    <option value="5">5</option>
+                                                                    <option value="6">6</option>
+                                                                    <option value="7">7</option>
+                                                                    <option value="8">8</option>
+                                                                    <option value="9">9</option>
+                                                                    <option value="10">10</option>
+                                                                    <option value="11">11</option>
+                                                                    <option value="12">12</option>
+                                                                    <option value="13">13</option>
+                                                                    <option value="14">14</option>
+                                                                    <option value="15">15</option>
+                                                                    <option value="16">16</option>
+                                                                    <option value="17">17</option>
+                                                                    <option value="18">18</option>
+                                                                    <option value="19">19</option>
+                                                                    <option value="20">20</option>
+                                                                    <option value="21">21</option>
+                                                                    <option value="22">22</option>
+                                                                    <option value="23">23</option>
+                                                                    <option value="24">24</option>
+                                                                    <option value="25">25</option>
+                                                                    <option value="26">26</option>
+                                                                    <option value="27">27</option>
+                                                                    <option value="28">28</option>
+                                                                    <option value="29">29</option>
+                                                                    <option value="30">30</option>
+                                                                    <option value="31">31</option>
+
+                                                                </select>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td valign="top"
+                                                                style="padding-top: 3px; !padding-top: 0px;">
+                                                                <input id="MainContent_rbDayOfWeek" type="radio"
+                                                                    name="ctl00$MainContent$AdditionalConditions"
+                                                                    value="rbDayOfWeek">
+                                                            </td>
+                                                            <td valign="top" class="padT0">
+                                                                Day of Week :
+                                                            </td>
+                                                            <td class="dayCheckBoxes" valign="top">
+                                                                <table width="98%" cellpadding="0" cellspacing="0"
+                                                                    border="0" class="pad0 mar0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="checkBoxList" valign="top">
+                                                                                <table id="MainContent_cblWeekDays">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_0"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$0"
+                                                                                                    value="Monday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_0">Monday</label>
+                                                                                            </td>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_1"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$1"
+                                                                                                    value="Tuesday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_1">Tuesday</label>
+                                                                                            </td>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_2"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$2"
+                                                                                                    value="Wednesday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_2">Wednesday</label>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_3"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$3"
+                                                                                                    value="Thursday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_3">Thursday</label>
+                                                                                            </td>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_4"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$4"
+                                                                                                    value="Friday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_4">Friday</label>
+                                                                                            </td>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_5"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$5"
+                                                                                                    value="Saturday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_5">Saturday</label>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td><input
+                                                                                                    id="MainContent_cblWeekDays_6"
+                                                                                                    type="checkbox"
+                                                                                                    name="ctl00$MainContent$cblWeekDays$6"
+                                                                                                    value="Sunday"
+                                                                                                    disabled=""><label
+                                                                                                    for="MainContent_cblWeekDays_6">Sunday</label>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <input id="MainContent_rbFromDate" type="radio"
+                                                                    name="ctl00$MainContent$AdditionalConditions"
+                                                                    value="rbFromDate">
+                                                            </td>
+                                                            <td>
+                                                                From Date :
+                                                            </td>
+                                                            <td>
+                                                                <input name="ctl00$MainContent$txtFromDate" type="text"
+                                                                    id="MainContent_txtFromDate" disabled="disabled"
+                                                                    class="aspNetDisabled dateTextBox"
+                                                                    style="width:31%;">
+                                                                &nbsp;<img src="../images/Calendar_scheduleHS.png"
+                                                                    id="MainContent_imgFromDate" class="calIcon">
+
+
+                                                                &nbsp; To Date :
+                                                                <input name="ctl00$MainContent$txtToDate" type="text"
+                                                                    id="MainContent_txtToDate" disabled="disabled"
+                                                                    class="aspNetDisabled dateTextBox"
+                                                                    style="width:31%;">
+                                                                <img src="../images/Calendar_scheduleHS.png"
+                                                                    id="MainContent_imgToDate" class="calIcon">
+
+
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                            <td>
+                                                                From Time :
+                                                            </td>
+                                                            <td>
+                                                                <select name="ctl00$MainContent$ddlFromHour"
+                                                                    id="MainContent_ddlFromHour" style="width:46%;">
+                                                                    <option value="0">HR</option>
+                                                                    <option value="00">00</option>
+                                                                    <option value="01">01</option>
+                                                                    <option value="02">02</option>
+                                                                    <option value="03">03</option>
+                                                                    <option value="04">04</option>
+                                                                    <option value="05">05</option>
+                                                                    <option value="06">06</option>
+                                                                    <option value="07">07</option>
+                                                                    <option value="08">08</option>
+                                                                    <option value="09">09</option>
+                                                                    <option value="10">10</option>
+                                                                    <option value="11">11</option>
+                                                                    <option value="12">12</option>
+                                                                    <option value="13">13</option>
+                                                                    <option value="14">14</option>
+                                                                    <option value="15">15</option>
+                                                                    <option value="16">16</option>
+                                                                    <option value="17">17</option>
+                                                                    <option value="18">18</option>
+                                                                    <option value="19">19</option>
+                                                                    <option value="20">20</option>
+                                                                    <option value="21">21</option>
+                                                                    <option value="22">22</option>
+                                                                    <option value="23">23</option>
+
+                                                                </select>
+                                                                <select name="ctl00$MainContent$ddlFromMinute"
+                                                                    id="MainContent_ddlFromMinute" class="fromTime-min"
+                                                                    style="width:46%;">
+                                                                    <option value="00">00</option>
+                                                                    <option value="15">15</option>
+                                                                    <option value="30">30</option>
+                                                                    <option value="45">45</option>
+
+                                                                </select>
+
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                            </td>
+                                                            <td>
+                                                                To Time :
+                                                            </td>
+                                                            <td>
+                                                                <select name="ctl00$MainContent$ddlToTimeHour"
+                                                                    id="MainContent_ddlToTimeHour" style="width:46%;">
+                                                                    <option value="0">HR</option>
+                                                                    <option value="00">00</option>
+                                                                    <option value="01">01</option>
+                                                                    <option value="02">02</option>
+                                                                    <option value="03">03</option>
+                                                                    <option value="04">04</option>
+                                                                    <option value="05">05</option>
+                                                                    <option value="06">06</option>
+                                                                    <option value="07">07</option>
+                                                                    <option value="08">08</option>
+                                                                    <option value="09">09</option>
+                                                                    <option value="10">10</option>
+                                                                    <option value="11">11</option>
+                                                                    <option value="12">12</option>
+                                                                    <option value="13">13</option>
+                                                                    <option value="14">14</option>
+                                                                    <option value="15">15</option>
+                                                                    <option value="16">16</option>
+                                                                    <option value="17">17</option>
+                                                                    <option value="18">18</option>
+                                                                    <option value="19">19</option>
+                                                                    <option value="20">20</option>
+                                                                    <option value="21">21</option>
+                                                                    <option value="22">22</option>
+                                                                    <option value="23">23</option>
+
+                                                                </select>
+                                                                <select name="ctl00$MainContent$ddlToMinute"
+                                                                    id="MainContent_ddlToMinute" class="fromTime-min"
+                                                                    style="width:46%;">
+                                                                    <option value="00">00</option>
+                                                                    <option value="15">15</option>
+                                                                    <option value="30">30</option>
+                                                                    <option value="45">45</option>
+
+                                                                </select>
+
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </fieldset>
+
+                                            <fieldset style="min-height: 60px;">
+                                                <legend style="color: #1b9b35">Consolidation by Days</legend>
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                                    class="padMarWid0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td width="1%">
+                                                                <span class="aspNetDisabled"><input
+                                                                        id="MainContent_rbconsolidate" type="radio"
+                                                                        name="ctl00$MainContent$AdditionalConsolidation"
+                                                                        value="rbconsolidate"
+                                                                        disabled="disabled"></span>
+                                                            </td>
+                                                            <td width="23%">
+                                                                Number of Days
+                                                            </td>
+                                                            <td>
+                                                                <input name="ctl00$MainContent$txtconsolidate"
+                                                                    type="text" id="MainContent_txtconsolidate"
+                                                                    disabled="disabled" class="aspNetDisabled"
+                                                                    style="width:20%;">
+                                                                <span id="MainContent_lblconsolidate"
+                                                                    class="redText"></span>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <h3 style="color: #1b9b35">
+                                                    &nbsp;Note: For Supply Exchange Alerts Only. Up to 99.</h3>
+                                            </fieldset>
+
+                                            <fieldset style="min-height: 60px;">
+                                                <legend style="color: #1b9b35">Consolidation by Week</legend>
+                                                <table border="0" cellpadding="0" cellspacing="0" width="100%"
+                                                    class="padMarWid0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td valign="top"
+                                                                style="padding-top: 3px; !padding-top: 0px;">
+                                                                <span class="aspNetDisabled"><input
+                                                                        id="MainContent_rbconsolidateweekday"
+                                                                        type="radio"
+                                                                        name="ctl00$MainContent$AdditionalConsolidation"
+                                                                        value="rbconsolidateweekday"
+                                                                        disabled="disabled"></span>
+                                                            </td>
+                                                            <td valign="top" class="padT0">
+                                                                Consolidation Day of Week :
+                                                            </td>
+                                                            <td class="dayCheckBoxes" valign="top">
+                                                                <table id="MainContent_tblconsolidation" width="98%"
+                                                                    cellpadding="0" cellspacing="0" border="0"
+                                                                    class="pad0 mar0">
+                                                                    <tbody>
+                                                                        <tr>
+                                                                            <td class="checkBoxList" valign="top">
+                                                                                <table
+                                                                                    id="MainContent_cblconsolidationweekdays"
+                                                                                    class="aspNetDisabled">
+                                                                                    <tbody>
+                                                                                        <tr>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_0"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$0"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Monday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_0">Monday</label></span>
+                                                                                            </td>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_1"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$1"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Tuesday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_1">Tuesday</label></span>
+                                                                                            </td>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_2"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$2"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Wednesday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_2">Wednesday</label></span>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_3"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$3"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Thursday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_3">Thursday</label></span>
+                                                                                            </td>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_4"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$4"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Friday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_4">Friday</label></span>
+                                                                                            </td>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_5"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$5"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Saturday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_5">Saturday</label></span>
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                        <tr>
+                                                                                            <td><span
+                                                                                                    class="aspNetDisabled"><input
+                                                                                                        id="MainContent_cblconsolidationweekdays_6"
+                                                                                                        type="checkbox"
+                                                                                                        name="ctl00$MainContent$cblconsolidationweekdays$6"
+                                                                                                        disabled="disabled"
+                                                                                                        value="Sunday"><label
+                                                                                                        for="MainContent_cblconsolidationweekdays_6">Sunday</label></span>
+                                                                                            </td>
+                                                                                            <td></td>
+                                                                                            <td></td>
+                                                                                        </tr>
+                                                                                    </tbody>
+                                                                                </table>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </tbody>
+                                                                </table>
+
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                                <h3 style="color: #1b9b35">
+                                                    &nbsp;Note: For Supply Exchange Alerts Only.</h3>
+                                            </fieldset>
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <div id="MainContent_dvViewExistingRule" style="display:block;">
+                                                <div class="expand_top">
+                                                    <div class="expand_all"
+                                                        style="height: auto; float: left; margin-left: -12px;">
+                                                        View Existing Rules</div>
+                                                </div>
+                                                <div class="expand_wrapper">
+                                                    <div class="toggle_container" style="display: none;">
+                                                        <div class="box">
+                                                            <h3>
+                                                                Existing Rules</h3>
+                                                            <table width="100%" border="0" cellpadding="0"
+                                                                cellspacing="0" class="padMarWid0">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td width="16%">
+                                                                            Alert Type :
+                                                                        </td>
+                                                                        <td width="19%">
+                                                                            <select
+                                                                                name="ctl00$MainContent$ddlAlertType2"
+                                                                                onchange="javascript:setTimeout('__doPostBack(\'ctl00$MainContent$ddlAlertType2\',\'\')', 0)"
+                                                                                id="MainContent_ddlAlertType2">
+                                                                                <option selected="selected" value="0">
+                                                                                    Select</option>
+                                                                                <option value="6">Daily Meter</option>
+                                                                                <option value="8">EXCH</option>
+                                                                                <option value="1">Fault</option>
+                                                                                <option value="9">Fault-GCC</option>
+                                                                                <option value="7">Fixed Billing</option>
+                                                                                <option value="3">KOC</option>
+                                                                                <option value="2">Non-Comm</option>
+                                                                                <option value="5">SE/F</option>
+                                                                                <option value="4">SNE/F</option>
+                                                                                <option value="10">SNEFGC</option>
+
+                                                                            </select>
+                                                                        </td>
+                                                                        <td width="58%">
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                            <div class="page_navigation-notop page_navigation1">
+
+                                                            </div>
+                                                            <div class="searchGrid searchGrid-addBrules">
+                                                                <div>
+
+                                                                </div>
+                                                            </div>
+                                                            <div class="page_navigation-notop page_navigation1">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <!--<div class="" style="display: block;margin-top: -3px;" >
+            	<div class="Collapsible"></div>
+                <div class="CollapsiblePanel">
+            	
+				
+               	</div>
+				
+            </div>-->
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3">
+                                            <fieldset>
+                                                <legend>Actions <span class="star">*</span></legend>
+                                                <table width="100%" border="0" cellpadding="0" cellspacing="0"
+                                                    class="ActionCheckboxes">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <table id="MainContent_tblApplyAction"
+                                                                    class="ActionCheckboxesInner" cellspacing="5"
+                                                                    cellpadding="5" border="0" style="width:100%;">
+
+                                                                </table>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td width="19%">
+                                                                <label>
+                                                                    <strong>Action Remarks</strong></label>
+                                                                <input name="ctl00$MainContent$txtActionRemark"
+                                                                    type="text" maxlength="150"
+                                                                    id="MainContent_txtActionRemark">
+                                                            </td>
+                                                            <td width="24%">
+                                                            </td>
+                                                            <td width="57%">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="3">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="buttonRight" colspan="3">
+                                                                <input type="submit"
+                                                                    name="ctl00$MainContent$btnAddNewTemplate"
+                                                                    value="Add New Template"
+                                                                    id="MainContent_btnAddNewTemplate"
+                                                                    class="btn btn-small btn-info button-big">
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </fieldset>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table width="100%" border="0" cellpadding="0" cellspacing="0" class="pad0">
+                                <tbody>
+                                    <tr>
+                                        <td class="mandatory">
+                                            * Mandatory
+                                        </td>
+                                        <td align="right" class="buttonRight">
+                                            <input type="submit" name="ctl00$MainContent$btnSave" value="Save"
+                                                onclick="return ValidatPageOnSave('');WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$MainContent$btnSave&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))"
+                                                id="MainContent_btnSave" class="btn btn-small btn-info button-small">
+
+                                            <input type="submit" name="ctl00$MainContent$btnReset" value="Reset"
+                                                id="MainContent_btnReset" class="btn btn-small btn-info button-small">
+
+
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="ctl00$MainContent$hdnPageSize" id="MainContent_hdnPageSize" value="30">
+                <input type="hidden" name="ctl00$MainContent$hdnResetOn" id="MainContent_hdnResetOn" value="0">
+                <input type="hidden" name="ctl00$MainContent$hdnAction" id="MainContent_hdnAction">
+                <input type="hidden" name="ctl00$MainContent$hdnTemplateQty" id="MainContent_hdnTemplateQty">
+                <input type="hidden" name="ctl00$MainContent$hdnSOTemplateQty" id="MainContent_hdnSOTemplateQty">
+                <input type="hidden" name="ctl00$MainContent$hdnActionName" id="MainContent_hdnActionName">
+                <input type="hidden" name="ctl00$MainContent$hdnTemplateIds" id="MainContent_hdnTemplateIds">
+                <input type="hidden" name="ctl00$MainContent$hdnShowHide" id="MainContent_hdnShowHide" value="0">
+                <input type="hidden" name="ctl00$MainContent$hdnBusinessRuleId" id="MainContent_hdnBusinessRuleId">
+                <input type="hidden" name="ctl00$MainContent$hdnIsITSS" id="MainContent_hdnIsITSS" value="False">
+                <input type="hidden" name="ctl00$MainContent$hdnweekday" id="MainContent_hdnweekday">
+
+            </div>
+            <div class="backtomain">
+                <input type="image" name="ctl00$MainContent$btnBack" id="MainContent_btnBack" text="Back"
+                    src="../images/backbtn1.png">
+            </div>
+
+            <div id="MainContent_alertBoxDelete_pnlModalPopUp" class="ModalWindow confirmationBox"
+                style="display: none; position: fixed; z-index: 1981;">
+
+                <div class="confirmationHeader">
+                    <h4>
+                        <span id="MainContent_alertBoxDelete_lblTitle">Confirmation</span>
+                    </h4>
+                </div>
+                <div class="conftreasure">
+                    <div class="confMsg">
+                        <span id="MainContent_alertBoxDelete_lblMessage">Do you want to delete this Business
+                            Rule?</span>
+                    </div>
+                    <div class="confLine">
+                    </div>
+                    <div class="confBtn">
+                        <input type="submit" name="ctl00$MainContent$alertBoxDelete$btnPopUpOk" value="Ok"
+                            onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$MainContent$alertBoxDelete$btnPopUpOk&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))"
+                            id="MainContent_alertBoxDelete_btnPopUpOk"
+                            class="btn btn-small btn-info button-small btnPopUpOkButton">
+                        <input type="submit" name="ctl00$MainContent$alertBoxDelete$btnPopUpCancel" value="Cancel"
+                            onclick="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$MainContent$alertBoxDelete$btnPopUpCancel&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))"
+                            id="MainContent_alertBoxDelete_btnPopUpCancel" class="btn btn-small btn-info button-small">
+                    </div>
+                </div>
+
+            </div>
+            <a id="MainContent_alertBoxDelete_hlnk"></a>
+            <script type="text/javascript">
+                function ShowModalPopUp(ctrl) {
+                    if (ctrl != '') {
+                        $('#' + ctrl + '_pnlModalPopUp').show();
+                    }
+                    else {
+                        $('#MainContent_alertBoxDelete_pnlModalPopUp').show();
+                    }
+                    $(".modalBackground").show().css("width", "1500px").css("height", "1000px");
+                }
+
+                function HideModalPopUp(ctrl) {
+                    if (ctrl != '') {
+                        $('#' + ctrl + '_pnlModalPopUp').hide();
+                    }
+                    else {
+                        $('#MainContent_alertBoxDelete_pnlModalPopUp').hide();
+                    }
+                    $(".modalBackground").hide();
+                }
+
+                $(document).ready(function () {
+                    $("#MainContent_alertBoxDelete_btnPopUpCancel").live("click", function () {
+                        HideModalPopUp('');
+                    });
+                });
+            </script>
+
+
+            <script type="text/javascript">
+                function Showhide() {
+
+                    var isShow = $("#MainContent_hdnShowHide").val();
+
+                    if (isShow === "1") {
+                        $(".toggle_container").show();
+                        $(".expand_all").addClass('expanded');
+                    }
+                    if (isShow === "0") {
+                        $(".toggle_container").hide();
+                        $(".expand_all").removeClass('expanded');
+                    }
+
+                }
+
+
+
+
+
+            </script>
+
+
+            <iframe frameborder="0" src="about:blank" class="AsyncWait" id="AsyncWaitIframe"></iframe>
+            <div class="AsyncWait" id="AsyncWaitCnt">
+                <table cellpadding="0" cellspacing="15" border="0" class="AsyncWait" id="AsyncWaitTableUpdate">
+                    <tbody>
+                        <tr>
+                            <td valign="top">
+                                <img id="ucAsync1_imgRefresh" src="../images/progress.gif"
+                                    style="height:32px;width:32px;">
+                            </td>
+                            <td>
+
+                                <a onclick="CancelRequest()" class="AsyncWait">Click here</a> to cancel the
+                                current request. <br><br>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table cellpadding="0" cellspacing="15" border="0" class="AsyncWait" id="AsyncWaitTableError">
+                    <tbody>
+                        <tr>
+                            <td valign="top"><img id="ucAsync1_imgWarning" src="../images/warning.gif"
+                                    style="height:32px;width:32px;"></td>
+                            <td>
+                                <h1>Unexpected Error</h1>
+                                An unexpected error was encountered processing the current request. Details of this
+                                error are listed below:<br><br><span id="AsyncWaitErrorMessage"
+                                    style="color:red"></span><br><br>
+                                Please try again shortly or contact the System Administrator if the error
+                                persists.<br><br>
+                                <a style="color:blue; text-decoration:underline; cursor:hand;"
+                                    onclick="javascript:CloseError();">Click here</a> to return to the current
+                                page.<br><br>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <input type="hidden" name="ctl00$ucAsync1$hdnTimeout" id="ucAsync1_hdnTimeout" value="30">
+            <input type="hidden" name="ctl00$ucAsync1$hdnSetTimeoutID" id="ucAsync1_hdnSetTimeoutID" value="4">
+            <script language="javascript" type="text/javascript">
+                <!-- 
+                if (Sys != null)
+                {
+                    Sys.Application.add_load(AppLoad);
+                }
+                // -->
+            </script>
+
+            <div class="copyRight">
+                <span id="lblCopyright"> Copyright FUJIFILM Co., Ltd. 1995 - 2013. All Right Reserved.</span>
+
+            </div>
+            <b class="TopLftRnd"></b><b class="TopRgtRnd"></b><b class="BotLftRnd"></b><b class="BotRgtRnd">
+            </b>
+            <div id="modalPopup_backgroundElement" class="modalBackground"
+                style="display: none; position: fixed; left: 0px; top: 0px; z-index: 10000;"></div>
+        </div>
+
+
+        <script type="text/javascript">
+            //<![CDATA[
+            var Page_ValidationSummaries = new Array(document.getElementById("MainContent_validationSummarySave"));
+            var Page_Validators = new Array(document.getElementById("MainContent_rqBusinessRule"), document.getElementById("MainContent_rqAlertType"), document.getElementById("MainContent_rqOpCo"));
+            //]]>
+        </script>
+
+        <script type="text/javascript">
+            //<![CDATA[
+            var MainContent_validationSummarySave = document.all ? document.all["MainContent_validationSummarySave"] : document.getElementById("MainContent_validationSummarySave");
+            MainContent_validationSummarySave.validationGroup = "save";
+            var MainContent_rqBusinessRule = document.all ? document.all["MainContent_rqBusinessRule"] : document.getElementById("MainContent_rqBusinessRule");
+            MainContent_rqBusinessRule.controltovalidate = "MainContent_txtBusinessRule";
+            MainContent_rqBusinessRule.focusOnError = "t";
+            MainContent_rqBusinessRule.errormessage = "Please specify all mandatory fields.";
+            MainContent_rqBusinessRule.display = "None";
+            MainContent_rqBusinessRule.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+            MainContent_rqBusinessRule.initialvalue = "";
+            var MainContent_rqAlertType = document.all ? document.all["MainContent_rqAlertType"] : document.getElementById("MainContent_rqAlertType");
+            MainContent_rqAlertType.controltovalidate = "MainContent_ddlAlertType";
+            MainContent_rqAlertType.focusOnError = "t";
+            MainContent_rqAlertType.errormessage = "Please specify all mandatory fields.";
+            MainContent_rqAlertType.display = "None";
+            MainContent_rqAlertType.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+            MainContent_rqAlertType.initialvalue = "0";
+            var MainContent_rqOpCo = document.all ? document.all["MainContent_rqOpCo"] : document.getElementById("MainContent_rqOpCo");
+            MainContent_rqOpCo.controltovalidate = "MainContent_ddlOpCo";
+            MainContent_rqOpCo.focusOnError = "t";
+            MainContent_rqOpCo.errormessage = "Please specify all mandatory fields.";
+            MainContent_rqOpCo.display = "None";
+            MainContent_rqOpCo.evaluationfunction = "RequiredFieldValidatorEvaluateIsValid";
+            MainContent_rqOpCo.initialvalue = "0";
+            //]]>
+        </script>
+
+
+        <script type="text/javascript">
+            //<![CDATA[
+            Showhide();
+            (function (id) {
+                var e = document.getElementById(id);
+                if (e) {
+                    e.dispose = function () {
+                        Array.remove(Page_ValidationSummaries, document.getElementById(id));
+                    }
+                    e = null;
+                }
+            })('MainContent_validationSummarySave');
+
+            var Page_ValidationActive = false;
+            if (typeof (ValidatorOnLoad) == "function") {
+                ValidatorOnLoad();
+            }
+
+            function ValidatorOnSubmit() {
+                if (Page_ValidationActive) {
+                    return ValidatorCommonOnSubmit();
+                }
+                else {
+                    return true;
+                }
+            }
+
+            document.getElementById('MainContent_rqBusinessRule').dispose = function () {
+                Array.remove(Page_Validators, document.getElementById('MainContent_rqBusinessRule'));
+            }
+
+            document.getElementById('MainContent_rqAlertType').dispose = function () {
+                Array.remove(Page_Validators, document.getElementById('MainContent_rqAlertType'));
+            }
+
+            document.getElementById('MainContent_rqOpCo').dispose = function () {
+                Array.remove(Page_Validators, document.getElementById('MainContent_rqOpCo'));
+            }
+            Sys.Application.add_init(function () {
+                $create(Sys.Extended.UI.CalendarBehavior, { "button": $get("MainContent_imgFromDate"), "format": "dd-MMM-yyyy", "id": "MainContent_ceFromDateCalendar" }, null, null, $get("MainContent_txtFromDate"));
+            });
+            Sys.Application.add_init(function () {
+                $create(Sys.Extended.UI.CalendarBehavior, { "button": $get("MainContent_imgToDate"), "format": "dd-MMM-yyyy", "id": "MainContent_ceToDateCalendar" }, null, null, $get("MainContent_txtToDate"));
+            });
+            Sys.Application.add_init(function () {
+                $create(Sys.Extended.UI.ModalPopupBehavior, { "BackgroundCssClass": "modalBackground", "CancelControlID": "MainContent_alertBoxDelete_btnPopUpCancel", "PopupControlID": "MainContent_alertBoxDelete_pnlModalPopUp", "PopupDragHandleControlID": "MainContent_alertBoxDelete_pnlModalPopUp", "dynamicServicePath": "/AlertManagement/AddBusinessRule.aspx", "id": "modalPopup" }, null, null, $get("MainContent_alertBoxDelete_hlnk"));
+            });
+            //]]>
+        </script>
+    </form>
+
+    <script language="javascript" type="text/javascript">
+        SessionTimeOut("30");
+        ScrollUp();
+        //    #534 commented for revert back
+        //    window.onbeforeunload = confirmExit1;
+        //    function confirmExit1(e) {
+        //        var keycode;
+        //        if (window.event)
+        //            keycode = window.event.keyCode;
+        //        else if (e)
+        //            keycode = e.which;
+
+        //        if (keycode == 0 || typeof (keycode) == 'undefined') {
+
+        //            $.ajax({
+        //                type: "POST",
+        //                url: "/CommonSvc.asmx/RemoveData",
+        //                contentType: "application/json; charset=utf-8",
+        //                dataType: "json",
+        //                success: OnSuccess1,
+        //                failure: function (response) {
+        //                }
+        //            });
+        //        }
+        //        return;
+        //    }
+        //    function OnSuccess1(response) {
+        //        //alert(response.d);
+        //    }
+    </script>
+
+</body>
+
+</html>eda
