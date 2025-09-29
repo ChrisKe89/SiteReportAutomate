@@ -9,6 +9,7 @@ __pycache__
 *.db
 *.sqlite3
 .env
-\gw_pages
+\gwpages
 \user-data
 \logs
+.ruff_cache
