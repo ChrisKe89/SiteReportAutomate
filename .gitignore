@@ -9,5 +9,5 @@ __pycache__
 *.db
 *.sqlite3
 .env
-\.gw_pages
+\gw_pages
 
