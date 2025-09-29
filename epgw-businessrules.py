@@ -1,5 +1,6 @@
 # EPGW-BusinessRules.py
 # Row-by-row rule creator with login monitor, validation, and CSV/XLSX ledgers
+import os
 
 import argparse
 import asyncio
@@ -18,6 +19,17 @@ from playwright.async_api import (
 from playwright.async_api import (
     async_playwright,
 )
+
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+except Exception:
+    pass
+
+ENV_INPUT = os.getenv("INPUT_XLSX")
+ENV_COMPLETED = os.getenv("COMPLETED_XLSX")
+ENV_COMPLETED_CSV = os.getenv("COMPLETED_CSV")
 
 # ============
 # Config area — fill these when you have the real site/flow
@@ -621,12 +633,20 @@ def main() -> None:
     args = parse_args()
     logger = setup_logging(args.verbose)
 
-    input_xlsx = Path(args.input).resolve()
+    input_xlsx = Path(args.input or ENV_INPUT or "").resolve()
     if not input_xlsx.exists():
         raise FileNotFoundError(f"Input not found: {input_xlsx}")
 
-    completed_xlsx = Path(args.completed).resolve() if args.completed else None
-    completed_csv = Path(args.completed_csv).resolve() if args.completed_csv else None
+    completed_xlsx = (
+        Path(args.completed or (ENV_COMPLETED or "")).resolve()
+        if (args.completed or ENV_COMPLETED)
+        else None
+    )
+    completed_csv = (
+        Path(args.completed_csv or (ENV_COMPLETED_CSV or "")).resolve()
+        if (args.completed_csv or ENV_COMPLETED_CSV)
+        else None
+    )
 
     asyncio.run(
         run_job(

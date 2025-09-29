@@ -1,341 +1,230 @@
-# EPGW-BusinessRules
+# EPGW Business Rules Bot — Windows + VS Code
 
-Row-by-row rule creator driven by an Excel sheet.
-Automates login monitoring, creates rules in the UI, and writes a Completed ledger with timestamps and status.
-
-Script: EPGW-BusinessRules.py
-
-Works best on Windows with Edge/Chromium + Playwright persistent profile
-
-Input: RulesToCreate.xlsx (one row = one rule)
-
-Output: RulesCompleted.xlsx (append-only), optional mutation of input
-
-Logs: .\logs\, Auth snapshots: auth_status.json + auth-*.png
-
-Site: http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx
+This tool reads rows from an **Excel workbook** and creates Business Rules in the EPGW web app using Playwright (Microsoft Edge automation).
+Each row is validated; results are written to a **Completed** CSV/XLSX ledger; detailed logs go to `logs/`.
+If you’re not logged in, the run stops and tells you why.
 
 ---
 
-0) Prereqs (Windows)
+## 0) Install VS Code and basics (one-time)
 
-1. Python 3.10+ in PATH (python --version).
+1. **Install**
 
+* **[VS Code](https://code.visualstudio.com/download)** (then open it)
+* **[Python 3.12+](https://www.python.org/downloads/)** (tick “**Add Python to PATH**” during install)
+* **[Git for Windows](https://git-scm.com/downloads/win)**
 
-2. VS Code (optional, recommended).
+2. **Create a working folder**
 
+```powershell
+New-Item -ItemType Directory -Path C:\EPGW_Automation -Force
+Set-Location C:\EPGW_Automation
+```
 
-3. Edge installed (or Chromium; script prefers Edge).
+3. **Clone the repo into that folder**
 
+```powershell
+git clone https://github.com/ChrisKe89/gwbusinessrules.git
+cd .\gwbusinessrules
+```
 
+4. **Open the project in VS Code**
 
+```powershell
+code .
+```
 
 ---
 
-1) First-time Setup
+## 1) Create & select a Python environment
 
-> Run these in PowerShell from the project folder (e.g., C:\Dev\EPGW-BusinessRules).
+In VS Code: **Terminal → New Terminal** (PowerShell), then:
 
-
-
-1. Create venv + install deps:
-
+```powershell
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+. .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-pip install playwright openpyxl
-python -m playwright install chromium
+```
 
-(Optional for lint/type hints): pip install types-openpyxl
-
-
-2. Open the script and set site details (top of EPGW-BusinessRules.py):
-
-BASE_URL, RULES_URL
-
-selectors like SEL_LOGIN_SENTINEL, SEL_NEW_RULE_BTN, SEL_RULE_NAME, etc.
-
-If your environment uses Windows Integrated Auth (IWA), keep the ALLOWLIST domain pattern (e.g., *.yourcorp.local).
-If it uses form login, you can implement the form flow later (see “When Credentials Change”, #6).
-
-
-
-3. Prepare your input workbook:
-
-Create RulesToCreate.xlsx with a header row. Minimum columns:
-
-RuleName, RuleType
-
-Optional: Extra1, Extra2 (or any others you’ll map in the script)
-
-
-Example:
-
-RuleName	RuleType	Extra1	Extra2
-
-Block colour copy	Policy	A	B
-Enforce stapling	Action		C
-
-
-
-
-
+Then select the interpreter: **Ctrl + Shift + P → “Python: Select Interpreter” → .venv**.
 
 ---
 
-2) Test a Dry Run (headed)
+## 2) Install dependencies
 
-> Headed mode is friendliest for IWA and selector tuning.
+```powershell
+pip install -r requirements.txt
+python -m playwright install
+python -m playwright install msedge
+```
 
-
-
-.\.venv\Scripts\Activate.ps1
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx
-
-What you should see:
-
-Browser launches (Edge), navigates to RULES_URL
-
-Script checks for a login sentinel (SEL_LOGIN_SENTINEL); writes:
-
-auth_status.json (logged_in true/false + URL + timestamp)
-
-auth-YYYYMMDD-HHMMSS.png (screenshot)
-
-
-For each row, it clicks New, fills fields, saves, waits for success indicator.
-
-A row is appended to RulesCompleted.xlsx with ProcessedAt + Status.
-
-Logs are written under .\logs\run-*.log.
-
-
-If the page keeps some connections open (ASP.NET, SignalR), the script tolerates it—no tweaks needed.
-
+> If activation is blocked:
+> `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 
 ---
 
-3) Daily Use
+## 3) Configure environment variables
 
-Normal run (append results, keep input untouched):
+The script reads its input/output file paths from a **.env** file.
 
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx
+1. **Review `.env.example`**
+   It contains sample keys like:
 
-Limit to first N rows (testing):
+   ```
+   INPUT_XLSX=.\EPGW-BusinessRules-template1.xlsx
+   COMPLETED_XLSX=.\Completed.xlsx
+   COMPLETED_CSV=.\RulesCompleted.csv
+   ```
 
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --max-rows 3
+   Edit these defaults if you need different locations (UNC paths like `\\server\share\Rules.xlsx` work fine).
 
-Mutate input: remove successful rows from RulesToCreate.xlsx after processing:
+2. **Create or update `.env` from the example**
+   The repo includes **sync-dotenv.ps1** to handle this.
 
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --mutate-input
+   * First-time create:
 
-Headless (only if IWA/form auth is solid in headless):
+     ```powershell
+     pwsh -File .\sync-dotenv.ps1
+     ```
+   * Update existing `.env` with any new keys (keeping your values):
 
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --headless
+     ```powershell
+     pwsh -File .\sync-dotenv.ps1
+     ```
+   * Force full overwrite (backs up current file):
 
+     ```powershell
+     pwsh -File .\sync-dotenv.ps1 -ForceCopy
+     ```
+   * Preview changes without writing:
 
+     ```powershell
+     pwsh -File .\sync-dotenv.ps1 -DryRun
+     ```
 
----
-
-4) Folder Outputs (what appears)
-
-.\logs\run-*.log – step-by-step log per run
-
-.\auth_status.json – last login check result
-
-.\auth-*.png – screenshots proving session state
-
-RulesCompleted.xlsx – append-only ledger (ProcessedAt, Status columns auto-added)
-
-(if you use the report script too) .\downloads\ and .\user-data\ (browser profile)
-
-
-
----
-
-5) Scheduling (Task Scheduler)
-
-Create a tiny wrapper run_rules.ps1:
-
-$ErrorActionPreference = 'Stop'
-$AppDir = 'C:\Dev\EPGW-BusinessRules'   # <- your folder
-$Py     = Join-Path $AppDir '.venv\Scripts\python.exe'
-$Script = Join-Path $AppDir 'EPGW-BusinessRules.py'
-$LogDir = Join-Path $AppDir 'logs'
-New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$ts  = Get-Date -Format 'yyyyMMdd-HHmmss'
-$log = Join-Path $LogDir "rules-$ts.log"
-
-Set-Location $AppDir
-& $Py $Script --input "$AppDir\RulesToCreate.xlsx" --completed "$AppDir\RulesCompleted.xlsx" *>> $log
-
-Task Scheduler → Create Task…
-
-General:
-
-Name: EPGW-BusinessRules
-
-Run only when user is logged on (recommended if using IWA/headed)
-
-Run with highest privileges
-
-
-Triggers: your schedule (e.g., Daily 07:30).
-
-Actions:
-
-Program: powershell.exe
-
-Args: -NoLogo -NoProfile -ExecutionPolicy Bypass -File "C:\Dev\EPGW-BusinessRules\run_rules.ps1"
-
-Start in: C:\Dev\EPGW-BusinessRules
-
-
-Settings: stop after 15 min; “If already running: Do not start a new instance”.
-
-
-If you confirm headless auth is reliable, you can flip to Run whether user is logged on or not and add --headless.
-
+   Your final `.env` should live at the repo root.
+   The main script automatically loads it (no code edits required).
 
 ---
 
-6) When Credentials Change (read this first)
+## 4) One-time login capture (stores your session)
 
-There are two common auth modes. The script supports both patterns.
+```powershell
+python .\login_capture_epgw.py
+```
 
-A) Windows Integrated Auth (Kerberos/NTLM)
-
-Used for intranet sites. Auth piggybacks your Windows session.
-
-The script launches a persistent Edge profile (.\user-data) with:
-
---auth-server-allowlist=*.yourcorp.local
---auth-negotiate-delegate-allowlist=*.yourcorp.local
-
-When your Windows password changes: nothing to do in the script. Your Windows login handles it.
-
-If the site changes domain/host: update ALLOWLIST pattern and RULES_URL.
-
-If the stored browser profile is stale (odd cached state): stop all runs, delete .\user-data folder, re-run (headed) once to rebuild the session.
-
-
-B) Form Login (username/password, maybe MFA)
-
-Add a small login flow to ensure_logged_in():
-
-# Pseudocode inside ensure_logged_in, before checking SEL_LOGIN_SENTINEL
-await page.goto(RULES_URL, wait_until="networkidle")
-if await page.query_selector(SEL_LOGIN_SENTINEL):
-    # already logged in
-    ...
-else:
-    await page.fill(SEL_USERNAME, os.environ["APP_USER"])
-    await page.fill(SEL_PASSWORD, os.environ["APP_PASS"])
-    await page.click(SEL_LOGIN_BTN)
-    # handle MFA here if needed (pause, wait for code field, etc.)
-    await page.wait_for_selector(SEL_LOGIN_SENTINEL, timeout=20000)
-
-Store creds in Windows Credential Manager or .env (with care):
-
-Windows CredMan (recommended): use pywin32/keyring or just mandate an interactive login once and rely on a persistent cookie.
-
-.env (quick):
-
-APP_USER=someone
-APP_PASS=secret
-
-and read with os.getenv.
-
-
-When credentials rotate:
-
-Update the source of truth (CredMan or .env).
-
-Re-run the script headed once to refresh any cookies.
-
-If the login page changed IDs or flow, update SEL_* selectors.
-
-
-
+An Edge window opens on the EPGW page. Sign in (SSO/NTLM/MFA).
+When the Business Rules page is fully loaded, return to the terminal and press **Enter**.
+A `storage_state.json` file is created and reused on later runs.
 
 ---
 
-7) Mapping Spreadsheet → Form
+## 5) Prepare your Excel input
 
-By default, the script expects columns:
+* Use the provided template (recommended) or your own workbook.
+* **Single worksheet** is assumed.
+* The file may be local or on a network share.
 
-RuleName → SEL_RULE_NAME
+**Required headers (case-sensitive):**
 
-RuleType → SEL_RULE_TYPE
+* Core: `BusinessRuleName`, `AlertType`, `OpCo`
+* Status: `BusinessRuleStatus` (`Enabled` / `Disabled`)
+* Additional Conditions:
 
-Optionals: Extra1, Extra2 (add your own fields)
+  * `AdditionalConditionsMode`: `DayOfMonth` | `DayOfWeek` | `FromDate` (blank = Any Day/Time)
+  * If `DayOfMonth`: `DayOfMonth`
+  * If `FromDate`: `FromDate`, `ToDate`, `FromHour`, `FromMinute`, `ToHour`, `ToMinute`
+  * If `DayOfWeek`: `WeekDay::Monday` … `WeekDay::Sunday` with `Yes` for selected days
+* Consolidation:
 
+  * `ConsolidationMode`: `ByDays` | `ByWeek`
+  * If `ByDays`: `ConsolidateDays` (positive integer)
+  * If `ByWeek`: `ConsolidationWeek::Monday` … `::Sunday` with `Yes` for selected days
+* Toner (when `AlertType` is `EXCH`, `SE/F`, `SNE/F`, or `SNEFGC`):
 
-Add any additional field mappings in create_rule_from_row():
+  * Columns like `TonerMain::BlackTonerCartridge` or `TonerOther::WasteTonerContainer` with `Yes`
 
-await page.fill(SEL_RULE_NAME, name)
-await page.fill(SEL_RULE_TYPE, rtype)
-# Example extras:
-# await page.fill(SEL_RULE_SCOPE, str(row.get("Scope", "")))
-# await page.select_option(SEL_RULE_PRIORITY, str(row.get("Priority", "Medium")))
-
-
----
-
-8) Troubleshooting
-
-Login fails: check auth_status.json + the latest auth-*.png.
-
-For IWA: confirm you can browse the URL manually in Edge as the same Windows user.
-
-If still failing headless, run headed and schedule “Run only when user is logged on”.
-
-
-Selectors moved: open DevTools, re-grab IDs, update SEL_*.
-
-Workbook issues:
-
-RulesCompleted.xlsx is append-only. If you want a fresh ledger, archive or delete it.
-
---mutate-input only removes rows with Status == "SUCCESS".
-
-
-Long-running pages (SignalR/WebSockets): the script already tolerates missing full idle by adding short waits after actions.
-
-
+Rows that miss required combinations are **SKIPPED** and the reason is recorded in the Completed ledger.
 
 ---
 
-9) Quick Commands (clipboard-friendly)
+## 6) Run it (normal usage from VS Code)
 
-# Activate env
-.\.venv\Scripts\Activate.ps1
+With `.venv` active:
 
-# Run (no input mutation)
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx
+```powershell
+python .\epgw-businessrules.py --mutate-input
+```
 
-# Run and remove successful rows from input
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --mutate-input
+Because `.env` supplies all paths, no other arguments are needed.
 
-# Limit to N rows for testing
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --max-rows 5
+What happens:
 
-# Headless (only if auth is solid)
-python .\EPGW-BusinessRules.py --input .\RulesToCreate.xlsx --completed .\RulesCompleted.xlsx --headless
+* Reads `INPUT_XLSX` from `.env`
+* Writes successes to `COMPLETED_XLSX` / `COMPLETED_CSV`
+* Removes every **successful** row from the input after the run (`--mutate-input`)
+* Logs full details to `logs/run-YYYYMMDD-HHMMSS.log`
 
+Optional extras:
+
+* `--max-rows 5` → test a few rows
+* `-v` → more detailed logging (DEBUG) in terminal and log file
 
 ---
 
-10) What to send me next
+## 7) Refresh the repo (pull updates)
 
-When you’re ready:
+In VS Code **Source Control** view:
 
-The real RULES_URL
+* **… → Pull**
+  or run:
 
-The final selectors for: login sentinel, new rule button, each field, save button, success toast
+```powershell
+git pull origin main
+```
 
-A sample row (or the live workbook headers) if you want me to wire the exact mappings
+If requirements changed:
 
+```powershell
+. .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+python -m playwright install
+```
 
-I’ll plug those in and hand back the ready-to-run version.
+---
 
+## 8) Schedule it (optional)
+
+Create a Basic Task in **Windows Task Scheduler**:
+
+```powershell
+-NoProfile -ExecutionPolicy Bypass -Command "Set-Location 'C:\EPGW_Automation\gwbusinessrules'; . .\.venv\Scripts\Activate.ps1; python .\epgw-businessrules.py --mutate-input"
+```
+
+If cookies expire, just re-run **login_capture_epgw.py** to refresh `storage_state.json`.
+
+---
+
+## 9) Troubleshooting
+
+* **Input not found** → check the path in `.env`.
+* **Login not established / Aborting** → session expired or selector changed; re-run login capture.
+* **Rows SKIPPED** → a required combo is missing (see headers above).
+* **Edge not found** → run `python -m playwright install msedge`.
+
+---
+
+## Changing file locations later
+
+1. Edit `.env` in VS Code and update:
+
+   ```
+   INPUT_XLSX=\\newserver\newshare\NewRules.xlsx
+   COMPLETED_XLSX=\\newserver\newshare\Completed.xlsx
+   COMPLETED_CSV=\\newserver\newshare\Completed.csv
+   ```
+2. Save and rerun `sync-dotenv.ps1` (optional) to ensure any new keys are present.
+
+No code changes are needed—the script always reads paths from `.env`.
+
+---
