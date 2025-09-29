@@ -1,0 +1,733 @@
+<!-- Add Business Rule Button -->
+<input type="submit" name="ctl00$MainContent$btnAddBusinessRule" value="Add Business Rule"
+    id="MainContent_btnAddBusinessRule" class="btn btn-small btn-info button-big">
+<!-- Business Rule Name -->
+<input name="ctl00$MainContent$txtBusinessRule" type="text" maxlength="60" id="MainContent_txtBusinessRule">
+<!-- Business Rule Description -->
+<input name="ctl00$MainContent$txtDescription" type="text" maxlength="150" id="MainContent_txtDescription">
+<!-- Business Rule Status -->
+<select name="ctl00$MainContent$ddlBusinessRuleStatus" id="MainContent_ddlBusinessRuleStatus">
+    <option value="Enabled">Enabled</option>
+    <option value="Disabled">Disabled</option>
+</select>
+<!-- Alert Type -->
+<select name="ctl00$MainContent$ddlAlertType"
+    onchange="javascript:setTimeout('__doPostBack(\'ctl00$MainContent$ddlAlertType\',\'\')', 0)"
+    id="MainContent_ddlAlertType">
+    <option selected="selected" value="0">Select</option>
+    <option value="6">Daily Meter</option>
+    <option value="8">EXCH</option>
+    <option value="1">Fault</option>
+    <option value="9">Fault-GCC</option>
+    <option value="7">Fixed Billing</option>
+    <option value="3">KOC</option>
+    <option value="2">Non-Comm</option>
+    <option value="5">SE/F</option>
+    <option value="4">SNE/F</option>
+    <option value="10">SNEFGC</option>
+</select>
+<!-- Daily Meter -->
+<!-- No other options -->
+<!-- EXCH -->
+<tbody>
+    <tr>
+        <td><input id="MainContent_cblTonner_0" type="checkbox" name="ctl00$MainContent$cblTonner$0" value="All"><label
+                for="MainContent_cblTonner_0">All</label></td>
+        <td><input id="MainContent_cblTonner_1" type="checkbox" name="ctl00$MainContent$cblTonner$1"
+                value="BlackTonerCartridge"><label for="MainContent_cblTonner_1">Black Toner</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_2" type="checkbox" name="ctl00$MainContent$cblTonner$2"
+                value="CyanTonerCartridge"><label for="MainContent_cblTonner_2">Cyan Toner</label></td>
+        <td><input id="MainContent_cblTonner_3" type="checkbox" name="ctl00$MainContent$cblTonner$3"
+                value="MagentaTonerCartridge"><label for="MainContent_cblTonner_3">Magenta Toner</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_4" type="checkbox" name="ctl00$MainContent$cblTonner$4"
+                value="YellowTonerCartridge"><label for="MainContent_cblTonner_4">Yellow Toner</label></td>
+        <td><input id="MainContent_cblTonner_5" type="checkbox" name="ctl00$MainContent$cblTonner$5"
+                value="BlackDrumCartridge"><label for="MainContent_cblTonner_5">Black Drum</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_6" type="checkbox" name="ctl00$MainContent$cblTonner$6"
+                value="CyanDrumCartridge"><label for="MainContent_cblTonner_6">Cyan Drum</label></td>
+        <td><input id="MainContent_cblTonner_7" type="checkbox" name="ctl00$MainContent$cblTonner$7"
+                value="MagentaDrumCartridge"><label for="MainContent_cblTonner_7">Magenta Drum</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_8" type="checkbox" name="ctl00$MainContent$cblTonner$8"
+                value="YellowDrumCartridge"><label for="MainContent_cblTonner_8">Yellow Drum</label></td>
+        <td><input id="MainContent_cblTonner_9" type="checkbox" name="ctl00$MainContent$cblTonner$9"
+                value="WasteTonerContainer"><label for="MainContent_cblTonner_9">Waste Toner Bottle</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_10" type="checkbox" name="ctl00$MainContent$cblTonner$10"
+                value="BlueTonerCartridge"><label for="MainContent_cblTonner_10">Blue Toner</label></td>
+        <td><input id="MainContent_cblTonner_11" type="checkbox" name="ctl00$MainContent$cblTonner$11"
+                value="WhiteTonerCartridge"><label for="MainContent_cblTonner_11">White Toner</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_12" type="checkbox" name="ctl00$MainContent$cblTonner$12"
+                value="GreenTonerCartridge"><label for="MainContent_cblTonner_12">Green Toner</label></td>
+        <td><input id="MainContent_cblTonner_13" type="checkbox" name="ctl00$MainContent$cblTonner$13"
+                value="RedTonerCartridge"><label for="MainContent_cblTonner_13">Red Toner</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_14" type="checkbox" name="ctl00$MainContent$cblTonner$14"
+                value="BlueDrumCartridge"><label for="MainContent_cblTonner_14">Blue Drum</label></td>
+        <td><input id="MainContent_cblTonner_15" type="checkbox" name="ctl00$MainContent$cblTonner$15"
+                value="WhiteDrumCartridge"><label for="MainContent_cblTonner_15">White Drum</label></td>
+    </tr>
+    <tr>
+        <td><input id="MainContent_cblTonner_16" type="checkbox" name="ctl00$MainContent$cblTonner$16"
+                value="GreenDrumCartridge"><label for="MainContent_cblTonner_16">Green Drum</label></td>
+        <td><input id="MainContent_cblTonner_17" type="checkbox" name="ctl00$MainContent$cblTonner$17"
+                value="RedDrumCartridge"><label for="MainContent_cblTonner_17">Red Drum</label></td>
+    </tr>
+</tbody>
+<!-- Fault -->
+<select name="ctl00$MainContent$ddlChainLink" id="MainContent_ddlChainLink">
+    <option selected="selected" value="All">All</option>
+    <!-- Enter six-digit Chain-Link in nnn-nnn format(Multiple code separate by comma) -->
+    <option value="Equals">Equals</option>
+    <!-- Enter six-digit Chain-Link in nnn-nnn format(Multiple code separate by comma)  -->
+    <option value="Does not Equal">Does not Equal</option>
+    <!-- Enter first 3 digit Code -->
+    <option value="Starts with">Starts with</option>
+    <!-- Enter last 3 digit Code -->
+    <option value="Ends with">Ends with</option>
+</select>
+
+<!-- Fault-GCC -->
+<select name="ctl00$MainContent$ddlChainLink" id="MainContent_ddlChainLink">
+    <option selected="selected" value="All">All</option>
+    <!-- Enter five-digit Chain-Link in nnnnn format GCT-10000 -->
+    <option value="Equals">Equals</option>
+    <!-- Enter five-digit Chain-Link in nnnnn format GCT-10000 -->
+    <option value="Does not Equal">Does not Equal</option>
+    <!-- Enter first 3 digit Code-->
+    <option value="Starts with">Starts with</option>
+    <!-- Enter last 3 digit Code-->
+    <option value="Ends with">Ends with</option>
+</select>
+
+<!-- Chain Link Input -->
+<input name="ctl00$MainContent$txtChainLink" type="text" id="MainContent_txtChainLink" class="chainTextBox"
+    style="display:inline;">
+<!-- Fixed Billing -->
+<!-- No other options -->
+<!-- KOC -->
+<!-- No other options -->
+<!-- Non-Comm -->
+<!-- No other options -->
+<!-- SE/F -->
+<tbody>
+    <tr>
+        <td class="checkBoxList2">
+            <table id="MainContent_cblTonner">
+                <tbody>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_0" type="checkbox" name="ctl00$MainContent$cblTonner$0"
+                                value="All"><label for="MainContent_cblTonner_0">All</label></td>
+                        <td><input id="MainContent_cblTonner_1" type="checkbox" name="ctl00$MainContent$cblTonner$1"
+                                value="BlackTonerCartridge"><label for="MainContent_cblTonner_1">Black Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_2" type="checkbox" name="ctl00$MainContent$cblTonner$2"
+                                value="CyanTonerCartridge"><label for="MainContent_cblTonner_2">Cyan Toner</label></td>
+                        <td><input id="MainContent_cblTonner_3" type="checkbox" name="ctl00$MainContent$cblTonner$3"
+                                value="MagentaTonerCartridge"><label for="MainContent_cblTonner_3">Magenta Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_4" type="checkbox" name="ctl00$MainContent$cblTonner$4"
+                                value="YellowTonerCartridge"><label for="MainContent_cblTonner_4">Yellow Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_5" type="checkbox" name="ctl00$MainContent$cblTonner$5"
+                                value="BlackDrumCartridge"><label for="MainContent_cblTonner_5">Black Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_6" type="checkbox" name="ctl00$MainContent$cblTonner$6"
+                                value="CyanDrumCartridge"><label for="MainContent_cblTonner_6">Cyan Drum</label></td>
+                        <td><input id="MainContent_cblTonner_7" type="checkbox" name="ctl00$MainContent$cblTonner$7"
+                                value="MagentaDrumCartridge"><label for="MainContent_cblTonner_7">Magenta Drum</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_8" type="checkbox" name="ctl00$MainContent$cblTonner$8"
+                                value="YellowDrumCartridge"><label for="MainContent_cblTonner_8">Yellow Drum</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_9" type="checkbox" name="ctl00$MainContent$cblTonner$9"
+                                value="WasteTonerContainer"><label for="MainContent_cblTonner_9">Waste Toner
+                                Bottle</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_10" type="checkbox" name="ctl00$MainContent$cblTonner$10"
+                                value="BlueTonerCartridge"><label for="MainContent_cblTonner_10">Blue Toner</label></td>
+                        <td><input id="MainContent_cblTonner_11" type="checkbox" name="ctl00$MainContent$cblTonner$11"
+                                value="WhiteTonerCartridge"><label for="MainContent_cblTonner_11">White Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_12" type="checkbox" name="ctl00$MainContent$cblTonner$12"
+                                value="GreenTonerCartridge"><label for="MainContent_cblTonner_12">Green Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_13" type="checkbox" name="ctl00$MainContent$cblTonner$13"
+                                value="RedTonerCartridge"><label for="MainContent_cblTonner_13">Red Toner</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_14" type="checkbox" name="ctl00$MainContent$cblTonner$14"
+                                value="BlueDrumCartridge"><label for="MainContent_cblTonner_14">Blue Drum</label></td>
+                        <td><input id="MainContent_cblTonner_15" type="checkbox" name="ctl00$MainContent$cblTonner$15"
+                                value="WhiteDrumCartridge"><label for="MainContent_cblTonner_15">White Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_16" type="checkbox" name="ctl00$MainContent$cblTonner$16"
+                                value="GreenDrumCartridge"><label for="MainContent_cblTonner_16">Green Drum</label></td>
+                        <td><input id="MainContent_cblTonner_17" type="checkbox" name="ctl00$MainContent$cblTonner$17"
+                                value="RedDrumCartridge"><label for="MainContent_cblTonner_17">Red Drum</label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+
+            <div id="MainContent_pnlOtherToner" style="width:91%;">
+
+                <input type="button" id="btnHideShowOtherTonerList" value="-">
+                <span id="MainContent_lblother">Others</span>
+                <div id="divOtherTonerList" style="">
+                    <table id="MainContent_cblothertonner">
+                        <tbody>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_0" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$0" value="All"><label
+                                        for="MainContent_cblothertonner_0">All</label></td>
+                                <td><input id="MainContent_cblothertonner_6" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$6" value="IBT"><label
+                                        for="MainContent_cblothertonner_6">IBT</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_1" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$1" value="CleaningCartridge"><label
+                                        for="MainContent_cblothertonner_1">Cleaning Cartridge</label></td>
+                                <td><input id="MainContent_cblothertonner_7" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$7" value="MaintenanceKit"><label
+                                        for="MainContent_cblothertonner_7">Maintenance Kit</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_2" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$2" value="FuserAssembly"><label
+                                        for="MainContent_cblothertonner_2">Fuser Assembly</label></td>
+                                <td><input id="MainContent_cblothertonner_8" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$8" value="PHDUnit"><label
+                                        for="MainContent_cblothertonner_8">PHD Unit</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_3" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$3" value="FusingUnit"><label
+                                        for="MainContent_cblothertonner_3">Fusing Unit</label></td>
+                                <td><input id="MainContent_cblothertonner_9" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$9" value="PrintCartridge"><label
+                                        for="MainContent_cblothertonner_9">Print Cartridge</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_4" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$4"
+                                        value="FusingUnitCleaningCartridge"><label
+                                        for="MainContent_cblothertonner_4">Fusing Unit Cleaning Cartridge</label></td>
+                                <td><input id="MainContent_cblothertonner_10" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$10" value="SMartKitDrumCartridge"><label
+                                        for="MainContent_cblothertonner_10">Smart Kit Drum Cartridge</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_5" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$5" value="FusingWeb"><label
+                                        for="MainContent_cblothertonner_5">Fusing Web</label></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </td>
+    </tr>
+</tbody>
+<!-- SNE/F -->
+<tbody>
+    <tr>
+        <td class="checkBoxList2">
+            <table id="MainContent_cblTonner">
+                <tbody>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_0" type="checkbox" name="ctl00$MainContent$cblTonner$0"
+                                value="All"><label for="MainContent_cblTonner_0">All</label></td>
+                        <td><input id="MainContent_cblTonner_1" type="checkbox" name="ctl00$MainContent$cblTonner$1"
+                                value="BlackTonerCartridge"><label for="MainContent_cblTonner_1">Black Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_2" type="checkbox" name="ctl00$MainContent$cblTonner$2"
+                                value="CyanTonerCartridge"><label for="MainContent_cblTonner_2">Cyan Toner</label></td>
+                        <td><input id="MainContent_cblTonner_3" type="checkbox" name="ctl00$MainContent$cblTonner$3"
+                                value="MagentaTonerCartridge"><label for="MainContent_cblTonner_3">Magenta Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_4" type="checkbox" name="ctl00$MainContent$cblTonner$4"
+                                value="YellowTonerCartridge"><label for="MainContent_cblTonner_4">Yellow Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_5" type="checkbox" name="ctl00$MainContent$cblTonner$5"
+                                value="BlackDrumCartridge"><label for="MainContent_cblTonner_5">Black Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_6" type="checkbox" name="ctl00$MainContent$cblTonner$6"
+                                value="CyanDrumCartridge"><label for="MainContent_cblTonner_6">Cyan Drum</label></td>
+                        <td><input id="MainContent_cblTonner_7" type="checkbox" name="ctl00$MainContent$cblTonner$7"
+                                value="MagentaDrumCartridge"><label for="MainContent_cblTonner_7">Magenta Drum</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_8" type="checkbox" name="ctl00$MainContent$cblTonner$8"
+                                value="YellowDrumCartridge"><label for="MainContent_cblTonner_8">Yellow Drum</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_9" type="checkbox" name="ctl00$MainContent$cblTonner$9"
+                                value="WasteTonerContainer"><label for="MainContent_cblTonner_9">Waste Toner
+                                Bottle</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_10" type="checkbox" name="ctl00$MainContent$cblTonner$10"
+                                value="BlueTonerCartridge"><label for="MainContent_cblTonner_10">Blue Toner</label></td>
+                        <td><input id="MainContent_cblTonner_11" type="checkbox" name="ctl00$MainContent$cblTonner$11"
+                                value="WhiteTonerCartridge"><label for="MainContent_cblTonner_11">White Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_12" type="checkbox" name="ctl00$MainContent$cblTonner$12"
+                                value="GreenTonerCartridge"><label for="MainContent_cblTonner_12">Green Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_13" type="checkbox" name="ctl00$MainContent$cblTonner$13"
+                                value="RedTonerCartridge"><label for="MainContent_cblTonner_13">Red Toner</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_14" type="checkbox" name="ctl00$MainContent$cblTonner$14"
+                                value="BlueDrumCartridge"><label for="MainContent_cblTonner_14">Blue Drum</label></td>
+                        <td><input id="MainContent_cblTonner_15" type="checkbox" name="ctl00$MainContent$cblTonner$15"
+                                value="WhiteDrumCartridge"><label for="MainContent_cblTonner_15">White Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_16" type="checkbox" name="ctl00$MainContent$cblTonner$16"
+                                value="GreenDrumCartridge"><label for="MainContent_cblTonner_16">Green Drum</label></td>
+                        <td><input id="MainContent_cblTonner_17" type="checkbox" name="ctl00$MainContent$cblTonner$17"
+                                value="RedDrumCartridge"><label for="MainContent_cblTonner_17">Red Drum</label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+
+            <div id="MainContent_pnlOtherToner" style="width:91%;">
+
+                <input type="button" id="btnHideShowOtherTonerList" value="-">
+                <span id="MainContent_lblother">Others</span>
+                <div id="divOtherTonerList" style="">
+                    <table id="MainContent_cblothertonner">
+                        <tbody>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_0" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$0" value="All"><label
+                                        for="MainContent_cblothertonner_0">All</label></td>
+                                <td><input id="MainContent_cblothertonner_6" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$6" value="IBT"><label
+                                        for="MainContent_cblothertonner_6">IBT</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_1" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$1" value="CleaningCartridge"><label
+                                        for="MainContent_cblothertonner_1">Cleaning Cartridge</label></td>
+                                <td><input id="MainContent_cblothertonner_7" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$7" value="MaintenanceKit"><label
+                                        for="MainContent_cblothertonner_7">Maintenance Kit</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_2" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$2" value="FuserAssembly"><label
+                                        for="MainContent_cblothertonner_2">Fuser Assembly</label></td>
+                                <td><input id="MainContent_cblothertonner_8" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$8" value="PHDUnit"><label
+                                        for="MainContent_cblothertonner_8">PHD Unit</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_3" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$3" value="FusingUnit"><label
+                                        for="MainContent_cblothertonner_3">Fusing Unit</label></td>
+                                <td><input id="MainContent_cblothertonner_9" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$9" value="PrintCartridge"><label
+                                        for="MainContent_cblothertonner_9">Print Cartridge</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_4" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$4"
+                                        value="FusingUnitCleaningCartridge"><label
+                                        for="MainContent_cblothertonner_4">Fusing Unit Cleaning Cartridge</label></td>
+                                <td><input id="MainContent_cblothertonner_10" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$10" value="SMartKitDrumCartridge"><label
+                                        for="MainContent_cblothertonner_10">Smart Kit Drum Cartridge</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_5" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$5" value="FusingWeb"><label
+                                        for="MainContent_cblothertonner_5">Fusing Web</label></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </td>
+    </tr>
+</tbody>
+<!-- SNEFGC -->
+<tbody>
+    <tr>
+        <td class="checkBoxList2">
+            <table id="MainContent_cblTonner">
+                <tbody>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_0" type="checkbox" name="ctl00$MainContent$cblTonner$0"
+                                value="All"><label for="MainContent_cblTonner_0">All</label></td>
+                        <td><input id="MainContent_cblTonner_1" type="checkbox" name="ctl00$MainContent$cblTonner$1"
+                                value="BlackTonerCartridge"><label for="MainContent_cblTonner_1">Black Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_2" type="checkbox" name="ctl00$MainContent$cblTonner$2"
+                                value="CyanTonerCartridge"><label for="MainContent_cblTonner_2">Cyan Toner</label></td>
+                        <td><input id="MainContent_cblTonner_3" type="checkbox" name="ctl00$MainContent$cblTonner$3"
+                                value="MagentaTonerCartridge"><label for="MainContent_cblTonner_3">Magenta Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_4" type="checkbox" name="ctl00$MainContent$cblTonner$4"
+                                value="YellowTonerCartridge"><label for="MainContent_cblTonner_4">Yellow Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_5" type="checkbox" name="ctl00$MainContent$cblTonner$5"
+                                value="BlackDrumCartridge"><label for="MainContent_cblTonner_5">Black Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_6" type="checkbox" name="ctl00$MainContent$cblTonner$6"
+                                value="CyanDrumCartridge"><label for="MainContent_cblTonner_6">Cyan Drum</label></td>
+                        <td><input id="MainContent_cblTonner_7" type="checkbox" name="ctl00$MainContent$cblTonner$7"
+                                value="MagentaDrumCartridge"><label for="MainContent_cblTonner_7">Magenta Drum</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_8" type="checkbox" name="ctl00$MainContent$cblTonner$8"
+                                value="YellowDrumCartridge"><label for="MainContent_cblTonner_8">Yellow Drum</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_9" type="checkbox" name="ctl00$MainContent$cblTonner$9"
+                                value="WasteTonerContainer"><label for="MainContent_cblTonner_9">Waste Toner
+                                Bottle</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_10" type="checkbox" name="ctl00$MainContent$cblTonner$10"
+                                value="BlueTonerCartridge"><label for="MainContent_cblTonner_10">Blue Toner</label></td>
+                        <td><input id="MainContent_cblTonner_11" type="checkbox" name="ctl00$MainContent$cblTonner$11"
+                                value="WhiteTonerCartridge"><label for="MainContent_cblTonner_11">White Toner</label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_12" type="checkbox" name="ctl00$MainContent$cblTonner$12"
+                                value="GreenTonerCartridge"><label for="MainContent_cblTonner_12">Green Toner</label>
+                        </td>
+                        <td><input id="MainContent_cblTonner_13" type="checkbox" name="ctl00$MainContent$cblTonner$13"
+                                value="RedTonerCartridge"><label for="MainContent_cblTonner_13">Red Toner</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_14" type="checkbox" name="ctl00$MainContent$cblTonner$14"
+                                value="BlueDrumCartridge"><label for="MainContent_cblTonner_14">Blue Drum</label></td>
+                        <td><input id="MainContent_cblTonner_15" type="checkbox" name="ctl00$MainContent$cblTonner$15"
+                                value="WhiteDrumCartridge"><label for="MainContent_cblTonner_15">White Drum</label></td>
+                    </tr>
+                    <tr>
+                        <td><input id="MainContent_cblTonner_16" type="checkbox" name="ctl00$MainContent$cblTonner$16"
+                                value="GreenDrumCartridge"><label for="MainContent_cblTonner_16">Green Drum</label></td>
+                        <td><input id="MainContent_cblTonner_17" type="checkbox" name="ctl00$MainContent$cblTonner$17"
+                                value="RedDrumCartridge"><label for="MainContent_cblTonner_17">Red Drum</label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </td>
+    </tr>
+    <tr>
+        <td>
+
+            <div id="MainContent_pnlOtherToner" style="width:91%;">
+
+                <input type="button" id="btnHideShowOtherTonerList" value="-">
+                <span id="MainContent_lblother">Others</span>
+                <div id="divOtherTonerList" style="">
+                    <table id="MainContent_cblothertonner">
+                        <tbody>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_0" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$0" value="All"><label
+                                        for="MainContent_cblothertonner_0">All</label></td>
+                                <td><input id="MainContent_cblothertonner_10" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$10" value="WasteWax"><label
+                                        for="MainContent_cblothertonner_10">Waste Wax</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_1" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$1" value="Ink"><label
+                                        for="MainContent_cblothertonner_1">Ink</label></td>
+                                <td><input id="MainContent_cblothertonner_11" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$11" value="Others"><label
+                                        for="MainContent_cblothertonner_11">Others</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_2" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$2" value="InkCartridge"><label
+                                        for="MainContent_cblothertonner_2">Ink Cartridge</label></td>
+                                <td><input id="MainContent_cblothertonner_12" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$12" value="Unknown"><label
+                                        for="MainContent_cblothertonner_12">Unknown</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_3" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$3" value="InkRibbon"><label
+                                        for="MainContent_cblothertonner_3">Ink Ribbon</label></td>
+                                <td><input id="MainContent_cblothertonner_13" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$13" value="Fuser"><label
+                                        for="MainContent_cblothertonner_13">Fuser</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_4" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$4" value="WasteInk"><label
+                                        for="MainContent_cblothertonner_4">Waste Ink</label></td>
+                                <td><input id="MainContent_cblothertonner_14" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$14" value="UsedSupply"><label
+                                        for="MainContent_cblothertonner_14">UsedSupply</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_5" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$5" value="Opc"><label
+                                        for="MainContent_cblothertonner_5">Opc</label></td>
+                                <td><input id="MainContent_cblothertonner_15" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$15" value="Stapler"><label
+                                        for="MainContent_cblothertonner_15">Stapler</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_6" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$6" value="Developer"><label
+                                        for="MainContent_cblothertonner_6">Developer</label></td>
+                                <td><input id="MainContent_cblothertonner_16" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$16" value="StaplerSaddleStitich"><label
+                                        for="MainContent_cblothertonner_16">StaplerSaddleStitich</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_7" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$7" value="FuserOil"><label
+                                        for="MainContent_cblothertonner_7">Fuser Oil</label></td>
+                                <td><input id="MainContent_cblothertonner_17" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$17" value="StampKit"><label
+                                        for="MainContent_cblothertonner_17">StampKit</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_8" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$8" value="SolidWax"><label
+                                        for="MainContent_cblothertonner_8">Solid Wax</label></td>
+                                <td><input id="MainContent_cblothertonner_18" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$18" value="Belt"><label
+                                        for="MainContent_cblothertonner_18">Belt</label></td>
+                            </tr>
+                            <tr>
+                                <td><input id="MainContent_cblothertonner_9" type="checkbox"
+                                        name="ctl00$MainContent$cblothertonner$9" value="RibbonWax"><label
+                                        for="MainContent_cblothertonner_9">Ribbon Wax</label></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </td>
+    </tr>
+</tbody>
+<!-- Heirarchy -->
+<select name="ctl00$MainContent$ddlOpCo"
+    onchange="javascript:setTimeout('__doPostBack(\'ctl00$MainContent$ddlOpCo\',\'\')', 0)" id="MainContent_ddlOpCo">
+    <option selected="selected" value="0">Select</option>
+    <option value="FXAU">FXAU</option>
+</select>
+<!-- Additional Conditions -->
+<!-- Any Day - choosing this makes other additional conditions unavailable-->
+<input id="MainContent_rbAnyDayTime" type="radio" name="ctl00$MainContent$AdditionalConditions" value="rbAnyDayTime"
+    checked="checked">
+<!-- Day of Month  - choosing this makes other additional conditions unavailable-->
+<input id="MainContent_rbDayofMonth" type="radio" name="ctl00$MainContent$AdditionalConditions" value="rbDayofMonth">
+<select name="ctl00$MainContent$ddlDayOfTheMonth" id="MainContent_ddlDayOfTheMonth" style="width:30%;">
+    <option value="0">Day</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="15">15</option>
+    <option value="16">16</option>
+    <option value="17">17</option>
+    <option value="18">18</option>
+    <option value="19">19</option>
+    <option value="20">20</option>
+    <option value="21">21</option>
+    <option value="22">22</option>
+    <option value="23">23</option>
+    <option value="24">24</option>
+    <option value="25">25</option>
+    <option value="26">26</option>
+    <option value="27">27</option>
+    <option value="28">28</option>
+    <option value="29">29</option>
+    <option value="30">30</option>
+    <option value="31">31</option>
+</select>
+<!-- Day of Week - choosing this makes other additional conditions unavailable, can chose multiple days-->
+<input id="MainContent_rbDayOfWeek" type="radio" name="ctl00$MainContent$AdditionalConditions" value="rbDayOfWeek">
+<select name="ctl00$MainContent$ddlDayOfTheWeek" id="MainContent_ddlDayOfTheWeek" style="width:30%;">
+    <input id="MainContent_cblWeekDays_0" type="checkbox" name="ctl00$MainContent$cblWeekDays$0" value="Monday">
+    <input id="MainContent_cblWeekDays_1" type="checkbox" name="ctl00$MainContent$cblWeekDays$1" value="Tuesday">
+    <input id="MainContent_cblWeekDays_2" type="checkbox" name="ctl00$MainContent$cblWeekDays$2" value="Wednesday">
+    <input id="MainContent_cblWeekDays_3" type="checkbox" name="ctl00$MainContent$cblWeekDays$3" value="Thursday">
+    <input id="MainContent_cblWeekDays_4" type="checkbox" name="ctl00$MainContent$cblWeekDays$4" value="Friday">
+    <input id="MainContent_cblWeekDays_5" type="checkbox" name="ctl00$MainContent$cblWeekDays$5" value="Saturday">
+    <input id="MainContent_cblWeekDays_6" type="checkbox" name="ctl00$MainContent$cblWeekDays$6" value="Sunday">
+</select>
+<!-- From Date -->
+<input id="MainContent_rbFromDate" type="radio" name="ctl00$MainContent$AdditionalConditions" value="rbFromDate">
+<input name="ctl00$MainContent$txtFromDate" type="text" id="MainContent_txtFromDate" disabled="disabled"
+    class="aspNetDisabled dateTextBox" style="width:31%;">
+<input name="ctl00$MainContent$txtToDate" type="text" id="MainContent_txtToDate" disabled="disabled"
+    class="aspNetDisabled dateTextBox" style="width:31%;">
+<select name="ctl00$MainContent$ddlFromHour" id="MainContent_ddlFromHour" style="width:46%;">
+    <option value="0">HR</option>
+    <option value="00">00</option>
+    <option value="01">01</option>
+    <option value="02">02</option>
+    <option value="03">03</option>
+    <option value="04">04</option>
+    <option value="05">05</option>
+    <option value="06">06</option>
+    <option value="07">07</option>
+    <option value="08">08</option>
+    <option value="09">09</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="15">15</option>
+    <option value="16">16</option>
+    <option value="17">17</option>
+    <option value="18">18</option>
+    <option value="19">19</option>
+    <option value="20">20</option>
+    <option value="21">21</option>
+    <option value="22">22</option>
+    <option value="23">23</option>
+
+</select>
+<select name="ctl00$MainContent$ddlFromMinute" id="MainContent_ddlFromMinute" class="fromTime-min" style="width:46%;">
+    <option value="00">00</option>
+    <option value="15">15</option>
+    <option value="30">30</option>
+    <option value="45">45</option>
+
+</select>
+<select name="ctl00$MainContent$ddlToTimeHour" id="MainContent_ddlToTimeHour" style="width:46%;">
+    <option value="0">HR</option>
+    <option value="00">00</option>
+    <option value="01">01</option>
+    <option value="02">02</option>
+    <option value="03">03</option>
+    <option value="04">04</option>
+    <option value="05">05</option>
+    <option value="06">06</option>
+    <option value="07">07</option>
+    <option value="08">08</option>
+    <option value="09">09</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="15">15</option>
+    <option value="16">16</option>
+    <option value="17">17</option>
+    <option value="18">18</option>
+    <option value="19">19</option>
+    <option value="20">20</option>
+    <option value="21">21</option>
+    <option value="22">22</option>
+    <option value="23">23</option>
+
+</select>
+<select name="ctl00$MainContent$ddlToMinute" id="MainContent_ddlToMinute" class="fromTime-min" style="width:46%;">
+    <option value="00">00</option>
+    <option value="15">15</option>
+    <option value="30">30</option>
+    <option value="45">45</option>
+
+</select>
+<!-- Consolidation by days-->
+<!-- Note: For Supply Exchange Alerts Only. Up to 99.-->
+<input id="MainContent_rbconsolidate" type="radio" name="ctl00$MainContent$AdditionalConsolidation"
+    value="rbconsolidate" disabled="disabled">
+<input name="ctl00$MainContent$txtconsolidate" type="text" id="MainContent_txtconsolidate" disabled="disabled"
+    class="aspNetDisabled" style="width:20%;">
+<!-- Consolidation by Week -->
+<!-- Note: For Supply Exchange Alerts Only -->
+<input id="MainContent_rbconsolidateweekday" type="radio" name="ctl00$MainContent$AdditionalConsolidation"
+    value="rbconsolidateweekday" disabled="disabled">
+<input id="MainContent_cblconsolidationweekdays_0" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$0"
+    value="Monday">
+<input id="MainContent_cblconsolidationweekdays_1" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$1"
+    value="Tuesday">
+<input id="MainContent_cblconsolidationweekdays_2" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$2"
+    value="Wednesday">
+<input id="MainContent_cblconsolidationweekdays_3" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$3"
+    value="Thursday">
+<input id="MainContent_cblconsolidationweekdays_4" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$4"
+    value="Friday">
+<input id="MainContent_cblconsolidationweekdays_5" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$5"
+    value="Saturday">
+<input id="MainContent_cblconsolidationweekdays_6" type="checkbox" name="ctl00$MainContent$cblconsolidationweekdays$6"
+    value="Sunday">
+
+<!-- Actions -->
+<!-- Action Remarks -->
+<input name="ctl00$MainContent$txtActionRemark" type="text" maxlength="150" id="MainContent_txtActionRemark">
+
+<!-- Save -->
+<input type="submit" name="ctl00$MainContent$btnSave" value="Save"
+    onclick="return ValidatPageOnSave('');WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;ctl00$MainContent$btnSave&quot;, &quot;&quot;, true, &quot;&quot;, &quot;&quot;, false, false))"
+    id="MainContent_btnSave" class="btn btn-small btn-info button-small">
