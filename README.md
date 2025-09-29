@@ -153,8 +153,12 @@ Rows that miss required combinations are **SKIPPED** and the reason is recorded 
 With `.venv` active:
 
 ```powershell
-python .\epgw-businessrules.py --mutate-input
-```
+python .\EPGW-BusinessRules.py `
+  --input templates\EPGW-BusinessRules-template.xlsx `
+  --completed .\Completed.xlsx `
+  --completed-csv .\RulesCompleted.csv `
+  --mutate-input
+  ```
 
 Because `.env` supplies all paths, no other arguments are needed.
 
