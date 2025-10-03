@@ -1,42 +1,47 @@
-# EPGW Business Rules Bot — Windows + VS Code
+# EP Gateway Business Rule Bot
 
-This tool reads rows from an **Excel workbook** and creates Business Rules in the EPGW web app using Playwright (Microsoft Edge automation).
-Each row is validated; results are written to a **Completed** CSV/XLSX ledger; detailed logs go to `logs/`.
-If you’re not logged in, the run stops and tells you why.
+
+> [!NOTE]  
+>
+>This tool reads rows from an **Excel workbook** and creates Business Rules in the EPGW web app using Playwright (Microsoft Edge automation).
+>
+>Each row is validated; results are written to a **Completed** CSV/XLSX ledger; detailed logs go to `logs/`.
+>
+>If you’re not logged in, the run stops and tells you why.
+
+
+### **First Time Use**
+---
+> [!IMPORTANT]
+> 
+> **Install**
+> * **[VS Code](https://code.visualstudio.com/download)** (then open it)
+> * **[Python 3.12+](https://www.python.org/downloads/)** (tick “**Add Python to PATH**” during install)
+> * **[Git for Windows](https://git-scm.com/downloads/win)**
+> 
+> 1. **Create a working folder**
+> 
+> ```powershell
+> New-Item -ItemType Directory -Path C:\EPGW_Automation -Force
+> Set-Location C:\EPGW_Automation
+> ```
+> 
+> 3. **Clone the repo into that folder**
+> 
+> ```powershell
+> git clone https://github.com/ChrisKe89/gwbusinessrules.git
+> cd .\gwbusinessrules
+> ```
+> 
+> 4. **Open the project in VS Code**
+> 
+> ```powershell
+> code .
+> ```
 
 ---
 
-## 0) Install VS Code and basics (one-time)
-
-1. **Install**
-
-* **[VS Code](https://code.visualstudio.com/download)** (then open it)
-* **[Python 3.12+](https://www.python.org/downloads/)** (tick “**Add Python to PATH**” during install)
-* **[Git for Windows](https://git-scm.com/downloads/win)**
-
-2. **Create a working folder**
-
-```powershell
-New-Item -ItemType Directory -Path C:\EPGW_Automation -Force
-Set-Location C:\EPGW_Automation
-```
-
-3. **Clone the repo into that folder**
-
-```powershell
-git clone https://github.com/ChrisKe89/gwbusinessrules.git
-cd .\gwbusinessrules
-```
-
-4. **Open the project in VS Code**
-
-```powershell
-code .
-```
-
----
-
-## 1) Create & select a Python environment
+### 1) Create & select a Python environment
 
 In VS Code: **Terminal → New Terminal** (PowerShell), then:
 
@@ -50,14 +55,15 @@ Then select the interpreter: **Ctrl + Shift + P → “Python: Select Interprete
 
 ---
 
-## 2) Install dependencies
+### 2) Install dependencies
 
-```powershell
+```bash
 pip install -r requirements.txt
 python -m playwright install
 python -m playwright install msedge
 ```
 
+> [!TIP]
 > If activation is blocked:
 > `Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned`
 

@@ -1,0 +1,39 @@
+config:
+  MD013:
+    line_length: 180
+    heading_line_length: 0
+    tables: false
+    strict: false
+    inner_sentence: true
+    code_blocks: false
+  MD029:
+    style: "one_or_ordered"
+  MD022: true
+  MD024:
+    siblings_only: true
+    allow_different_nesting: true
+  MD032: true
+  MD033:
+    allowed_elements: ["img", "p", "br", "a", "code", "em", "strong", "details", "summary"]
+  MD041: true
+globs:
+  - "**/*.md"
+ignores:
+  - "CHANGELOG.md"
+  - ".venv/**"
+  - "**/.venv/**"
+  - "node_modules/**"
+  - "README.md"
+  - "AGENTS.md"
+  - "ToDo-Complete.md"
+  - "TODO.md"
+  - "CODEX_PROMPT.md"
+  - "CONTRIBUTING.md"
+  - "docs/README.md"
+  - "REQUIREMENTS.md"
+  - "SECURITY.md"
+  - "content/**"
+  - "scripts/rollback.md"
+  - ".archive/**"
+  - "tests/**"
+  - "EXAMPLES_ONLY/**"

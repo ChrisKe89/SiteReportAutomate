@@ -1,0 +1,7 @@
+{
+    "markdownlint.configFile": "${workspaceFolder}/markdownlint-global.yaml",
+    "markdownlint.run": "onSave",
+    "markdown.styles": [
+        "${workspaceFolder}/assets/css/markdown-modern.css"
+    ]
+}
