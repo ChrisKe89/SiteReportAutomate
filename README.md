@@ -2,7 +2,7 @@
 
 ## Version
 
-Current release: **0.1.1** (2024-05-21)
+Current release: **0.1.2** (2024-05-22)
 
 
 > [!NOTE]  
@@ -168,7 +168,7 @@ With `.venv` active:
 
 `ast_toner.py` drives the Fuji Xerox parts status portal using Playwright.
 
-* **Input**: `input.xlsx` at the repo root (first row headers, data from row 2).
+* **Input**: The newest `.xlsx` file inside `downloads/` (skipping temporary `~$` files). Override with the `AST_TONER_INPUT` environment variable if you need a specific workbook.
 * **Output**: `output.xlsx` populated with the input columns and fetched status rows.
 * **Resilience**: missing columns are treated as blanks, empty rows are skipped, and
   timeouts/no-table responses are logged to both the console and output workbook.

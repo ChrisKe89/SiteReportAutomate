@@ -8,16 +8,19 @@ structures do not crash the run.
 
 import asyncio
 import logging
-from typing import Iterable, List, Sequence, Tuple
+import os
+from pathlib import Path
+from typing import Iterable, List, Sequence, Tuple, cast
 
 from bs4 import BeautifulSoup
 from openpyxl import Workbook, load_workbook
+from openpyxl.worksheet.worksheet import Worksheet
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
 
 # Input and output file paths
-INPUT_XLSX = "downloads\20251015-130256-Device List.xlsx"  # Your cleaned spreadsheet
-OUTPUT_XLSX = "output.xlsx"  # Where results will be saved
+DOWNLOAD_DIR = Path("downloads")
+OUTPUT_XLSX = Path("output.xlsx")  # Where results will be saved
 
 # Selectors for the input fields and search button
 SELECTORS = {
@@ -32,6 +35,50 @@ PAGE_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/rdhc/PartStatuses.aspx"
 
 
 logger = logging.getLogger(__name__)
+
+
+def _active_sheet(wb: Workbook) -> Worksheet:
+    """Return the active worksheet, raising if the workbook is empty."""
+
+    ws = wb.active
+    if ws is None:
+        raise ValueError("Workbook has no active worksheet")
+    return cast(Worksheet, ws)
+
+
+def _resolve_input_workbook() -> Path:
+    """Locate the workbook to ingest, preferring an explicit override."""
+
+    env_path = os.environ.get("AST_TONER_INPUT")
+    if env_path:
+        candidate = Path(env_path).expanduser()
+        if candidate.is_file():
+            return candidate
+        raise FileNotFoundError(
+            f"AST_TONER_INPUT was set to '{candidate}', but the file does not exist."
+        )
+
+    if not DOWNLOAD_DIR.exists():
+        raise FileNotFoundError(
+            f"Download directory '{DOWNLOAD_DIR}' does not exist."
+        )
+
+    candidates = sorted(
+        (
+            path
+            for path in DOWNLOAD_DIR.glob("*.xlsx")
+            if path.is_file() and not path.name.startswith("~")
+        ),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+
+    if not candidates:
+        raise FileNotFoundError(
+            f"No .xlsx files found in '{DOWNLOAD_DIR}'."
+        )
+
+    return candidates[0]
 
 
 def parse_html_table(html: str) -> Tuple[List[str], List[List[str]]]:
@@ -73,12 +120,18 @@ async def main():
         level=logging.INFO,
     )
 
-    logger.info("Loading input workbook: %s", INPUT_XLSX)
-    wb = load_workbook(INPUT_XLSX)
-    ws = wb.active
+    try:
+        input_xlsx = _resolve_input_workbook()
+    except FileNotFoundError as exc:
+        logger.error("Could not locate input workbook: %s", exc)
+        raise
+
+    logger.info("Loading input workbook: %s", input_xlsx)
+    wb = load_workbook(input_xlsx)
+    ws: Worksheet = _active_sheet(wb)
 
     out_wb = Workbook()
-    out_ws = out_wb.active
+    out_ws: Worksheet = _active_sheet(out_wb)
     out_ws.title = "Results"
 
     async with async_playwright() as p:
