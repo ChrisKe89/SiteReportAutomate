@@ -1,5 +1,9 @@
 # EP Gateway Business Rule Bot
 
+## Version
+
+Current release: **0.1.1** (2024-05-21)
+
 
 > [!NOTE]  
 >
@@ -157,6 +161,23 @@ Rows that miss required combinations are **SKIPPED** and the reason is recorded 
 ## 6) Run it (normal usage from VS Code)
 
 With `.venv` active:
+
+---
+
+## Toner status automation companion script
+
+`ast_toner.py` drives the Fuji Xerox parts status portal using Playwright.
+
+* **Input**: `input.xlsx` at the repo root (first row headers, data from row 2).
+* **Output**: `output.xlsx` populated with the input columns and fetched status rows.
+* **Resilience**: missing columns are treated as blanks, empty rows are skipped, and
+  timeouts/no-table responses are logged to both the console and output workbook.
+
+Run it with the same authenticated `storage_state.json` created for the main bot:
+
+```bash
+python ast_toner.py
+```
 
 ```powershell
 python .\EPGW-BusinessRules.py `

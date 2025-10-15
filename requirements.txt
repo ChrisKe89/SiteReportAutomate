@@ -3,4 +3,4 @@ openpyxl>=3.1
 python-dotenv>=1.0
 types-openpyxl
 types-beautifulsoup4
-beautifulsoup4
+beautifulsoup4>=4.12
