@@ -16,7 +16,7 @@ from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 from playwright.async_api import async_playwright
 
 # Input and output file paths
-INPUT_XLSX = "input.xlsx"  # Your cleaned spreadsheet
+INPUT_XLSX = "downloads\20251015-130256-Device List.xlsx"  # Your cleaned spreadsheet
 OUTPUT_XLSX = "output.xlsx"  # Where results will be saved
 
 # Selectors for the input fields and search button
