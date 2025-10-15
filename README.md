@@ -2,7 +2,7 @@
 
 ## Version
 
-Current release: **0.1.2** (2024-05-22)
+Current release: **0.1.3** (2024-05-23)
 
 
 > [!NOTE]  
@@ -172,6 +172,7 @@ With `.venv` active:
 * **Output**: `output.xlsx` populated with the input columns and fetched status rows.
 * **Resilience**: missing columns are treated as blanks, empty rows are skipped, and
   timeouts/no-table responses are logged to both the console and output workbook.
+* **Authentication**: set `AST_TONER_STORAGE_STATE` to point at a specific `storage_state.json`. If it is omitted the script falls back to a local `storage_state.json` when present, otherwise it launches without persisted cookies and you will need to log in interactively.
 
 Run it with the same authenticated `storage_state.json` created for the main bot:
 

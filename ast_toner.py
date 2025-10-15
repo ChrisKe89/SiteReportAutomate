@@ -10,7 +10,7 @@ import asyncio
 import logging
 import os
 from pathlib import Path
-from typing import Iterable, List, Sequence, Tuple, cast
+from typing import Iterable, List, Optional, Sequence, Tuple, cast
 
 from bs4 import BeautifulSoup
 from openpyxl import Workbook, load_workbook
@@ -32,6 +32,7 @@ SELECTORS = {
 }
 
 PAGE_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/rdhc/PartStatuses.aspx"
+STORAGE_STATE_ENV = "AST_TONER_STORAGE_STATE"
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,34 @@ def _resolve_input_workbook() -> Path:
         )
 
     return candidates[0]
+
+
+def _resolve_storage_state() -> Optional[Path]:
+    """Return a valid storage state file when available.
+
+    When ``AST_TONER_STORAGE_STATE`` is set we require that file to exist.
+    Otherwise we fall back to ``storage_state.json`` next to the script if it is
+    present. Returning ``None`` signals that no storage state should be passed
+    to Playwright.
+    """
+
+    env_path = os.environ.get(STORAGE_STATE_ENV)
+    if env_path:
+        candidate = Path(env_path).expanduser()
+        if candidate.is_file():
+            return candidate
+        raise FileNotFoundError(
+            f"{STORAGE_STATE_ENV} was set to '{candidate}', but the file does not exist."
+        )
+
+    default_path = Path("storage_state.json")
+    if default_path.is_file():
+        return default_path
+
+    logger.warning(
+        "No Playwright storage state found. Proceeding without persisted login; a fresh login will be required."
+    )
+    return None
 
 
 def parse_html_table(html: str) -> Tuple[List[str], List[List[str]]]:
@@ -136,7 +165,12 @@ async def main():
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
-        context = await browser.new_context(storage_state="storage_state.json")
+        storage_state_path = _resolve_storage_state()
+        context = (
+            await browser.new_context(storage_state=str(storage_state_path))
+            if storage_state_path
+            else await browser.new_context()
+        )
         page = await context.new_page()
         await page.goto(PAGE_URL)
 
