@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.1.2] - 2024-05-22
+### Fixed
+- Automatically locate the latest cleaned workbook in `downloads/` to prevent missing-file crashes in `ast_toner.py`.
+- Tightened workbook typing so Pylance recognises worksheet methods.
+
 ## [0.1.1] - 2024-05-21
 ### Added
 - Hardened `ast_toner.py` with structured logging, resilient parsing, and safeguards for missing workbook columns.
