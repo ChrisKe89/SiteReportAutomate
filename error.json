@@ -29,3 +29,86 @@ Traceback (most recent call last):
               ~~~~~~~^^^^^^^^^^^^^^^^
 FileNotFoundError: [Errno 2
 ] No such file or directory: 'downloads\x8251015-130256-Device List.xlsx'
+
+[
+    {
+        "resource": "/c:/Dev/SiteReportAutomate/ast_toner.py",
+        "owner": "pylance",
+        "code": {
+            "value": "reportOptionalMemberAccess",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pylance-release/blob/main/docs/diagnostics/reportOptionalMemberAccess.md",
+                "scheme": "https",
+                "authority": "github.com"
+            }
+        },
+        "severity": 8,
+        "message": "\"title\" is not a known attribute of \"None\"",
+        "source": "Pylance",
+        "startLineNumber": 82,
+        "startColumn": 12,
+        "endLineNumber": 82,
+        "endColumn": 17
+    },
+    {
+        "resource": "/c:/Dev/SiteReportAutomate/ast_toner.py",
+        "owner": "pylance",
+        "code": {
+            "value": "reportOptionalMemberAccess",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pylance-release/blob/main/docs/diagnostics/reportOptionalMemberAccess.md",
+                "scheme": "https",
+                "authority": "github.com"
+            }
+        },
+        "severity": 8,
+        "message": "\"iter_rows\" is not a known attribute of \"None\"",
+        "source": "Pylance",
+        "startLineNumber": 90,
+        "startColumn": 38,
+        "endLineNumber": 90,
+        "endColumn": 47
+    },
+    {
+        "resource": "/c:/Dev/SiteReportAutomate/ast_toner.py",
+        "owner": "pylance",
+        "code": {
+            "value": "reportOptionalMemberAccess",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pylance-release/blob/main/docs/diagnostics/reportOptionalMemberAccess.md",
+                "scheme": "https",
+                "authority": "github.com"
+            }
+        },
+        "severity": 8,
+        "message": "\"append\" is not a known attribute of \"None\"",
+        "source": "Pylance",
+        "startLineNumber": 124,
+        "startColumn": 24,
+        "endLineNumber": 124,
+        "endColumn": 30
+    },
+    {
+        "resource": "/c:/Dev/SiteReportAutomate/ast_toner.py",
+        "owner": "pylance",
+        "code": {
+            "value": "reportOptionalMemberAccess",
+            "target": {
+                "$mid": 1,
+                "path": "/microsoft/pylance-release/blob/main/docs/diagnostics/reportOptionalMemberAccess.md",
+                "scheme": "https",
+                "authority": "github.com"
+            }
+        },
+        "severity": 8,
+        "message": "\"append\" is not a known attribute of \"None\"",
+        "source": "Pylance",
+        "startLineNumber": 133,
+        "startColumn": 24,
+        "endLineNumber": 133,
+        "endColumn": 30
+    }
+]
