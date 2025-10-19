@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.1.4] - 2025-10-20
+### Added
+- Optional `FIRMWARE_HTTP_USERNAME` / `FIRMWARE_HTTP_PASSWORD` environment variables and a warm-up navigation hook to support portals that require HTTP authentication before loading the scheduling form.
+- Guidance in the README and `.env.example` for configuring the new firmware scheduler options.
+
+### Fixed
+- Hardened `schedule_firmware.py` against missing active worksheets and broadened row parsing so mypy recognises the worksheet API.
+- Display a helpful remediation hint when Playwright reports `ERR_INVALID_AUTH_CREDENTIALS` during navigation.
+
 ## [0.1.3] - 2024-05-23
 ### Fixed
 - Allow `ast_toner.py` to proceed when `storage_state.json` is missing by making the storage state optional and configurable via `AST_TONER_STORAGE_STATE`.

@@ -13,13 +13,14 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Iterable, Optional
+from typing import Any, Iterable
 
 from dotenv import load_dotenv  # type: ignore[import]
 from openpyxl import Workbook, load_workbook  # type: ignore[import]
 from playwright.async_api import (  # type: ignore[import]
     Browser,
     BrowserContext,
+    Error as PlaywrightError,
     Page,
     TimeoutError as PlaywrightTimeoutError,
     async_playwright,
@@ -32,6 +33,12 @@ INPUT_XLSX = Path(os.getenv("FIRMWARE_INPUT_XLSX", "downloads/VIC.xlsx"))
 LOG_XLSX = Path(os.getenv("FIRMWARE_LOG_XLSX", "downloads/FirmwareLog.xlsx"))
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
 ERRORS_JSON = Path(os.getenv("FIRMWARE_ERRORS_JSON", "errors.json")).expanduser()
+HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
+HTTP_PASSWORD = os.getenv("FIRMWARE_HTTP_PASSWORD")
+AUTH_WARMUP_URL = os.getenv(
+    "FIRMWARE_WARMUP_URL",
+    "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
+)
 
 STORAGE_STATE_ENV = "FIRMWARE_STORAGE_STATE"
 _DEFAULT_STORAGE_STATE = "storage_state.json"
@@ -58,7 +65,7 @@ class DeviceRow:
     opco: str
 
     @classmethod
-    def from_iterable(cls, row: Iterable[Optional[str]]) -> "DeviceRow | None":
+    def from_iterable(cls, row: Iterable[Any]) -> "DeviceRow | None":
         cells = ["" if cell is None else str(cell).strip() for cell in row]
         if len(cells) < 4:
             return None
@@ -111,6 +118,9 @@ def load_rows(path: Path) -> list[DeviceRow]:
         raise FileNotFoundError(f"Input workbook not found: {path}")
     workbook = load_workbook(path, read_only=True)
     sheet = workbook.active
+    if sheet is None:
+        workbook.close()
+        raise ValueError(f"No active worksheet found in workbook: {path}")
     rows: list[DeviceRow] = []
     # Skip header row by using min_row=2
     for raw in sheet.iter_rows(min_row=2, values_only=True):
@@ -162,9 +172,15 @@ def append_log(row: DeviceRow, status: str, message: str, *, scheduled_date: str
     if LOG_XLSX.exists():
         workbook = load_workbook(LOG_XLSX)
         sheet = workbook.active
+        if sheet is None:
+            workbook.close()
+            raise ValueError("Log workbook has no active worksheet.")
     else:
         workbook = Workbook()
         sheet = workbook.active
+        if sheet is None:
+            workbook.close()
+            raise ValueError("Unable to create log worksheet.")
         sheet.append([
             "SerialNumber",
             "Product_Code",
@@ -336,20 +352,46 @@ async def run() -> None:
 
     async with async_playwright() as p:
         browser: Browser = await p.chromium.launch(headless=False, channel=BROWSER_CHANNEL)
-        context: BrowserContext = await browser.new_context(storage_state=str(storage_state_path))
-        page: Page = await context.new_page()
+        context_options: dict[str, Any] = {"storage_state": str(storage_state_path)}
+        if HTTP_USERNAME and HTTP_PASSWORD:
+            context_options["http_credentials"] = {
+                "username": HTTP_USERNAME,
+                "password": HTTP_PASSWORD,
+            }
+        context: BrowserContext = await browser.new_context(**context_options)
 
-        await page.goto(DEFAULT_URL, wait_until="domcontentloaded")
-        for row in rows:
+        try:
+            page: Page = await context.new_page()
+            if AUTH_WARMUP_URL:
+                try:
+                    await page.goto(AUTH_WARMUP_URL, wait_until="domcontentloaded")
+                except PlaywrightError as exc:
+                    print(f"Warm-up navigation to {AUTH_WARMUP_URL} failed: {exc}")
+            await page.goto(DEFAULT_URL, wait_until="domcontentloaded")
+            for row in rows:
+                try:
+                    await handle_row(page, row)
+                except Exception as exc:  # noqa: BLE001
+                    message = str(exc)
+                    append_log(row, "Failed", message)
+                    record_error(row, "Failed", message)
+
+            await context.storage_state(path=str(storage_state_path))
+        except PlaywrightError as exc:
+            message = str(exc)
+            if "ERR_INVALID_AUTH_CREDENTIALS" in message:
+                print(
+                    "Authentication failed when opening the firmware scheduling page. "
+                    "Re-capture storage_state.json after a successful manual login or "
+                    "set FIRMWARE_HTTP_USERNAME/FIRMWARE_HTTP_PASSWORD in your .env."
+                )
+            else:
+                raise
+        finally:
             try:
-                await handle_row(page, row)
-            except Exception as exc:  # noqa: BLE001
-                message = str(exc)
-                append_log(row, "Failed", message)
-                record_error(row, "Failed", message)
-
-        await context.storage_state(path=str(storage_state_path))
-        await browser.close()
+                await browser.close()
+            except PlaywrightError:
+                pass
 
 
 if __name__ == "__main__":

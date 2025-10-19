@@ -173,6 +173,9 @@ FIRMWARE_LOG_XLSX=downloads/FirmwareLog.xlsx
 FIRMWARE_STORAGE_STATE=storage_state.json
 FIRMWARE_BROWSER_CHANNEL=msedge
 FIRMWARE_ERRORS_JSON=errors.json
+FIRMWARE_HTTP_USERNAME=
+FIRMWARE_HTTP_PASSWORD=
+FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx
 ```
 
 * `FIRMWARE_INPUT_XLSX` must point to a worksheet that contains the columns
@@ -189,6 +192,12 @@ FIRMWARE_ERRORS_JSON=errors.json
 * `FIRMWARE_ERRORS_JSON` is a JSON ledger that captures failed or skipped rows
   (for example, when a device table is missing). Leave it at the default or
   point it to a shared location if multiple team members are running the bot.
+* `FIRMWARE_HTTP_USERNAME` / `FIRMWARE_HTTP_PASSWORD` are optional HTTP Auth
+  credentials for environments where the Single Request portal prompts for a
+  login dialog before cookies are considered valid.
+* `FIRMWARE_WARMUP_URL` lets the scheduler visit a gateway page (captured with
+  `login_capture_epgw.py`) before loading the firmware scheduling form. Keep the
+  default or clear it if your environment does not require the warm-up hop.
 
 ### Run the scheduler
 
@@ -213,6 +222,11 @@ review and retry later.
 
 Failures and critical skips are additionally written to `errors.json` (or your
 custom `FIRMWARE_ERRORS_JSON` path) to make quick triage easier.
+
+> **Tip:** If the script reports `ERR_INVALID_AUTH_CREDENTIALS`, re-run
+> `login_capture_epgw.py` to refresh `storage_state.json` or configure the HTTP
+> credentials in `.env` so the browser can satisfy the portal's authentication
+> challenge automatically.
 
 ## 6) Run it (normal usage from VS Code)
 
