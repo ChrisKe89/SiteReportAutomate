@@ -158,6 +158,53 @@ Rows that miss required combinations are **SKIPPED** and the reason is recorded 
 
 ---
 
+## Firmware scheduling automation
+
+The repository now includes **`schedule_firmware.py`** to automate software upgrade
+requests in the Fuji Xerox Single Request portal.
+
+### Configure inputs
+
+Add the following keys to your `.env` (or rely on the defaults shown):
+
+```env
+FIRMWARE_INPUT_XLSX=downloads/VIC.xlsx
+FIRMWARE_LOG_XLSX=downloads/FirmwareLog.xlsx
+FIRMWARE_STORAGE_STATE=storage_state.json
+FIRMWARE_BROWSER_CHANNEL=msedge
+```
+
+* `FIRMWARE_INPUT_XLSX` must point to a worksheet that contains the columns
+  **`SerialNumber`**, **`Product_Code`**, **`OpcoID`**, and **`State`**.
+* `FIRMWARE_LOG_XLSX` receives the results for each processed row. Successful
+  schedules, skips (already upgraded/not eligible), and failures are all
+  appended with timestamps.
+* `FIRMWARE_STORAGE_STATE` should reference a login state captured via
+  `login_capture_epgw.py` so the script can reuse your authenticated session.
+* `FIRMWARE_BROWSER_CHANNEL` defaults to Microsoft Edge. Change it to `chromium`
+  or `chrome` if you prefer another browser build installed on your system.
+
+### Run the scheduler
+
+```bash
+python schedule_firmware.py
+```
+
+For each Excel row the bot:
+
+1. Selects **FBAU** in the OpCo dropdown.
+2. Submits the product code and serial number.
+3. Skips rows that report `already upgraded` in the eligibility grid.
+4. When eligible, chooses a random schedule date within the next six days,
+   selects an allowed time slot (00:00–07:59 or 18:00–23:59), and picks the
+   correct timezone based on the State column (NT → Darwin, SA → Adelaide,
+   ACT/VIC/NSW → Canberra/Melbourne/Sydney, QLD → Brisbane, TAS → Hobart).
+5. Clicks **Schedule** and records the portal’s confirmation message in the
+   firmware log workbook.
+
+Any exceptions encountered while processing a row are also logged so you can
+review and retry later.
+
 ## 6) Run it (normal usage from VS Code)
 
 With `.venv` active:
