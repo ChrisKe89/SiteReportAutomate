@@ -172,6 +172,7 @@ FIRMWARE_INPUT_XLSX=downloads/VIC.xlsx
 FIRMWARE_LOG_XLSX=downloads/FirmwareLog.xlsx
 FIRMWARE_STORAGE_STATE=storage_state.json
 FIRMWARE_BROWSER_CHANNEL=msedge
+FIRMWARE_ERRORS_JSON=errors.json
 ```
 
 * `FIRMWARE_INPUT_XLSX` must point to a worksheet that contains the columns
@@ -181,8 +182,13 @@ FIRMWARE_BROWSER_CHANNEL=msedge
   appended with timestamps.
 * `FIRMWARE_STORAGE_STATE` should reference a login state captured via
   `login_capture_epgw.py` so the script can reuse your authenticated session.
+  The scheduler now **requires** that this file exists and will prompt you to
+  capture a session if it cannot be found.
 * `FIRMWARE_BROWSER_CHANNEL` defaults to Microsoft Edge. Change it to `chromium`
   or `chrome` if you prefer another browser build installed on your system.
+* `FIRMWARE_ERRORS_JSON` is a JSON ledger that captures failed or skipped rows
+  (for example, when a device table is missing). Leave it at the default or
+  point it to a shared location if multiple team members are running the bot.
 
 ### Run the scheduler
 
@@ -204,6 +210,9 @@ For each Excel row the bot:
 
 Any exceptions encountered while processing a row are also logged so you can
 review and retry later.
+
+Failures and critical skips are additionally written to `errors.json` (or your
+custom `FIRMWARE_ERRORS_JSON` path) to make quick triage easier.
 
 ## 6) Run it (normal usage from VS Code)
 

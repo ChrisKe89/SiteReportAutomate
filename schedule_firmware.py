@@ -6,6 +6,7 @@ SingleRequest firmware page, and schedules upgrades when eligible.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import random
 import re
@@ -29,8 +30,11 @@ load_dotenv()
 DEFAULT_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"
 INPUT_XLSX = Path(os.getenv("FIRMWARE_INPUT_XLSX", "downloads/VIC.xlsx"))
 LOG_XLSX = Path(os.getenv("FIRMWARE_LOG_XLSX", "downloads/FirmwareLog.xlsx"))
-STORAGE_STATE = os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.json")
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
+ERRORS_JSON = Path(os.getenv("FIRMWARE_ERRORS_JSON", "errors.json")).expanduser()
+
+STORAGE_STATE_ENV = "FIRMWARE_STORAGE_STATE"
+_DEFAULT_STORAGE_STATE = "storage_state.json"
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
@@ -67,6 +71,27 @@ class DeviceRow:
             opco=opco or "",
             state=state.upper() if state else "",
         )
+
+
+def resolve_storage_state() -> Path:
+    """Locate the persisted Playwright storage state required for login reuse."""
+
+    env_value = os.getenv(STORAGE_STATE_ENV)
+    if env_value:
+        candidate = Path(env_value).expanduser()
+        if candidate.is_file():
+            return candidate
+        raise FileNotFoundError(
+            f"{STORAGE_STATE_ENV} was set to '{candidate}', but the file does not exist."
+        )
+
+    default_candidate = Path(_DEFAULT_STORAGE_STATE)
+    if default_candidate.is_file():
+        return default_candidate
+
+    raise FileNotFoundError(
+        "No Playwright storage state was found. Run login_capture_epgw.py to save a session before scheduling firmware."
+    )
 
 
 async def ensure_option_selected(page: Page, selector: str, value: str, *, timeout: float = 10_000) -> None:
@@ -170,6 +195,36 @@ def append_log(row: DeviceRow, status: str, message: str, *, scheduled_date: str
     workbook.close()
 
 
+def record_error(row: DeviceRow, status: str, message: str) -> None:
+    """Append an error entry to the JSON ledger for quick troubleshooting."""
+
+    if ERRORS_JSON.parent != Path("."):
+        ERRORS_JSON.parent.mkdir(parents=True, exist_ok=True)
+
+    entries: list[dict[str, str]] = []
+    if ERRORS_JSON.exists():
+        try:
+            existing = json.loads(ERRORS_JSON.read_text(encoding="utf-8"))
+            if isinstance(existing, list):
+                entries = [entry for entry in existing if isinstance(entry, dict)]
+        except json.JSONDecodeError:
+            entries = []
+
+    entries.append(
+        {
+            "serial_number": row.serial_number,
+            "product_code": row.product_code,
+            "opco": row.opco,
+            "state": row.state,
+            "status": status,
+            "message": message,
+            "logged_at": datetime.now().isoformat(timespec="seconds"),
+        }
+    )
+
+    ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
+
+
 async def select_time(page: Page) -> tuple[str, str]:
     selectors = [
         "select#MainContent_ddlTime",
@@ -238,7 +293,9 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
 
     device_table = page.locator("#MainContent_GridViewDevice")
     if await device_table.count() == 0 or not await device_table.is_visible():
-        append_log(row, "NotEligible", "Device table not visible after search")
+        message = "Device table not visible after search"
+        append_log(row, "NotEligible", message)
+        record_error(row, "NotEligible", message)
         return
 
     schedule_date = pick_random_schedule_date()
@@ -271,13 +328,15 @@ async def run() -> None:
         print("No rows to process")
         return
 
+    try:
+        storage_state_path = resolve_storage_state()
+    except FileNotFoundError as exc:
+        print(exc)
+        return
+
     async with async_playwright() as p:
         browser: Browser = await p.chromium.launch(headless=False, channel=BROWSER_CHANNEL)
-        context_args = {}
-        storage_state_path = Path(STORAGE_STATE)
-        if storage_state_path.exists():
-            context_args["storage_state"] = str(storage_state_path)
-        context: BrowserContext = await browser.new_context(**context_args)
+        context: BrowserContext = await browser.new_context(storage_state=str(storage_state_path))
         page: Page = await context.new_page()
 
         await page.goto(DEFAULT_URL, wait_until="domcontentloaded")
@@ -285,8 +344,11 @@ async def run() -> None:
             try:
                 await handle_row(page, row)
             except Exception as exc:  # noqa: BLE001
-                append_log(row, "Failed", str(exc))
+                message = str(exc)
+                append_log(row, "Failed", message)
+                record_error(row, "Failed", message)
 
+        await context.storage_state(path=str(storage_state_path))
         await browser.close()
 
 
