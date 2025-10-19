@@ -1,5 +1,9 @@
+go to website 
 website:
 https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+
+xlsx:
+downloads\VIC.xlsx
 
 elements
 <div id="pnlSearch">
@@ -75,10 +79,10 @@ change this to FBAU:
 </select>
 
 
-enter product code from xlsx here:
+enter product code from xlsx here Column B:
 <input name="ctl00$MainContent$ProductCode" type="text" value="" id="MainContent_ProductCode">
 
-enter serial number from xlsx here:
+enter serial number from xlsx here Column A:
 <input name="ctl00$MainContent$SerialNumber" type="text" value="131586" id="MainContent_SerialNumber">
 
 search:
@@ -113,7 +117,7 @@ enter a random date in here using date picker (can only be 6 days from today)
 
 select random time 12am to 7am or 6pm to 11pm
 
-choose this based on state column NT = "Darwin", SA = "Adelaide", ACT/VIC/NSW = "Canberra, Melbourne, Sydney", QLD = "Brisbane", TAS = "Hobart"
+choose this based on state column D NT = "Darwin", SA = "Adelaide", ACT/VIC/NSW = "Canberra, Melbourne, Sydney", QLD = "Brisbane", TAS = "Hobart"
 <select name="ctl00$MainContent$ddlTimeZone" id="MainContent_ddlTimeZone" class="yellowBg">
 		<option selected="selected" value="Select">Select Time Zone</option>
 		<option value="+09:30">(UTC+09:30) Darwin</option>
