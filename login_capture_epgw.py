@@ -1,5 +1,11 @@
-# login_capture_epgw.py
+"""Capture Playwright storage state for the EP Gateway + firmware sites."""
+
+from __future__ import annotations
+
+import argparse
 import asyncio
+from pathlib import Path
+from typing import Iterable, Sequence
 
 from playwright.async_api import (  # type: ignore[import]
     Error as PlaywrightError,
@@ -7,46 +13,123 @@ from playwright.async_api import (  # type: ignore[import]
     async_playwright,
 )
 
-LOGIN_URL = "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx"  # adjust if your entry point differs
+DEFAULT_STORAGE_STATE = "storage_state.json"
+DEFAULT_BROWSER_CHANNEL = "msedge"
+
+TARGETS: dict[str, dict[str, str]] = {
+    "gateway": {
+        "label": "EP Gateway warm-up",
+        "url": "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
+        "wait_until": "networkidle",
+    },
+    "firmware": {
+        "label": "Firmware scheduler",
+        "url": "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx",
+        "wait_until": "networkidle",
+    },
+}
+
+DEFAULT_SEQUENCE: Sequence[str] = ("gateway", "firmware")
 
 
-async def main():
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Launch Edge and manually authenticate so Playwright can persist cookies "
+            "for subsequent automated runs."
+        )
+    )
+    parser.add_argument(
+        "--site",
+        action="append",
+        choices=sorted(TARGETS),
+        help=(
+            "Capture login for one or more sites. "
+            "Repeat the flag to include multiple entries. "
+            "Defaults to both 'gateway' and 'firmware'."
+        ),
+    )
+    parser.add_argument(
+        "--storage-state",
+        default=DEFAULT_STORAGE_STATE,
+        help=f"Where to save the captured storage state (default: {DEFAULT_STORAGE_STATE}).",
+    )
+    parser.add_argument(
+        "--browser-channel",
+        default=DEFAULT_BROWSER_CHANNEL,
+        help=f"Chromium channel to launch (default: {DEFAULT_BROWSER_CHANNEL}).",
+    )
+    return parser.parse_args()
+
+
+def dedupe_preserve_order(items: Iterable[str]) -> list[str]:
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for item in items:
+        if item not in seen:
+            ordered.append(item)
+            seen.add(item)
+    return ordered
+
+
+async def capture_logins(
+    site_keys: Sequence[str],
+    storage_state_path: Path,
+    browser_channel: str,
+) -> None:
+    targets = [TARGETS[key] for key in site_keys]
+
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False, channel="msedge")
-        context = await browser.new_context()  # ephemeral context just to capture state
+        browser = await p.chromium.launch(headless=False, channel=browser_channel)
+        context = await browser.new_context()
         page = await context.new_page()
 
-        navigation_failed = False
-        try:
-            await page.goto(LOGIN_URL, wait_until="networkidle")
-        except PlaywrightError as exc:  # pragma: no cover - interactive workflow
-            navigation_failed = True
-            message = str(exc)
-            if "ERR_INVALID_AUTH_CREDENTIALS" in message:
-                print(
-                    "\n>>> The gateway rejected the automatic request because it "
-                    "requires manual credentials."
-                )
-                print(
-                    "    Use the Edge window to complete the login (SSO/NTLM/MFA)."
-                )
-                print("    Once the site finishes loading, return here and continue.")
-            else:
-                raise
+        total = len(targets)
+        for index, target in enumerate(targets, start=1):
+            label = target["label"]
+            url = target["url"]
+            wait_until = target.get("wait_until", "networkidle")
 
-        print("\n>>> Log in in the Edge window (SSO/NTLM/MFA/etc).")
-        input("Press ENTER here once the site shows you're logged in... ")
+            print(f"\n[{index}/{total}] Opening {label}: {url}")
 
-        if navigation_failed:
+            navigation_failed = False
+            try:
+                await page.goto(url, wait_until=wait_until)
+            except PlaywrightError as exc:  # pragma: no cover - interactive workflow
+                navigation_failed = True
+                message = str(exc)
+                if "ERR_INVALID_AUTH_CREDENTIALS" in message:
+                    print(
+                        "\n>>> The gateway rejected the automatic request because it "
+                        "requires manual credentials."
+                    )
+                    print("    Use the Edge window to complete the login (SSO/NTLM/MFA).")
+                    print("    Once the site finishes loading, return here and continue.")
+                else:
+                    raise
+
+            print(">>> Complete any interactive login in the Edge window.")
+            input(f"Press ENTER here once '{label}' shows you are signed in... ")
+
             try:
                 await page.wait_for_load_state("networkidle", timeout=15_000)
-            except PlaywrightTimeoutError:  # pragma: no cover - interactive workflow
+            except PlaywrightTimeoutError:  # pragma: no cover - page may stay busy
                 pass
 
-        await context.storage_state(path="storage_state.json")
-        print("Saved storage_state.json")
+        await context.storage_state(path=str(storage_state_path))
+        print(f"\nSaved {storage_state_path}")
 
         await browser.close()
+
+
+async def main() -> None:
+    args = parse_args()
+
+    site_keys = dedupe_preserve_order(args.site or DEFAULT_SEQUENCE)
+    storage_state_path = Path(args.storage_state).expanduser().resolve()
+    storage_state_path.parent.mkdir(parents=True, exist_ok=True)
+
+    await capture_logins(site_keys, storage_state_path, args.browser_channel)
 
 
 if __name__ == "__main__":
