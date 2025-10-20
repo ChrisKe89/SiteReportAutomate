@@ -9,6 +9,7 @@ structures do not crash the run.
 import asyncio
 import logging
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple, cast
 
@@ -16,11 +17,12 @@ from bs4 import BeautifulSoup
 from openpyxl import Workbook, load_workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from playwright.async_api import async_playwright
+from playwright.async_api import Page, async_playwright
 
 # Input and output file paths
 DOWNLOAD_DIR = Path("downloads")
 OUTPUT_XLSX = Path("output.xlsx")  # Where results will be saved
+SCREENSHOTS_DIR = Path("screenshots")
 
 # Selectors for the input fields and search button
 SELECTORS = {
@@ -139,6 +141,47 @@ def _row_has_data(values: Iterable[str]) -> bool:
     return any(value for value in values)
 
 
+def _ensure_screenshot_dir() -> None:
+    """Ensure the screenshot directory exists prior to screenshot capture."""
+
+    SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _screenshot_path(row_index: int, stage: str) -> Path:
+    """Build a timestamped screenshot path for a given row and stage."""
+
+    timestamp = datetime.utcnow().strftime("%Y%m%d-%H%M%S-%f")
+    return SCREENSHOTS_DIR / f"row{row_index:04d}-{stage}-{timestamp}.png"
+
+
+async def _fill_input(page: Page, selector: str, value: str, field_name: str) -> bool:
+    """Populate an input and confirm the DOM reflects the expected data."""
+
+    locator = page.locator(selector)
+    await locator.wait_for(state="visible")
+    await locator.click()
+
+    target_value = value or ""
+    await locator.fill(target_value)
+
+    actual_value = (await locator.input_value()).strip()
+    if target_value and not actual_value:
+        logger.warning(
+            "%s field appeared blank after initial fill; retrying with type().",
+            field_name,
+        )
+        await locator.fill("")
+        await locator.type(target_value)
+        actual_value = (await locator.input_value()).strip()
+
+    if target_value and not actual_value:
+        logger.error("Failed to set %s field to '%s'", field_name, target_value)
+        return False
+
+    await locator.press("Tab")
+    return True
+
+
 async def main():
     logging.basicConfig(
         format="%(asctime)s %(levelname)s %(message)s",
@@ -158,6 +201,8 @@ async def main():
     out_wb = Workbook()
     out_ws: Worksheet = _active_sheet(out_wb)
     out_ws.title = "Results"
+
+    _ensure_screenshot_dir()
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
@@ -187,21 +232,48 @@ async def main():
                 serial_number or "-",
             )
 
-            await page.fill(SELECTORS["product_family"], product_family)
-            await page.fill(SELECTORS["product_code"], product_code)
-            await page.fill(SELECTORS["serial_number"], serial_number)
+            family_ok = await _fill_input(
+                page, SELECTORS["product_family"], product_family, "Product Family"
+            )
+            code_ok = await _fill_input(
+                page, SELECTORS["product_code"], product_code, "Product Code"
+            )
+            serial_ok = await _fill_input(
+                page, SELECTORS["serial_number"], serial_number, "Serial Number"
+            )
+
+            if family_ok and code_ok and serial_ok:
+                filled_path = _screenshot_path(idx, "filled")
+                await page.screenshot(path=str(filled_path), full_page=True)
+                logger.info("Captured filled-fields screenshot: %s", filled_path)
+            else:
+                logger.warning(
+                    "Skipping pre-search screenshot for row %s due to input issues", idx
+                )
+
             await page.click(SELECTORS["search_btn"])
 
             try:
                 await page.wait_for_selector(SELECTORS["results_table"], timeout=10000)
                 table_html = await page.inner_html(SELECTORS["results_table"])
                 headers, data_rows = parse_html_table(table_html)
+                results_path = _screenshot_path(idx, "results")
+                await page.screenshot(path=str(results_path), full_page=True)
+                logger.info("Captured results screenshot: %s", results_path)
             except PlaywrightTimeoutError:
                 logger.warning("Timed out waiting for results table on row %s", idx)
                 headers, data_rows = ["Status"], [["Lookup timed out"]]
+                timeout_path = _screenshot_path(idx, "timeout")
+                await page.screenshot(path=str(timeout_path), full_page=True)
+                logger.info("Captured timeout screenshot for row %s: %s", idx, timeout_path)
             except ValueError as exc:
                 logger.warning("Failed to parse table for row %s: %s", idx, exc)
                 headers, data_rows = ["Status"], [["No results table found"]]
+                missing_path = _screenshot_path(idx, "no-table")
+                await page.screenshot(path=str(missing_path), full_page=True)
+                logger.info(
+                    "Captured missing-table screenshot for row %s: %s", idx, missing_path
+                )
 
             if idx == 2:
                 out_ws.append(

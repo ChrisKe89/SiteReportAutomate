@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.5] - 2025-10-21
+### Added
+- Screenshot capture for each toner lookup step to provide a visual audit trail.
+
+### Fixed
+- Verified toner portal inputs before submitting searches so required fields are
+  consistently populated.
+
 ## [0.1.4] - 2025-10-20
 ### Added
 - Optional `FIRMWARE_HTTP_USERNAME` / `FIRMWARE_HTTP_PASSWORD` environment variables and a warm-up navigation hook to support portals that require HTTP authentication before loading the scheduling form.

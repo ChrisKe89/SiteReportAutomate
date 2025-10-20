@@ -1,6 +1,6 @@
-\.venv
-\.mypy_cache
-\.pytest_cache
+.venv
+.mypy_cache
+.pytest_cache
 __pycache__
 *.pyc
 *.pyo
@@ -12,3 +12,4 @@ __pycache__
 \user-data
 \logs
 .ruff_cache
+screenshots/
