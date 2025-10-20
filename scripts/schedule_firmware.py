@@ -122,6 +122,49 @@ class StepRecorder:
             pass
 
 
+async def read_status_messages(page: Page) -> str:
+    """Return the latest status message shown on the page."""
+
+    selectors = [
+        "#MainContent_MessageLabel li",
+        "#MainContent_MessageLabel",
+        "#MainContent_lblMessage",
+        "#MainContent_lblStatus",
+    ]
+    messages: list[str] = []
+
+    for selector in selectors:
+        locator = page.locator(selector)
+        count = await locator.count()
+        if count == 0:
+            continue
+
+        for idx in range(count):
+            element = locator.nth(idx)
+            try:
+                await element.wait_for(state="visible", timeout=5_000)
+            except PlaywrightTimeoutError:
+                pass
+
+            try:
+                text = (await element.inner_text()).strip()
+            except PlaywrightTimeoutError:
+                continue
+            if not text:
+                continue
+
+            normalised = re.sub(r"\s+", " ", text)
+            if normalised:
+                messages.append(normalised)
+
+    unique_messages: list[str] = []
+    for message in messages:
+        if message not in unique_messages:
+            unique_messages.append(message)
+
+    return " | ".join(unique_messages)
+
+
 async def fill_input(page: Page, selector: str, value: str) -> None:
     locator = page.locator(selector)
     await locator.wait_for(state="visible")
@@ -474,7 +517,9 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
 
         device_table = page.locator("#MainContent_GridViewDevice")
         if await device_table.count() == 0 or not await device_table.is_visible():
-            message = "Device table not visible after search"
+            message = await read_status_messages(page)
+            if not message:
+                message = "Device table not visible after search"
             await stepper.capture("device-table-missing")
             append_log(row, "NotEligible", message)
             record_error(row, "NotEligible", message)
@@ -490,18 +535,19 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
 
         await page.click("#MainContent_submitButton")
         await stepper.capture("submit-clicked")
-        message_locator = page.locator("#MainContent_lblMessage, #MainContent_lblStatus")
-        status_text = ""
         try:
-            await message_locator.wait_for(state="visible", timeout=10_000)
-            status_text = (await message_locator.inner_text()).strip()
+            await page.wait_for_timeout(500)
         except PlaywrightTimeoutError:
-            status_text = "No confirmation message"
+            pass
+
+        status_text = await read_status_messages(page)
+        if not status_text:
+            status_text = "Scheduled"
 
         append_log(
             row,
             "Scheduled",
-            status_text or "Scheduled",
+            status_text,
             scheduled_date=scheduled_date_str,
             scheduled_time=time_label or time_value,
             timezone=timezone_value,
@@ -558,7 +604,8 @@ async def run() -> None:
                 try:
                     await handle_row(page, row)
                 except Exception as exc:  # noqa: BLE001
-                    message = str(exc)
+                    status_text = await read_status_messages(page)
+                    message = status_text or str(exc)
                     append_log(row, "Failed", message)
                     record_error(row, "Failed", message)
         except PlaywrightError as exc:
