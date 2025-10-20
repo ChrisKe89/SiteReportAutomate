@@ -43,9 +43,7 @@ AUTH_WARMUP_URL = os.getenv(
     "FIRMWARE_WARMUP_URL",
     "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
 )
-ALLOWLIST = os.getenv(
-    "FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com"
-)
+ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
 USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
 SCREENSHOT_DIR = Path(os.getenv("FIRMWARE_SCREENSHOT_DIR", "downloads/screenshots"))
@@ -240,7 +238,9 @@ async def fill_input(page: Page, selector: str, value: str) -> None:
         )
         actual = (await locator.input_value()).strip()
     if actual != value:
-        raise RuntimeError(f"Unable to populate input {selector!r} with value {value!r}")
+        raise RuntimeError(
+            f"Unable to populate input {selector!r} with value {value!r}"
+        )
 
 
 def load_rows(path: Path) -> list[DeviceRow]:
@@ -375,7 +375,9 @@ def record_error(row: DeviceRow, status: str, message: str) -> None:
     ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
-async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tuple[str, str]:
+async def select_time(
+    page: Page, *, stepper: StepRecorder | None = None
+) -> tuple[str, str]:
     selectors = [
         "select#MainContent_ddlTime",
         "select#MainContent_ddlTimeSlot",
@@ -450,14 +452,17 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                     "time-option-selected",
                     extra={"value": value, "label": label, "selector": selector},
                 )
-<<<<<<< ours
-            if value:
-                await dropdown.select_option(value=value)
-            else:
-                await dropdown.select_option(label=label)
-=======
 
-            target_label = label or value
+            target_label = next(
+                (
+                    candidate
+                    for candidate in (label, value, PREFERRED_TIME_LABEL)
+                    if candidate
+                    and _normalise_time_label(candidate)
+                    == PREFERRED_TIME_LABEL_NORMALISED
+                ),
+                PREFERRED_TIME_LABEL,
+            )
             if not target_label:
                 continue
 
@@ -468,8 +473,7 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                     await dropdown.select_option(value=value)
                 else:
                     raise
->>>>>>> theirs
-
+                
             # Confirm the dropdown reflects the selected option; fall back to JS if needed.
             selected_value = (await dropdown.input_value()).strip()
             if value and selected_value != value:
@@ -481,11 +485,15 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
 
             selected_label_locator = dropdown.locator("option:checked")
             if await selected_label_locator.count() > 0:
-                selected_label = (await selected_label_locator.first.inner_text()).strip()
+                selected_label = (
+                    await selected_label_locator.first.inner_text()
+                ).strip()
             else:
                 selected_label = target_label
 
-            if selected_label.lower().replace(" ", "") != target_label.lower().replace(" ", ""):
+            if selected_label.lower().replace(" ", "") != target_label.lower().replace(
+                " ", ""
+            ):
                 await dropdown.evaluate(
                     "(el, payload) => {"
                     "  const options = Array.from(el.options);"
@@ -499,7 +507,9 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                 )
                 selected_value = (await dropdown.input_value()).strip()
                 if await selected_label_locator.count() > 0:
-                    selected_label = (await selected_label_locator.first.inner_text()).strip()
+                    selected_label = (
+                        await selected_label_locator.first.inner_text()
+                    ).strip()
 
             if not selected_value and value:
                 # As a last resort, set both value and label to ensure a submission-friendly state.
@@ -524,11 +534,7 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                     },
                 )
 
-<<<<<<< ours
             if selected_value or not value:
-=======
-            if selected_label:
->>>>>>> theirs
                 return selected_value or value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
 
@@ -560,7 +566,10 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
             # Navigate to the month containing the target date.
             for _ in range(12):
                 month_number, year_number = await current_month_year()
-                if year_number == target_date.year and month_number == target_date.month:
+                if (
+                    year_number == target_date.year
+                    and month_number == target_date.month
+                ):
                     break
                 await datepicker.locator(".ui-datepicker-next").click()
                 await page.wait_for_timeout(200)
@@ -621,7 +630,9 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             if "already upgraded" in text:
                 await stepper.capture("already-upgraded")
                 append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
-                stepper.log("row-processing-complete", extra={"status": "AlreadyUpgraded"})
+                stepper.log(
+                    "row-processing-complete", extra={"status": "AlreadyUpgraded"}
+                )
                 return
 
         device_table = page.locator("#MainContent_GridViewDevice")
@@ -649,7 +660,10 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
         await stepper.capture("time-selected")
         stepper.log(
             "selecting-timezone",
-            extra={"state": row.state, "timezone_mapping": TIMEZONE_BY_STATE.get(row.state, "")},
+            extra={
+                "state": row.state,
+                "timezone_mapping": TIMEZONE_BY_STATE.get(row.state, ""),
+            },
         )
         timezone_value = await select_timezone(page, row.state)
         await stepper.capture("timezone-selected")
