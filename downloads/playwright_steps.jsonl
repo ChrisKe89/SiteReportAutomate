@@ -1,111 +1,607 @@
-{"timestamp": "2025-10-20T21:50:27.549", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
-{"timestamp": "2025-10-20T21:50:27.551", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-215027_row-start.png"}
-{"timestamp": "2025-10-20T21:50:27.741", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
-{"timestamp": "2025-10-20T21:50:27.743", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
-{"timestamp": "2025-10-20T21:50:27.789", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-215027_opco-selected.png"}
-{"timestamp": "2025-10-20T21:50:27.908", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
-{"timestamp": "2025-10-20T21:50:28.040", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-215028_product-code-filled.png"}
-{"timestamp": "2025-10-20T21:50:28.180", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
-{"timestamp": "2025-10-20T21:50:28.245", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-215028_serial-number-filled.png"}
-{"timestamp": "2025-10-20T21:50:28.357", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
-{"timestamp": "2025-10-20T21:50:28.412", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-215028_search-clicked.png"}
-{"timestamp": "2025-10-20T21:50:29.573", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-25T00:00:00"}
-{"timestamp": "2025-10-20T21:50:29.657", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-215029_schedule-date-set.png"}
-{"timestamp": "2025-10-20T21:50:29.823", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "error", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-215029_error.png"}
-{"timestamp": "2025-10-20T21:50:29.951", "serial_number": "100816", "action": "row-processing-error", "step_counter": 7}
-{"timestamp": "2025-10-20T21:59:17.415", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
-{"timestamp": "2025-10-20T21:59:17.417", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-215917_row-start.png"}
-{"timestamp": "2025-10-20T21:59:17.593", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
-{"timestamp": "2025-10-20T21:59:17.595", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
-{"timestamp": "2025-10-20T21:59:17.648", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-215917_opco-selected.png"}
-{"timestamp": "2025-10-20T21:59:17.772", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
-{"timestamp": "2025-10-20T21:59:17.920", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-215917_product-code-filled.png"}
-{"timestamp": "2025-10-20T21:59:18.059", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
-{"timestamp": "2025-10-20T21:59:18.122", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-215918_serial-number-filled.png"}
-{"timestamp": "2025-10-20T21:59:18.237", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
-{"timestamp": "2025-10-20T21:59:18.283", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-215918_search-clicked.png"}
-{"timestamp": "2025-10-20T21:59:19.454", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-25T00:00:00"}
-{"timestamp": "2025-10-20T21:59:19.551", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-215919_schedule-date-set.png"}
-{"timestamp": "2025-10-20T21:59:20.214", "serial_number": "100816", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
-{"timestamp": "2025-10-20T21:59:20.217", "serial_number": "100816", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T21:59:20.259", "serial_number": "100816", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T21:59:20.261", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-215920_time-selected.png"}
-{"timestamp": "2025-10-20T21:59:20.397", "serial_number": "100816", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": "+11:00"}
-{"timestamp": "2025-10-20T21:59:20.431", "serial_number": "100816", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\100816\\08_20251020-215920_timezone-selected.png"}
-{"timestamp": "2025-10-20T21:59:20.565", "serial_number": "100816", "action": "clicking-submit", "step_counter": 8}
-{"timestamp": "2025-10-20T21:59:20.610", "serial_number": "100816", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\100816\\09_20251020-215920_submit-clicked.png"}
-{"timestamp": "2025-10-20T21:59:21.463", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "ERROR: String was not recognized as a valid DateTime.", "scheduled_date": "25/10/2025", "scheduled_time": "12 AM", "timezone": "+11:00"}
-{"timestamp": "2025-10-20T21:59:21.465", "serial_number": "100816", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\100816\\10_20251020-215921_row-complete.png"}
-{"timestamp": "2025-10-20T22:12:14.076", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:12:14.080", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-221214_row-start.png"}
-{"timestamp": "2025-10-20T22:12:14.285", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
-{"timestamp": "2025-10-20T22:12:14.287", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:12:14.339", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-221214_opco-selected.png"}
-{"timestamp": "2025-10-20T22:12:14.468", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
-{"timestamp": "2025-10-20T22:12:14.599", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-221214_product-code-filled.png"}
-{"timestamp": "2025-10-20T22:12:14.727", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
-{"timestamp": "2025-10-20T22:12:14.804", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-221214_serial-number-filled.png"}
-{"timestamp": "2025-10-20T22:12:14.918", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
-{"timestamp": "2025-10-20T22:12:14.971", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-221214_search-clicked.png"}
-{"timestamp": "2025-10-20T22:12:16.613", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-25T00:00:00"}
-{"timestamp": "2025-10-20T22:12:16.661", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-221216_schedule-date-set.png"}
-{"timestamp": "2025-10-20T22:12:16.896", "serial_number": "100816", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
-{"timestamp": "2025-10-20T22:12:16.897", "serial_number": "100816", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "canonical_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:12:16.917", "serial_number": "100816", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:12:16.919", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-221216_time-selected.png"}
-{"timestamp": "2025-10-20T22:12:17.017", "serial_number": "100816", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": "+11:00"}
-{"timestamp": "2025-10-20T22:12:17.036", "serial_number": "100816", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\100816\\08_20251020-221217_timezone-selected.png"}
-{"timestamp": "2025-10-20T22:12:17.199", "serial_number": "100816", "action": "clicking-submit", "step_counter": 8}
-{"timestamp": "2025-10-20T22:12:17.257", "serial_number": "100816", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\100816\\09_20251020-221217_submit-clicked.png"}
-{"timestamp": "2025-10-20T22:12:18.065", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "ERROR: String was not recognized as a valid DateTime.", "scheduled_date": "25/10/2025", "scheduled_time": "12 AM", "timezone": "+11:00"}
-{"timestamp": "2025-10-20T22:12:18.067", "serial_number": "100816", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\100816\\10_20251020-221218_row-complete.png"}
-{"timestamp": "2025-10-20T22:21:03.865", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:21:03.871", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-222103_row-start.png"}
-{"timestamp": "2025-10-20T22:21:04.046", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
-{"timestamp": "2025-10-20T22:21:04.049", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:21:04.101", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-222104_opco-selected.png"}
-{"timestamp": "2025-10-20T22:21:04.253", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
-{"timestamp": "2025-10-20T22:21:04.406", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-222104_product-code-filled.png"}
-{"timestamp": "2025-10-20T22:21:04.526", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
-{"timestamp": "2025-10-20T22:21:04.602", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-222104_serial-number-filled.png"}
-{"timestamp": "2025-10-20T22:21:04.728", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
-{"timestamp": "2025-10-20T22:21:04.782", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-222104_search-clicked.png"}
-{"timestamp": "2025-10-20T22:21:05.948", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-26T00:00:00"}
-{"timestamp": "2025-10-20T22:21:06.015", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-222106_schedule-date-set.png"}
-{"timestamp": "2025-10-20T22:21:06.495", "serial_number": "100816", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
-{"timestamp": "2025-10-20T22:21:06.498", "serial_number": "100816", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "canonical_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:21:06.528", "serial_number": "100816", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:21:06.530", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-222106_time-selected.png"}
-{"timestamp": "2025-10-20T22:21:06.659", "serial_number": "100816", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": {"value": "+11:00", "label": "(UTC+11: 00) Canberra, Melbourne, Sydney"}}
-{"timestamp": "2025-10-20T22:21:06.750", "serial_number": "100816", "action": "timezone-options-detected", "step_counter": 7, "selector": "#MainContent_ddlTimeZone", "options": [["Select", "Select Time Zone"], ["+09:30", "(UTC+09:30) Darwin"], ["+10:30", "(UTC+10:30) Adelaide"], ["+11:00", "(UTC+11:00) Canberra, Melbourne, Sydney"], ["+10:00", "(UTC+10:00) Brisbane"], ["+11:00", "(UTC+11:00) Hobart"]], "missing_expected_labels": [], "missing_expected_values": [], "unexpected_labels": ["Select Time Zone"], "unexpected_values": ["Select"]}
-{"timestamp": "2025-10-20T22:21:06.773", "serial_number": "100816", "action": "timezone-option-selected", "step_counter": 7, "state": "VIC", "target_value": "+11:00", "target_label": "(UTC+11: 00) Canberra, Melbourne, Sydney", "selected_value": "+11:00", "selected_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
-{"timestamp": "2025-10-20T22:21:06.775", "serial_number": "100816", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\100816\\08_20251020-222106_timezone-selected.png"}
-{"timestamp": "2025-10-20T22:21:06.925", "serial_number": "100816", "action": "clicking-submit", "step_counter": 8}
-{"timestamp": "2025-10-20T22:21:06.962", "serial_number": "100816", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\100816\\09_20251020-222106_submit-clicked.png"}
-{"timestamp": "2025-10-20T22:21:07.872", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "ERROR: String was not recognized as a valid DateTime.", "scheduled_date": "26/10/2025", "scheduled_time": "12 AM", "timezone_value": "+11:00", "timezone_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
-{"timestamp": "2025-10-20T22:21:07.875", "serial_number": "100816", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\100816\\10_20251020-222107_row-complete.png"}
-{"timestamp": "2025-10-20T22:42:12.804", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:42:12.810", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-224212_row-start.png"}
-{"timestamp": "2025-10-20T22:42:13.036", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
-{"timestamp": "2025-10-20T22:42:13.040", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
-{"timestamp": "2025-10-20T22:42:13.104", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-224213_opco-selected.png"}
-{"timestamp": "2025-10-20T22:42:13.244", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
-{"timestamp": "2025-10-20T22:42:13.413", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-224213_product-code-filled.png"}
-{"timestamp": "2025-10-20T22:42:13.540", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
-{"timestamp": "2025-10-20T22:42:13.607", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-224213_serial-number-filled.png"}
-{"timestamp": "2025-10-20T22:42:13.736", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
-{"timestamp": "2025-10-20T22:42:13.783", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-224213_search-clicked.png"}
-{"timestamp": "2025-10-20T22:42:14.976", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-26T00:00:00"}
-{"timestamp": "2025-10-20T22:42:15.120", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-224215_schedule-date-set.png"}
-{"timestamp": "2025-10-20T22:42:15.579", "serial_number": "100816", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
-{"timestamp": "2025-10-20T22:42:15.582", "serial_number": "100816", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "target_value": "00", "target_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:42:15.612", "serial_number": "100816", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
-{"timestamp": "2025-10-20T22:42:15.614", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-224215_time-selected.png"}
-{"timestamp": "2025-10-20T22:42:15.731", "serial_number": "100816", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": {"value": "+11:00", "label": "(UTC+11: 00) Canberra, Melbourne, Sydney"}}
-{"timestamp": "2025-10-20T22:42:15.822", "serial_number": "100816", "action": "timezone-options-detected", "step_counter": 7, "selector": "#MainContent_ddlTimeZone", "options": [["Select", "Select Time Zone"], ["+09:30", "(UTC+09:30) Darwin"], ["+10:30", "(UTC+10:30) Adelaide"], ["+11:00", "(UTC+11:00) Canberra, Melbourne, Sydney"], ["+10:00", "(UTC+10:00) Brisbane"], ["+11:00", "(UTC+11:00) Hobart"]], "missing_expected_labels": [], "missing_expected_values": [], "unexpected_labels": ["Select Time Zone"], "unexpected_values": ["Select"]}
-{"timestamp": "2025-10-20T22:42:15.851", "serial_number": "100816", "action": "timezone-option-selected", "step_counter": 7, "state": "VIC", "target_value": "+11:00", "target_label": "(UTC+11: 00) Canberra, Melbourne, Sydney", "selected_value": "+11:00", "selected_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
-{"timestamp": "2025-10-20T22:42:15.853", "serial_number": "100816", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\100816\\08_20251020-224215_timezone-selected.png"}
-{"timestamp": "2025-10-20T22:42:16.007", "serial_number": "100816", "action": "clicking-submit", "step_counter": 8}
-{"timestamp": "2025-10-20T22:42:16.075", "serial_number": "100816", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\100816\\09_20251020-224216_submit-clicked.png"}
-{"timestamp": "2025-10-20T22:42:16.869", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "ERROR: String was not recognized as a valid DateTime.", "scheduled_date": "26/10/2025", "scheduled_time": "12 AM", "timezone_value": "+11:00", "timezone_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
-{"timestamp": "2025-10-20T22:42:16.872", "serial_number": "100816", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\100816\\10_20251020-224216_row-complete.png"}
+{"timestamp": "2025-10-20T23:03:22.256", "serial_number": "100020", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:22.259", "serial_number": "100020", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100020\\01_20251020-230322_row-start.png"}
+{"timestamp": "2025-10-20T23:03:22.425", "serial_number": "100020", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:22.427", "serial_number": "100020", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:22.459", "serial_number": "100020", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100020\\02_20251020-230322_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:22.576", "serial_number": "100020", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:03:22.672", "serial_number": "100020", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100020\\03_20251020-230322_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:22.794", "serial_number": "100020", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:22.858", "serial_number": "100020", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100020\\04_20251020-230322_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:22.969", "serial_number": "100020", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:23.019", "serial_number": "100020", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100020\\05_20251020-230323_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:24.162", "serial_number": "100020", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100020\\06_20251020-230324_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:24.390", "serial_number": "100020", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:24.393", "serial_number": "100110", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:24.394", "serial_number": "100110", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100110\\01_20251020-230324_row-start.png"}
+{"timestamp": "2025-10-20T23:03:24.522", "serial_number": "100110", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:24.523", "serial_number": "100110", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:24.545", "serial_number": "100110", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100110\\02_20251020-230324_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:24.667", "serial_number": "100110", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:24.857", "serial_number": "100110", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100110\\03_20251020-230324_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:24.985", "serial_number": "100110", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:25.049", "serial_number": "100110", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100110\\04_20251020-230325_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:25.173", "serial_number": "100110", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:25.212", "serial_number": "100110", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100110\\05_20251020-230325_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:26.365", "serial_number": "100110", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100110\\06_20251020-230326_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:26.561", "serial_number": "100110", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:26.562", "serial_number": "100133", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:26.563", "serial_number": "100133", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100133\\01_20251020-230326_row-start.png"}
+{"timestamp": "2025-10-20T23:03:26.685", "serial_number": "100133", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:26.687", "serial_number": "100133", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:26.706", "serial_number": "100133", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100133\\02_20251020-230326_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:26.810", "serial_number": "100133", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:03:27.111", "serial_number": "100133", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100133\\03_20251020-230327_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:27.220", "serial_number": "100133", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:27.292", "serial_number": "100133", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100133\\04_20251020-230327_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:27.401", "serial_number": "100133", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:27.446", "serial_number": "100133", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100133\\05_20251020-230327_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:28.593", "serial_number": "100133", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100133\\06_20251020-230328_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:28.835", "serial_number": "100133", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:28.839", "serial_number": "100197", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:28.840", "serial_number": "100197", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100197\\01_20251020-230328_row-start.png"}
+{"timestamp": "2025-10-20T23:03:28.970", "serial_number": "100197", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:28.973", "serial_number": "100197", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:28.996", "serial_number": "100197", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100197\\02_20251020-230328_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:29.125", "serial_number": "100197", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:29.415", "serial_number": "100197", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100197\\03_20251020-230329_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:29.539", "serial_number": "100197", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:29.602", "serial_number": "100197", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100197\\04_20251020-230329_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:29.715", "serial_number": "100197", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:29.763", "serial_number": "100197", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100197\\05_20251020-230329_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:30.933", "serial_number": "100197", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\100197\\06_20251020-230330_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:03:31.085", "serial_number": "100197", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Device is in non-communicating state."}
+{"timestamp": "2025-10-20T23:03:31.087", "serial_number": "100213", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:31.088", "serial_number": "100213", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100213\\01_20251020-230331_row-start.png"}
+{"timestamp": "2025-10-20T23:03:31.179", "serial_number": "100213", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:31.180", "serial_number": "100213", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:31.194", "serial_number": "100213", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100213\\02_20251020-230331_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:31.289", "serial_number": "100213", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:31.570", "serial_number": "100213", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100213\\03_20251020-230331_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:31.711", "serial_number": "100213", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:31.772", "serial_number": "100213", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100213\\04_20251020-230331_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:31.920", "serial_number": "100213", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:31.952", "serial_number": "100213", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100213\\05_20251020-230331_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:33.117", "serial_number": "100213", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100213\\06_20251020-230333_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:33.333", "serial_number": "100213", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:33.336", "serial_number": "100225", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:33.338", "serial_number": "100225", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100225\\01_20251020-230333_row-start.png"}
+{"timestamp": "2025-10-20T23:03:33.451", "serial_number": "100225", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:33.453", "serial_number": "100225", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:33.471", "serial_number": "100225", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100225\\02_20251020-230333_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:33.575", "serial_number": "100225", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:33.871", "serial_number": "100225", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100225\\03_20251020-230333_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:33.963", "serial_number": "100225", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:34.001", "serial_number": "100225", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100225\\04_20251020-230334_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:34.100", "serial_number": "100225", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:34.132", "serial_number": "100225", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100225\\05_20251020-230334_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:35.275", "serial_number": "100225", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100225\\06_20251020-230335_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:35.517", "serial_number": "100225", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:35.521", "serial_number": "100543", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:35.522", "serial_number": "100543", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100543\\01_20251020-230335_row-start.png"}
+{"timestamp": "2025-10-20T23:03:35.653", "serial_number": "100543", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:35.656", "serial_number": "100543", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:35.677", "serial_number": "100543", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100543\\02_20251020-230335_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:35.799", "serial_number": "100543", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:36.086", "serial_number": "100543", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100543\\03_20251020-230336_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:36.211", "serial_number": "100543", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:36.275", "serial_number": "100543", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100543\\04_20251020-230336_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:36.398", "serial_number": "100543", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:36.445", "serial_number": "100543", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100543\\05_20251020-230336_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:37.598", "serial_number": "100543", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100543\\06_20251020-230337_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:37.765", "serial_number": "100543", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:37.766", "serial_number": "100646", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:37.767", "serial_number": "100646", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100646\\01_20251020-230337_row-start.png"}
+{"timestamp": "2025-10-20T23:03:37.874", "serial_number": "100646", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:37.875", "serial_number": "100646", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:37.888", "serial_number": "100646", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100646\\02_20251020-230337_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:37.973", "serial_number": "100646", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:38.259", "serial_number": "100646", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100646\\03_20251020-230338_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:38.382", "serial_number": "100646", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:38.465", "serial_number": "100646", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100646\\04_20251020-230338_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:38.600", "serial_number": "100646", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:38.632", "serial_number": "100646", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100646\\05_20251020-230338_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:39.789", "serial_number": "100646", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100646\\06_20251020-230339_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:40.005", "serial_number": "100646", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:40.008", "serial_number": "100679", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:40.010", "serial_number": "100679", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100679\\01_20251020-230340_row-start.png"}
+{"timestamp": "2025-10-20T23:03:40.197", "serial_number": "100679", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:40.200", "serial_number": "100679", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:40.219", "serial_number": "100679", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100679\\02_20251020-230340_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:40.332", "serial_number": "100679", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:40.602", "serial_number": "100679", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100679\\03_20251020-230340_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:40.698", "serial_number": "100679", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:40.738", "serial_number": "100679", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100679\\04_20251020-230340_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:40.826", "serial_number": "100679", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:40.860", "serial_number": "100679", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100679\\05_20251020-230340_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:41.985", "serial_number": "100679", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100679\\06_20251020-230341_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:42.137", "serial_number": "100679", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:42.138", "serial_number": "100721", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:42.139", "serial_number": "100721", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100721\\01_20251020-230342_row-start.png"}
+{"timestamp": "2025-10-20T23:03:42.226", "serial_number": "100721", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:42.228", "serial_number": "100721", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:42.241", "serial_number": "100721", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100721\\02_20251020-230342_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:42.361", "serial_number": "100721", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:42.544", "serial_number": "100721", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100721\\03_20251020-230342_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:42.659", "serial_number": "100721", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:42.723", "serial_number": "100721", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100721\\04_20251020-230342_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:42.828", "serial_number": "100721", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:42.878", "serial_number": "100721", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100721\\05_20251020-230342_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:44.013", "serial_number": "100721", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100721\\06_20251020-230344_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:44.189", "serial_number": "100721", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:44.192", "serial_number": "100725", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:44.194", "serial_number": "100725", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100725\\01_20251020-230344_row-start.png"}
+{"timestamp": "2025-10-20T23:03:44.307", "serial_number": "100725", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:44.308", "serial_number": "100725", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:44.324", "serial_number": "100725", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100725\\02_20251020-230344_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:44.442", "serial_number": "100725", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:44.711", "serial_number": "100725", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100725\\03_20251020-230344_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:44.816", "serial_number": "100725", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:44.860", "serial_number": "100725", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100725\\04_20251020-230344_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:44.968", "serial_number": "100725", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:44.997", "serial_number": "100725", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100725\\05_20251020-230344_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:46.183", "serial_number": "100725", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\100725\\06_20251020-230346_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:03:46.392", "serial_number": "100725", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Device is in non-communicating state."}
+{"timestamp": "2025-10-20T23:03:46.395", "serial_number": "100727", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:46.397", "serial_number": "100727", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100727\\01_20251020-230346_row-start.png"}
+{"timestamp": "2025-10-20T23:03:46.511", "serial_number": "100727", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:46.513", "serial_number": "100727", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:46.534", "serial_number": "100727", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100727\\02_20251020-230346_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:46.648", "serial_number": "100727", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:46.944", "serial_number": "100727", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100727\\03_20251020-230346_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:47.061", "serial_number": "100727", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:47.121", "serial_number": "100727", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100727\\04_20251020-230347_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:47.228", "serial_number": "100727", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:47.279", "serial_number": "100727", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100727\\05_20251020-230347_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:48.402", "serial_number": "100727", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100727\\06_20251020-230348_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:48.608", "serial_number": "100727", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:48.611", "serial_number": "100728", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:48.612", "serial_number": "100728", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100728\\01_20251020-230348_row-start.png"}
+{"timestamp": "2025-10-20T23:03:48.741", "serial_number": "100728", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:48.743", "serial_number": "100728", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:48.762", "serial_number": "100728", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100728\\02_20251020-230348_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:48.875", "serial_number": "100728", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:49.158", "serial_number": "100728", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100728\\03_20251020-230349_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:49.267", "serial_number": "100728", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:49.300", "serial_number": "100728", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100728\\04_20251020-230349_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:49.398", "serial_number": "100728", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:49.429", "serial_number": "100728", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100728\\05_20251020-230349_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:50.550", "serial_number": "100728", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100728\\06_20251020-230350_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:50.750", "serial_number": "100728", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:50.753", "serial_number": "100733", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:50.756", "serial_number": "100733", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100733\\01_20251020-230350_row-start.png"}
+{"timestamp": "2025-10-20T23:03:50.882", "serial_number": "100733", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:50.884", "serial_number": "100733", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:50.904", "serial_number": "100733", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100733\\02_20251020-230350_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:51.008", "serial_number": "100733", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:51.296", "serial_number": "100733", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100733\\03_20251020-230351_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:51.425", "serial_number": "100733", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:51.492", "serial_number": "100733", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100733\\04_20251020-230351_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:51.613", "serial_number": "100733", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:51.662", "serial_number": "100733", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100733\\05_20251020-230351_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:52.803", "serial_number": "100733", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100733\\06_20251020-230352_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:53.020", "serial_number": "100733", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:53.022", "serial_number": "100763", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:53.023", "serial_number": "100763", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100763\\01_20251020-230353_row-start.png"}
+{"timestamp": "2025-10-20T23:03:53.139", "serial_number": "100763", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:53.140", "serial_number": "100763", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:53.164", "serial_number": "100763", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100763\\02_20251020-230353_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:53.279", "serial_number": "100763", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:53.583", "serial_number": "100763", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100763\\03_20251020-230353_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:53.709", "serial_number": "100763", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:53.762", "serial_number": "100763", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100763\\04_20251020-230353_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:53.879", "serial_number": "100763", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:53.914", "serial_number": "100763", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100763\\05_20251020-230353_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:55.046", "serial_number": "100763", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100763\\06_20251020-230355_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:55.201", "serial_number": "100763", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:55.202", "serial_number": "100767", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:55.203", "serial_number": "100767", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100767\\01_20251020-230355_row-start.png"}
+{"timestamp": "2025-10-20T23:03:55.289", "serial_number": "100767", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:55.289", "serial_number": "100767", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:55.299", "serial_number": "100767", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100767\\02_20251020-230355_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:55.400", "serial_number": "100767", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:03:55.702", "serial_number": "100767", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100767\\03_20251020-230355_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:55.827", "serial_number": "100767", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:55.883", "serial_number": "100767", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100767\\04_20251020-230355_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:56.020", "serial_number": "100767", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:56.056", "serial_number": "100767", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100767\\05_20251020-230356_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:57.239", "serial_number": "100767", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100767\\06_20251020-230357_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:57.528", "serial_number": "100767", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:57.529", "serial_number": "100787", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:57.529", "serial_number": "100787", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100787\\01_20251020-230357_row-start.png"}
+{"timestamp": "2025-10-20T23:03:57.629", "serial_number": "100787", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:57.630", "serial_number": "100787", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:57.640", "serial_number": "100787", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100787\\02_20251020-230357_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:57.750", "serial_number": "100787", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:03:58.005", "serial_number": "100787", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100787\\03_20251020-230358_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:03:58.104", "serial_number": "100787", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:03:58.136", "serial_number": "100787", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100787\\04_20251020-230358_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:03:58.227", "serial_number": "100787", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:03:58.262", "serial_number": "100787", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100787\\05_20251020-230358_search-clicked.png"}
+{"timestamp": "2025-10-20T23:03:59.375", "serial_number": "100787", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100787\\06_20251020-230359_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:03:59.639", "serial_number": "100787", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:03:59.642", "serial_number": "100815", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:59.643", "serial_number": "100815", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100815\\01_20251020-230359_row-start.png"}
+{"timestamp": "2025-10-20T23:03:59.770", "serial_number": "100815", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:03:59.772", "serial_number": "100815", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:03:59.791", "serial_number": "100815", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100815\\02_20251020-230359_opco-selected.png"}
+{"timestamp": "2025-10-20T23:03:59.911", "serial_number": "100815", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:00.252", "serial_number": "100815", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100815\\03_20251020-230400_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:00.370", "serial_number": "100815", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:00.422", "serial_number": "100815", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100815\\04_20251020-230400_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:00.551", "serial_number": "100815", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:00.581", "serial_number": "100815", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100815\\05_20251020-230400_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:01.732", "serial_number": "100815", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100815\\06_20251020-230401_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:01.894", "serial_number": "100815", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:01.895", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:01.896", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-230401_row-start.png"}
+{"timestamp": "2025-10-20T23:04:01.992", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:01.993", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:02.006", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-230402_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:02.119", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
+{"timestamp": "2025-10-20T23:04:02.433", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-230402_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:02.565", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:02.623", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-230402_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:02.761", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:02.800", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-230402_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:03.948", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-230403_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:04.154", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:04.156", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:04.156", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-230404_row-start.png"}
+{"timestamp": "2025-10-20T23:04:04.261", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:04.261", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:04.278", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-230404_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:04.404", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:04.585", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-230404_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:04.682", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:04.717", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-230404_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:04.808", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:04.845", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-230404_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:05.963", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-230405_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:06.276", "serial_number": "100816", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:06.279", "serial_number": "100901", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:06.281", "serial_number": "100901", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100901\\01_20251020-230406_row-start.png"}
+{"timestamp": "2025-10-20T23:04:06.443", "serial_number": "100901", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:06.444", "serial_number": "100901", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:06.469", "serial_number": "100901", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100901\\02_20251020-230406_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:06.806", "serial_number": "100901", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:04:06.873", "serial_number": "100901", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100901\\03_20251020-230406_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:07.017", "serial_number": "100901", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:07.099", "serial_number": "100901", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100901\\04_20251020-230407_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:07.243", "serial_number": "100901", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:07.326", "serial_number": "100901", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100901\\05_20251020-230407_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:08.486", "serial_number": "100901", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100901\\06_20251020-230408_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:08.683", "serial_number": "100901", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:08.684", "serial_number": "100921", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:08.685", "serial_number": "100921", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100921\\01_20251020-230408_row-start.png"}
+{"timestamp": "2025-10-20T23:04:08.799", "serial_number": "100921", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:08.800", "serial_number": "100921", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:08.813", "serial_number": "100921", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100921\\02_20251020-230408_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:08.946", "serial_number": "100921", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:09.226", "serial_number": "100921", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100921\\03_20251020-230409_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:09.342", "serial_number": "100921", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:09.411", "serial_number": "100921", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100921\\04_20251020-230409_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:09.514", "serial_number": "100921", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:09.564", "serial_number": "100921", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100921\\05_20251020-230409_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:10.736", "serial_number": "100921", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\100921\\06_20251020-230410_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:04:10.965", "serial_number": "100921", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Device is in non-communicating state."}
+{"timestamp": "2025-10-20T23:04:10.968", "serial_number": "100925", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:10.969", "serial_number": "100925", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100925\\01_20251020-230410_row-start.png"}
+{"timestamp": "2025-10-20T23:04:11.089", "serial_number": "100925", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:11.091", "serial_number": "100925", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:11.109", "serial_number": "100925", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100925\\02_20251020-230411_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:11.242", "serial_number": "100925", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:11.525", "serial_number": "100925", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100925\\03_20251020-230411_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:11.643", "serial_number": "100925", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:11.715", "serial_number": "100925", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100925\\04_20251020-230411_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:11.834", "serial_number": "100925", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:11.884", "serial_number": "100925", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100925\\05_20251020-230411_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:13.032", "serial_number": "100925", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100925\\06_20251020-230413_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:13.208", "serial_number": "100925", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:13.210", "serial_number": "100948", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:13.210", "serial_number": "100948", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100948\\01_20251020-230413_row-start.png"}
+{"timestamp": "2025-10-20T23:04:13.308", "serial_number": "100948", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:13.309", "serial_number": "100948", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:13.324", "serial_number": "100948", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100948\\02_20251020-230413_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:13.418", "serial_number": "100948", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:13.693", "serial_number": "100948", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100948\\03_20251020-230413_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:13.812", "serial_number": "100948", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:13.880", "serial_number": "100948", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100948\\04_20251020-230413_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:13.994", "serial_number": "100948", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:14.031", "serial_number": "100948", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100948\\05_20251020-230414_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:15.170", "serial_number": "100948", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100948\\06_20251020-230415_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:15.379", "serial_number": "100948", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:15.380", "serial_number": "100949", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:15.381", "serial_number": "100949", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100949\\01_20251020-230415_row-start.png"}
+{"timestamp": "2025-10-20T23:04:15.492", "serial_number": "100949", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:15.493", "serial_number": "100949", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:15.508", "serial_number": "100949", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100949\\02_20251020-230415_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:15.614", "serial_number": "100949", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:15.806", "serial_number": "100949", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100949\\03_20251020-230415_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:15.934", "serial_number": "100949", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:15.998", "serial_number": "100949", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100949\\04_20251020-230415_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:16.112", "serial_number": "100949", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:16.165", "serial_number": "100949", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100949\\05_20251020-230416_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:17.301", "serial_number": "100949", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100949\\06_20251020-230417_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:17.503", "serial_number": "100949", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:17.504", "serial_number": "100961", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:17.505", "serial_number": "100961", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100961\\01_20251020-230417_row-start.png"}
+{"timestamp": "2025-10-20T23:04:17.625", "serial_number": "100961", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:17.626", "serial_number": "100961", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:17.648", "serial_number": "100961", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100961\\02_20251020-230417_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:17.765", "serial_number": "100961", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:18.733", "serial_number": "100961", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100961\\03_20251020-230418_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:18.855", "serial_number": "100961", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:18.913", "serial_number": "100961", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100961\\04_20251020-230418_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:19.031", "serial_number": "100961", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:19.082", "serial_number": "100961", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100961\\05_20251020-230419_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:20.233", "serial_number": "100961", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100961\\06_20251020-230420_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:20.411", "serial_number": "100961", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:20.413", "serial_number": "100964", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:20.414", "serial_number": "100964", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100964\\01_20251020-230420_row-start.png"}
+{"timestamp": "2025-10-20T23:04:20.539", "serial_number": "100964", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:20.540", "serial_number": "100964", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:20.554", "serial_number": "100964", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100964\\02_20251020-230420_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:20.661", "serial_number": "100964", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:20.960", "serial_number": "100964", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100964\\03_20251020-230420_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:21.043", "serial_number": "100964", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:21.090", "serial_number": "100964", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100964\\04_20251020-230421_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:21.189", "serial_number": "100964", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:21.230", "serial_number": "100964", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100964\\05_20251020-230421_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:22.384", "serial_number": "100964", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100964\\06_20251020-230422_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:22.542", "serial_number": "100964", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:22.544", "serial_number": "100971", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:22.544", "serial_number": "100971", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100971\\01_20251020-230422_row-start.png"}
+{"timestamp": "2025-10-20T23:04:22.647", "serial_number": "100971", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:22.648", "serial_number": "100971", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:22.663", "serial_number": "100971", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100971\\02_20251020-230422_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:22.769", "serial_number": "100971", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:23.045", "serial_number": "100971", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100971\\03_20251020-230423_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:23.172", "serial_number": "100971", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:23.226", "serial_number": "100971", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100971\\04_20251020-230423_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:23.351", "serial_number": "100971", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:23.397", "serial_number": "100971", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100971\\05_20251020-230423_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:24.553", "serial_number": "100971", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100971\\06_20251020-230424_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:24.774", "serial_number": "100971", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:24.777", "serial_number": "100976", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:24.779", "serial_number": "100976", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100976\\01_20251020-230424_row-start.png"}
+{"timestamp": "2025-10-20T23:04:24.914", "serial_number": "100976", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:24.915", "serial_number": "100976", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:24.938", "serial_number": "100976", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100976\\02_20251020-230424_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:25.064", "serial_number": "100976", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:25.301", "serial_number": "100976", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100976\\03_20251020-230425_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:25.441", "serial_number": "100976", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:25.520", "serial_number": "100976", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100976\\04_20251020-230425_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:25.661", "serial_number": "100976", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:25.702", "serial_number": "100976", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100976\\05_20251020-230425_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:26.854", "serial_number": "100976", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\100976\\06_20251020-230426_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:27.095", "serial_number": "100976", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:27.098", "serial_number": "101012", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:27.099", "serial_number": "101012", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101012\\01_20251020-230427_row-start.png"}
+{"timestamp": "2025-10-20T23:04:27.221", "serial_number": "101012", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:27.223", "serial_number": "101012", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:27.251", "serial_number": "101012", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101012\\02_20251020-230427_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:27.387", "serial_number": "101012", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:27.568", "serial_number": "101012", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101012\\03_20251020-230427_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:27.684", "serial_number": "101012", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:27.731", "serial_number": "101012", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101012\\04_20251020-230427_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:27.851", "serial_number": "101012", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:27.901", "serial_number": "101012", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101012\\05_20251020-230427_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:29.057", "serial_number": "101012", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101012\\06_20251020-230429_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:29.253", "serial_number": "101012", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:29.255", "serial_number": "101055", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:29.256", "serial_number": "101055", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101055\\01_20251020-230429_row-start.png"}
+{"timestamp": "2025-10-20T23:04:29.352", "serial_number": "101055", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:29.353", "serial_number": "101055", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:29.366", "serial_number": "101055", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101055\\02_20251020-230429_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:29.492", "serial_number": "101055", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:29.764", "serial_number": "101055", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101055\\03_20251020-230429_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:29.873", "serial_number": "101055", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:29.913", "serial_number": "101055", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101055\\04_20251020-230429_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:30.045", "serial_number": "101055", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:30.082", "serial_number": "101055", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101055\\05_20251020-230430_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:31.217", "serial_number": "101055", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101055\\06_20251020-230431_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:31.405", "serial_number": "101055", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:31.407", "serial_number": "101070", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:31.408", "serial_number": "101070", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101070\\01_20251020-230431_row-start.png"}
+{"timestamp": "2025-10-20T23:04:31.510", "serial_number": "101070", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:31.511", "serial_number": "101070", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:31.526", "serial_number": "101070", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101070\\02_20251020-230431_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:31.652", "serial_number": "101070", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:31.873", "serial_number": "101070", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101070\\03_20251020-230431_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:31.976", "serial_number": "101070", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:32.052", "serial_number": "101070", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101070\\04_20251020-230432_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:32.165", "serial_number": "101070", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:32.217", "serial_number": "101070", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101070\\05_20251020-230432_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:33.387", "serial_number": "101070", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101070\\06_20251020-230433_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:33.590", "serial_number": "101070", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:33.592", "serial_number": "101146", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:33.593", "serial_number": "101146", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101146\\01_20251020-230433_row-start.png"}
+{"timestamp": "2025-10-20T23:04:33.718", "serial_number": "101146", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:33.720", "serial_number": "101146", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:33.741", "serial_number": "101146", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101146\\02_20251020-230433_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:33.848", "serial_number": "101146", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:04:34.143", "serial_number": "101146", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101146\\03_20251020-230434_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:34.258", "serial_number": "101146", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:34.323", "serial_number": "101146", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101146\\04_20251020-230434_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:34.428", "serial_number": "101146", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:34.465", "serial_number": "101146", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101146\\05_20251020-230434_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:35.604", "serial_number": "101146", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101146\\06_20251020-230435_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:35.860", "serial_number": "101146", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:35.862", "serial_number": "101178", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:35.863", "serial_number": "101178", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101178\\01_20251020-230435_row-start.png"}
+{"timestamp": "2025-10-20T23:04:35.999", "serial_number": "101178", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:36.000", "serial_number": "101178", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:36.020", "serial_number": "101178", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101178\\02_20251020-230436_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:36.155", "serial_number": "101178", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:04:36.454", "serial_number": "101178", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101178\\03_20251020-230436_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:36.592", "serial_number": "101178", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:36.646", "serial_number": "101178", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101178\\04_20251020-230436_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:36.760", "serial_number": "101178", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:36.798", "serial_number": "101178", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101178\\05_20251020-230436_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:37.948", "serial_number": "101178", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101178\\06_20251020-230437_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:38.105", "serial_number": "101178", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:38.107", "serial_number": "101195", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:38.107", "serial_number": "101195", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101195\\01_20251020-230438_row-start.png"}
+{"timestamp": "2025-10-20T23:04:38.190", "serial_number": "101195", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:38.190", "serial_number": "101195", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:38.200", "serial_number": "101195", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101195\\02_20251020-230438_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:38.304", "serial_number": "101195", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:38.590", "serial_number": "101195", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101195\\03_20251020-230438_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:38.688", "serial_number": "101195", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:38.720", "serial_number": "101195", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101195\\04_20251020-230438_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:38.803", "serial_number": "101195", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:38.847", "serial_number": "101195", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101195\\05_20251020-230438_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:39.973", "serial_number": "101195", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101195\\06_20251020-230439_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:40.191", "serial_number": "101195", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:40.193", "serial_number": "101196", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:40.194", "serial_number": "101196", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101196\\01_20251020-230440_row-start.png"}
+{"timestamp": "2025-10-20T23:04:40.312", "serial_number": "101196", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:40.314", "serial_number": "101196", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:40.334", "serial_number": "101196", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101196\\02_20251020-230440_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:40.452", "serial_number": "101196", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:40.763", "serial_number": "101196", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101196\\03_20251020-230440_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:40.883", "serial_number": "101196", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:40.942", "serial_number": "101196", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101196\\04_20251020-230440_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:41.047", "serial_number": "101196", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:41.092", "serial_number": "101196", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101196\\05_20251020-230441_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:42.269", "serial_number": "101196", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101196\\06_20251020-230442_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:42.427", "serial_number": "101196", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:42.428", "serial_number": "101206", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:42.429", "serial_number": "101206", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101206\\01_20251020-230442_row-start.png"}
+{"timestamp": "2025-10-20T23:04:42.536", "serial_number": "101206", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:42.537", "serial_number": "101206", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:42.547", "serial_number": "101206", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101206\\02_20251020-230442_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:42.661", "serial_number": "101206", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:42.940", "serial_number": "101206", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101206\\03_20251020-230442_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:43.076", "serial_number": "101206", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:43.157", "serial_number": "101206", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101206\\04_20251020-230443_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:43.292", "serial_number": "101206", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:43.335", "serial_number": "101206", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101206\\05_20251020-230443_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:44.491", "serial_number": "101206", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-25T00:00:00"}
+{"timestamp": "2025-10-20T23:04:44.599", "serial_number": "101206", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\101206\\06_20251020-230444_schedule-date-set.png"}
+{"timestamp": "2025-10-20T23:04:44.941", "serial_number": "101206", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
+{"timestamp": "2025-10-20T23:04:44.942", "serial_number": "101206", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "target_value": "00", "target_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
+{"timestamp": "2025-10-20T23:04:44.962", "serial_number": "101206", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
+{"timestamp": "2025-10-20T23:04:44.963", "serial_number": "101206", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\101206\\07_20251020-230444_time-selected.png"}
+{"timestamp": "2025-10-20T23:04:45.073", "serial_number": "101206", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": {"value": "+11:00", "label": "(UTC+11: 00) Canberra, Melbourne, Sydney"}}
+{"timestamp": "2025-10-20T23:04:45.134", "serial_number": "101206", "action": "timezone-options-detected", "step_counter": 7, "selector": "#MainContent_ddlTimeZone", "options": [["Select", "Select Time Zone"], ["+09:30", "(UTC+09:30) Darwin"], ["+10:30", "(UTC+10:30) Adelaide"], ["+11:00", "(UTC+11:00) Canberra, Melbourne, Sydney"], ["+10:00", "(UTC+10:00) Brisbane"], ["+11:00", "(UTC+11:00) Hobart"]], "missing_expected_labels": [], "missing_expected_values": [], "unexpected_labels": ["Select Time Zone"], "unexpected_values": ["Select"]}
+{"timestamp": "2025-10-20T23:04:45.155", "serial_number": "101206", "action": "timezone-option-selected", "step_counter": 7, "state": "VIC", "target_value": "+11:00", "target_label": "(UTC+11: 00) Canberra, Melbourne, Sydney", "selected_value": "+11:00", "selected_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
+{"timestamp": "2025-10-20T23:04:45.156", "serial_number": "101206", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\101206\\08_20251020-230445_timezone-selected.png"}
+{"timestamp": "2025-10-20T23:04:45.257", "serial_number": "101206", "action": "clicking-submit", "step_counter": 8}
+{"timestamp": "2025-10-20T23:04:45.296", "serial_number": "101206", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\101206\\09_20251020-230445_submit-clicked.png"}
+{"timestamp": "2025-10-20T23:04:46.003", "serial_number": "101206", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "FIRMWARE SINGLE Request Transaction Submitted: Records: 1 | IFFileName:FWUDDATETIMEREGISTRATIONREQUEST20251020080445.txt | FIRMWARE SINGLE Request Transaction Submitted: Records: 1 IFFileName:FWUDDATETIMEREGISTRATIONREQUEST20251020080445.txt", "scheduled_date": "2025-10-25", "scheduled_time": "12 AM", "timezone_value": "+11:00", "timezone_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
+{"timestamp": "2025-10-20T23:04:46.004", "serial_number": "101206", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\101206\\10_20251020-230446_row-complete.png"}
+{"timestamp": "2025-10-20T23:04:46.099", "serial_number": "101215", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:46.099", "serial_number": "101215", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101215\\01_20251020-230446_row-start.png"}
+{"timestamp": "2025-10-20T23:04:46.217", "serial_number": "101215", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:46.218", "serial_number": "101215", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:46.228", "serial_number": "101215", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101215\\02_20251020-230446_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:46.330", "serial_number": "101215", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:04:53.659", "serial_number": "101215", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101215\\03_20251020-230453_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:53.784", "serial_number": "101215", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:53.866", "serial_number": "101215", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101215\\04_20251020-230453_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:53.983", "serial_number": "101215", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:54.033", "serial_number": "101215", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101215\\05_20251020-230454_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:55.235", "serial_number": "101215", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\101215\\06_20251020-230455_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:04:55.461", "serial_number": "101215", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Please select an OpCo."}
+{"timestamp": "2025-10-20T23:04:55.463", "serial_number": "101252", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:55.463", "serial_number": "101252", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101252\\01_20251020-230455_row-start.png"}
+{"timestamp": "2025-10-20T23:04:55.576", "serial_number": "101252", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:55.577", "serial_number": "101252", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:55.598", "serial_number": "101252", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101252\\02_20251020-230455_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:55.705", "serial_number": "101252", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:04:56.032", "serial_number": "101252", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101252\\03_20251020-230456_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:56.148", "serial_number": "101252", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:56.201", "serial_number": "101252", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101252\\04_20251020-230456_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:56.306", "serial_number": "101252", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:56.350", "serial_number": "101252", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101252\\05_20251020-230456_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:57.508", "serial_number": "101252", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101252\\06_20251020-230457_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:04:57.734", "serial_number": "101252", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:04:57.736", "serial_number": "101261", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:57.737", "serial_number": "101261", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101261\\01_20251020-230457_row-start.png"}
+{"timestamp": "2025-10-20T23:04:57.854", "serial_number": "101261", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:04:57.856", "serial_number": "101261", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:04:57.876", "serial_number": "101261", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101261\\02_20251020-230457_opco-selected.png"}
+{"timestamp": "2025-10-20T23:04:57.999", "serial_number": "101261", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
+{"timestamp": "2025-10-20T23:04:58.166", "serial_number": "101261", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101261\\03_20251020-230458_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:04:58.281", "serial_number": "101261", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:04:58.343", "serial_number": "101261", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101261\\04_20251020-230458_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:04:58.450", "serial_number": "101261", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:04:58.484", "serial_number": "101261", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101261\\05_20251020-230458_search-clicked.png"}
+{"timestamp": "2025-10-20T23:04:59.633", "serial_number": "101261", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-24T00:00:00"}
+{"timestamp": "2025-10-20T23:04:59.733", "serial_number": "101261", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\101261\\06_20251020-230459_schedule-date-set.png"}
+{"timestamp": "2025-10-20T23:05:00.172", "serial_number": "101261", "action": "time-options-detected", "step_counter": 6, "selector": "select#MainContent_ddlScheduleTime", "option_count": 25, "options": [["Select", "Select Time"], ["00", "12 AM"], ["01", "01 AM"], ["02", "02 AM"], ["03", "03 AM"], ["04", "04 AM"], ["05", "05 AM"], ["06", "06 AM"], ["07", "07 AM"], ["08", "08 AM"], ["09", "09 AM"], ["10", "10 AM"], ["11", "11 AM"], ["12", "12 PM"], ["13", "01 PM"], ["14", "02 PM"], ["15", "03 PM"], ["16", "04 PM"], ["17", "05 PM"], ["18", "06 PM"], ["19", "07 PM"], ["20", "08 PM"], ["21", "09 PM"], ["22", "10 PM"], ["23", "11 PM"]], "missing_expected_labels": [], "unexpected_labels": ["Select Time", "08 AM", "09 AM", "10 AM", "11 AM", "12 PM", "01 PM", "02 PM", "03 PM", "04 PM", "05 PM", "06 PM"]}
+{"timestamp": "2025-10-20T23:05:00.174", "serial_number": "101261", "action": "time-option-selected", "step_counter": 6, "value": "00", "label": "12 AM", "target_value": "00", "target_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
+{"timestamp": "2025-10-20T23:05:00.205", "serial_number": "101261", "action": "time-option-confirmed", "step_counter": 6, "selected_value": "00", "selected_label": "12 AM", "selector": "select#MainContent_ddlScheduleTime"}
+{"timestamp": "2025-10-20T23:05:00.206", "serial_number": "101261", "action": "capture", "step_counter": 7, "label": "time-selected", "screenshot_path": "downloads\\screenshots\\101261\\07_20251020-230500_time-selected.png"}
+{"timestamp": "2025-10-20T23:05:00.313", "serial_number": "101261", "action": "selecting-timezone", "step_counter": 7, "state": "VIC", "timezone_mapping": {"value": "+11:00", "label": "(UTC+11: 00) Canberra, Melbourne, Sydney"}}
+{"timestamp": "2025-10-20T23:05:00.396", "serial_number": "101261", "action": "timezone-options-detected", "step_counter": 7, "selector": "#MainContent_ddlTimeZone", "options": [["Select", "Select Time Zone"], ["+09:30", "(UTC+09:30) Darwin"], ["+10:30", "(UTC+10:30) Adelaide"], ["+11:00", "(UTC+11:00) Canberra, Melbourne, Sydney"], ["+10:00", "(UTC+10:00) Brisbane"], ["+11:00", "(UTC+11:00) Hobart"]], "missing_expected_labels": [], "missing_expected_values": [], "unexpected_labels": ["Select Time Zone"], "unexpected_values": ["Select"]}
+{"timestamp": "2025-10-20T23:05:00.423", "serial_number": "101261", "action": "timezone-option-selected", "step_counter": 7, "state": "VIC", "target_value": "+11:00", "target_label": "(UTC+11: 00) Canberra, Melbourne, Sydney", "selected_value": "+11:00", "selected_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
+{"timestamp": "2025-10-20T23:05:00.424", "serial_number": "101261", "action": "capture", "step_counter": 8, "label": "timezone-selected", "screenshot_path": "downloads\\screenshots\\101261\\08_20251020-230500_timezone-selected.png"}
+{"timestamp": "2025-10-20T23:05:00.529", "serial_number": "101261", "action": "clicking-submit", "step_counter": 8}
+{"timestamp": "2025-10-20T23:05:00.574", "serial_number": "101261", "action": "capture", "step_counter": 9, "label": "submit-clicked", "screenshot_path": "downloads\\screenshots\\101261\\09_20251020-230500_submit-clicked.png"}
+{"timestamp": "2025-10-20T23:05:01.402", "serial_number": "101261", "action": "row-processing-complete", "step_counter": 9, "status": "Scheduled", "status_text": "FIRMWARE SINGLE Request Transaction Submitted: Records: 1 | IFFileName:FWUDDATETIMEREGISTRATIONREQUEST20251020080500.txt | FIRMWARE SINGLE Request Transaction Submitted: Records: 1 IFFileName:FWUDDATETIMEREGISTRATIONREQUEST20251020080500.txt", "scheduled_date": "2025-10-24", "scheduled_time": "12 AM", "timezone_value": "+11:00", "timezone_label": "(UTC+11:00) Canberra, Melbourne, Sydney"}
+{"timestamp": "2025-10-20T23:05:01.403", "serial_number": "101261", "action": "capture", "step_counter": 10, "label": "row-complete", "screenshot_path": "downloads\\screenshots\\101261\\10_20251020-230501_row-complete.png"}
+{"timestamp": "2025-10-20T23:05:01.526", "serial_number": "101274", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:01.528", "serial_number": "101274", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101274\\01_20251020-230501_row-start.png"}
+{"timestamp": "2025-10-20T23:05:01.717", "serial_number": "101274", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:05:01.718", "serial_number": "101274", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:01.745", "serial_number": "101274", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101274\\02_20251020-230501_opco-selected.png"}
+{"timestamp": "2025-10-20T23:05:02.031", "serial_number": "101274", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:05:08.020", "serial_number": "101274", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101274\\03_20251020-230508_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:05:08.151", "serial_number": "101274", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:05:08.238", "serial_number": "101274", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101274\\04_20251020-230508_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:05:08.391", "serial_number": "101274", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:05:08.419", "serial_number": "101274", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101274\\05_20251020-230508_search-clicked.png"}
+{"timestamp": "2025-10-20T23:05:09.618", "serial_number": "101274", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\101274\\06_20251020-230509_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:05:09.859", "serial_number": "101274", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Please select an OpCo."}
+{"timestamp": "2025-10-20T23:05:09.861", "serial_number": "101278", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:09.861", "serial_number": "101278", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101278\\01_20251020-230509_row-start.png"}
+{"timestamp": "2025-10-20T23:05:09.977", "serial_number": "101278", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:05:09.978", "serial_number": "101278", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:10.000", "serial_number": "101278", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101278\\02_20251020-230510_opco-selected.png"}
+{"timestamp": "2025-10-20T23:05:10.108", "serial_number": "101278", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:05:10.383", "serial_number": "101278", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101278\\03_20251020-230510_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:05:10.632", "serial_number": "101278", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:05:10.694", "serial_number": "101278", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101278\\04_20251020-230510_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:05:10.811", "serial_number": "101278", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:05:10.851", "serial_number": "101278", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101278\\05_20251020-230510_search-clicked.png"}
+{"timestamp": "2025-10-20T23:05:12.075", "serial_number": "101278", "action": "capture", "step_counter": 6, "label": "device-table-missing", "screenshot_path": "downloads\\screenshots\\101278\\06_20251020-230512_device-table-missing.png"}
+{"timestamp": "2025-10-20T23:05:12.316", "serial_number": "101278", "action": "row-processing-complete", "step_counter": 6, "status": "NotEligible", "message": "Device is in non-communicating state."}
+{"timestamp": "2025-10-20T23:05:12.319", "serial_number": "101284", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101673", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:12.320", "serial_number": "101284", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101284\\01_20251020-230512_row-start.png"}
+{"timestamp": "2025-10-20T23:05:12.440", "serial_number": "101284", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:05:12.442", "serial_number": "101284", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:12.547", "serial_number": "101284", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101284\\02_20251020-230512_opco-selected.png"}
+{"timestamp": "2025-10-20T23:05:12.662", "serial_number": "101284", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101673"}
+{"timestamp": "2025-10-20T23:05:12.952", "serial_number": "101284", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101284\\03_20251020-230512_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:05:13.064", "serial_number": "101284", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:05:13.135", "serial_number": "101284", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101284\\04_20251020-230513_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:05:13.249", "serial_number": "101284", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:05:13.299", "serial_number": "101284", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101284\\05_20251020-230513_search-clicked.png"}
+{"timestamp": "2025-10-20T23:05:14.461", "serial_number": "101284", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101284\\06_20251020-230514_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:05:14.705", "serial_number": "101284", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:05:14.707", "serial_number": "101301", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:14.709", "serial_number": "101301", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101301\\01_20251020-230514_row-start.png"}
+{"timestamp": "2025-10-20T23:05:14.871", "serial_number": "101301", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:05:14.875", "serial_number": "101301", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:14.900", "serial_number": "101301", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101301\\02_20251020-230514_opco-selected.png"}
+{"timestamp": "2025-10-20T23:05:15.019", "serial_number": "101301", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:05:15.239", "serial_number": "101301", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101301\\03_20251020-230515_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:05:15.377", "serial_number": "101301", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:05:15.436", "serial_number": "101301", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101301\\04_20251020-230515_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:05:15.560", "serial_number": "101301", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:05:15.618", "serial_number": "101301", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101301\\05_20251020-230515_search-clicked.png"}
+{"timestamp": "2025-10-20T23:05:16.775", "serial_number": "101301", "action": "capture", "step_counter": 6, "label": "already-upgraded", "screenshot_path": "downloads\\screenshots\\101301\\06_20251020-230516_already-upgraded.png"}
+{"timestamp": "2025-10-20T23:05:17.068", "serial_number": "101301", "action": "row-processing-complete", "step_counter": 6, "status": "AlreadyUpgraded"}
+{"timestamp": "2025-10-20T23:05:17.071", "serial_number": "101303", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101672", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:17.073", "serial_number": "101303", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\101303\\01_20251020-230517_row-start.png"}
+{"timestamp": "2025-10-20T23:05:17.213", "serial_number": "101303", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T23:05:17.215", "serial_number": "101303", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T23:05:17.241", "serial_number": "101303", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\101303\\02_20251020-230517_opco-selected.png"}
+{"timestamp": "2025-10-20T23:05:17.489", "serial_number": "101303", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101672"}
+{"timestamp": "2025-10-20T23:05:17.566", "serial_number": "101303", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\101303\\03_20251020-230517_product-code-filled.png"}
+{"timestamp": "2025-10-20T23:05:17.704", "serial_number": "101303", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T23:05:17.793", "serial_number": "101303", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\101303\\04_20251020-230517_serial-number-filled.png"}
+{"timestamp": "2025-10-20T23:05:17.947", "serial_number": "101303", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T23:05:18.027", "serial_number": "101303", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\101303\\05_20251020-230518_search-clicked.png"}
