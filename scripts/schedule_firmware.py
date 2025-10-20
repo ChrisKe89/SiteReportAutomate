@@ -64,6 +64,34 @@ TIMEZONE_BY_STATE = {
 }
 
 
+def _normalise_time_label(value: str) -> str:
+    return re.sub(r"\s+", " ", value.strip()).upper()
+
+
+EXPECTED_TIME_LABELS = [
+    "12 AM",
+    "01 AM",
+    "02 AM",
+    "03 AM",
+    "04 AM",
+    "05 AM",
+    "06 AM",
+    "07 AM",
+    "07 PM",
+    "08 PM",
+    "09 PM",
+    "10 PM",
+    "11 PM",
+]
+
+EXPECTED_TIME_LABELS_NORMALISED = {
+    _normalise_time_label(label) for label in EXPECTED_TIME_LABELS
+}
+
+PREFERRED_TIME_LABEL = "12 AM"
+PREFERRED_TIME_LABEL_NORMALISED = _normalise_time_label(PREFERRED_TIME_LABEL)
+
+
 @dataclass
 class DeviceRow:
     serial_number: str
@@ -242,22 +270,6 @@ def pick_random_schedule_date() -> datetime:
     return datetime.combine(start + timedelta(days=offset), datetime.min.time())
 
 
-def _is_midnight(text: str) -> bool:
-    normalised = text.strip().lower()
-    if not normalised:
-        return False
-    compact = normalised.replace(" ", "")
-    if compact in {"0", "00", "0000", "00:00", "0:00"}:
-        return True
-    if "midnight" in compact:
-        return True
-    if "12:00am" in compact or "12:00a.m." in compact:
-        return True
-    if re.search(r"\b00:?00\b", compact):
-        return True
-    return False
-
-
 def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
     """Return the option corresponding to 12:00 AM (midnight) if available."""
 
@@ -270,8 +282,11 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
         normalised.append((cleaned_value, cleaned_label))
 
     for value, label in normalised:
-        if _is_midnight(value) or _is_midnight(label):
-            return value, label
+        candidate_label = label or value
+        if not candidate_label:
+            continue
+        if _normalise_time_label(candidate_label) == PREFERRED_TIME_LABEL_NORMALISED:
+            return value, label or candidate_label
 
     return None
 
@@ -393,12 +408,31 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                 options.append((value, label))
 
             if stepper:
+                observed_normalised = {
+                    _normalise_time_label(label)
+                    for _, label in options
+                    if label.strip()
+                }
+                missing_expected = [
+                    label
+                    for label in EXPECTED_TIME_LABELS
+                    if _normalise_time_label(label) not in observed_normalised
+                ]
+                unexpected_labels = [
+                    label
+                    for _, label in options
+                    if label.strip()
+                    and _normalise_time_label(label)
+                    not in EXPECTED_TIME_LABELS_NORMALISED
+                ]
                 stepper.log(
                     "time-options-detected",
                     extra={
                         "selector": selector,
                         "option_count": len(options),
                         "options": options,
+                        "missing_expected_labels": missing_expected,
+                        "unexpected_labels": unexpected_labels,
                     },
                 )
             choice = pick_time_option(options)
@@ -416,10 +450,25 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                     "time-option-selected",
                     extra={"value": value, "label": label, "selector": selector},
                 )
+<<<<<<< ours
             if value:
                 await dropdown.select_option(value=value)
             else:
                 await dropdown.select_option(label=label)
+=======
+
+            target_label = label or value
+            if not target_label:
+                continue
+
+            try:
+                await dropdown.select_option(label=target_label)
+            except PlaywrightError:
+                if value:
+                    await dropdown.select_option(value=value)
+                else:
+                    raise
+>>>>>>> theirs
 
             # Confirm the dropdown reflects the selected option; fall back to JS if needed.
             selected_value = (await dropdown.input_value()).strip()
@@ -434,7 +483,23 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
             if await selected_label_locator.count() > 0:
                 selected_label = (await selected_label_locator.first.inner_text()).strip()
             else:
-                selected_label = label
+                selected_label = target_label
+
+            if selected_label.lower().replace(" ", "") != target_label.lower().replace(" ", ""):
+                await dropdown.evaluate(
+                    "(el, payload) => {"
+                    "  const options = Array.from(el.options);"
+                    "  const match = options.find(o => o.text.trim().toLowerCase() === payload.label.trim().toLowerCase());"
+                    "  if (match) {"
+                    "    match.selected = true;"
+                    "    el.dispatchEvent(new Event('change', { bubbles: true }));"
+                    "  }"
+                    "}",
+                    {"label": target_label},
+                )
+                selected_value = (await dropdown.input_value()).strip()
+                if await selected_label_locator.count() > 0:
+                    selected_label = (await selected_label_locator.first.inner_text()).strip()
 
             if not selected_value and value:
                 # As a last resort, set both value and label to ensure a submission-friendly state.
@@ -459,7 +524,11 @@ async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tup
                     },
                 )
 
+<<<<<<< ours
             if selected_value or not value:
+=======
+            if selected_label:
+>>>>>>> theirs
                 return selected_value or value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
 
