@@ -173,10 +173,22 @@ def pick_random_schedule_date() -> datetime:
     return datetime.combine(start + timedelta(days=offset), datetime.min.time())
 
 
+def _extract_hour(text: str) -> str | None:
+    """Return a two digit hour extracted from a dropdown option."""
+
+    match = re.search(r"(\d{1,2})", text)
+    if not match:
+        return None
+    hour = int(match.group(1))
+    if 0 <= hour <= 23:
+        return f"{hour:02d}"
+    return None
+
+
 def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
     """Pick a random time option that matches the allowed scheduler values."""
 
-    allowed_values = {
+    allowed_hours = {
         "00",
         "01",
         "02",
@@ -192,14 +204,28 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
         "23",
     }
 
-    candidates = [
-        (value, label)
-        for value, label in options
-        if value in allowed_values
-    ]
-    if not candidates:
-        return None
-    return random.choice(candidates)
+    normalised: list[tuple[str, str]] = []
+    for value, label in options:
+        cleaned_value = value.strip()
+        cleaned_label = label.strip()
+        if not cleaned_value and not cleaned_label:
+            continue
+        normalised.append((cleaned_value, cleaned_label))
+
+    candidates: list[tuple[str, str]] = []
+    for value, label in normalised:
+        hour = _extract_hour(value) or _extract_hour(label)
+        if hour and hour in allowed_hours:
+            candidates.append((value, label))
+
+    if candidates:
+        return random.choice(candidates)
+
+    if normalised:
+        # Fall back to the first real option to avoid leaving the field unset.
+        return normalised[0]
+
+    return None
 
 
 def append_log(
@@ -295,21 +321,69 @@ async def select_time(page: Page) -> tuple[str, str]:
         "select[id*='ddlTime']:not(#MainContent_ddlTimeZone)",
     ]
     for selector in selectors:
-        dropdown = page.locator(selector)
-        if await dropdown.count() == 0:
+        dropdown_group = page.locator(selector)
+        count = await dropdown_group.count()
+        if count == 0:
             continue
-        options_locator = dropdown.locator("option")
-        total = await options_locator.count()
-        options: list[tuple[str, str]] = []
-        for idx in range(total):
-            option = options_locator.nth(idx)
-            value = ((await option.get_attribute("value")) or "").strip()
-            label = (await option.inner_text()).strip()
-            options.append((value, label))
-        choice = pick_time_option(options)
-        if choice:
-            await dropdown.select_option(choice[0])
-            return choice
+
+        for idx in range(count):
+            dropdown = dropdown_group.nth(idx)
+            if not await dropdown.is_visible():
+                continue
+            if await dropdown.is_disabled():
+                continue
+
+            options_locator = dropdown.locator("option")
+            total = await options_locator.count()
+            options: list[tuple[str, str]] = []
+            for option_idx in range(total):
+                option = options_locator.nth(option_idx)
+                value = ((await option.get_attribute("value")) or "").strip()
+                label = (await option.inner_text()).strip()
+                if not value and "select" in label.lower():
+                    continue
+                options.append((value, label))
+
+            choice = pick_time_option(options)
+            if not choice:
+                continue
+
+            value, label = choice
+            if value:
+                await dropdown.select_option(value=value)
+            else:
+                await dropdown.select_option(label=label)
+
+            # Confirm the dropdown reflects the selected option; fall back to JS if needed.
+            selected_value = (await dropdown.input_value()).strip()
+            if value and selected_value != value:
+                await dropdown.evaluate(
+                    "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
+                    value,
+                )
+                selected_value = (await dropdown.input_value()).strip()
+
+            selected_label_locator = dropdown.locator("option:checked")
+            if await selected_label_locator.count() > 0:
+                selected_label = (await selected_label_locator.first.inner_text()).strip()
+            else:
+                selected_label = label
+
+            if not selected_value and value:
+                # As a last resort, set both value and label to ensure a submission-friendly state.
+                await dropdown.evaluate(
+                    "(el, payload) => {"
+                    "  el.value = payload.value;"
+                    "  const option = Array.from(el.options).find(o => o.value === payload.value || o.text === payload.label);"
+                    "  if (option) option.selected = true;"
+                    "  el.dispatchEvent(new Event('change', { bubbles: true }));"
+                    "}",
+                    {"value": value, "label": label},
+                )
+                selected_value = (await dropdown.input_value()).strip()
+
+            if selected_value or not value:
+                return selected_value or value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
 
 
@@ -409,7 +483,7 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
         schedule_date = pick_random_schedule_date()
         scheduled_date_str = await set_schedule_date(page, schedule_date)
         await stepper.capture("schedule-date-set")
-        _, time_label = await select_time(page)
+        time_value, time_label = await select_time(page)
         await stepper.capture("time-selected")
         timezone_value = await select_timezone(page, row.state)
         await stepper.capture("timezone-selected")
@@ -429,7 +503,7 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             "Scheduled",
             status_text or "Scheduled",
             scheduled_date=scheduled_date_str,
-            scheduled_time=time_label,
+            scheduled_time=time_label or time_value,
             timezone=timezone_value,
         )
         await stepper.capture("row-complete")
