@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.1.6] - 2025-10-21
+### Fixed
+- Ensure the firmware scheduler presses the Reset button after a successful submission so the form is ready for the next device.
+
 ## [0.1.5] - 2025-10-21
 ### Added
 - Screenshot capture for each toner lookup step to provide a visual audit trail.

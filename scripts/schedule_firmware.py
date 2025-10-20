@@ -374,17 +374,17 @@ def remove_row_from_input(path: Path, row: DeviceRow) -> None:
 async def reset_form(page: Page) -> None:
     """Attempt to reset the firmware request form."""
 
-    reset_selector = "#ct100$MainContent$btnReset"
+    reset_selector = "#MainContent_btnReset"
     reset_locator = page.locator(reset_selector)
     if await reset_locator.count() == 0:
         return
 
     try:
+        await reset_locator.wait_for(state="visible", timeout=2000)
+        if await reset_locator.is_disabled():
+            return
         await reset_locator.click()
-        try:
-            await page.wait_for_timeout(500)
-        except PlaywrightTimeoutError:
-            pass
+        await page.wait_for_timeout(500)
     except PlaywrightError:
         pass
 
