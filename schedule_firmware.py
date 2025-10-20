@@ -18,7 +18,6 @@ from typing import Any, Iterable
 from dotenv import load_dotenv  # type: ignore[import]
 from openpyxl import Workbook, load_workbook  # type: ignore[import]
 from playwright.async_api import (  # type: ignore[import]
-    Browser,
     BrowserContext,
     Error as PlaywrightError,
     Page,
@@ -39,9 +38,9 @@ AUTH_WARMUP_URL = os.getenv(
     "FIRMWARE_WARMUP_URL",
     "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
 )
-
-STORAGE_STATE_ENV = "FIRMWARE_STORAGE_STATE"
-_DEFAULT_STORAGE_STATE = "storage_state.json"
+ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net")
+HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
+USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
@@ -78,27 +77,6 @@ class DeviceRow:
             opco=opco or "",
             state=state.upper() if state else "",
         )
-
-
-def resolve_storage_state() -> Path:
-    """Locate the persisted Playwright storage state required for login reuse."""
-
-    env_value = os.getenv(STORAGE_STATE_ENV)
-    if env_value:
-        candidate = Path(env_value).expanduser()
-        if candidate.is_file():
-            return candidate
-        raise FileNotFoundError(
-            f"{STORAGE_STATE_ENV} was set to '{candidate}', but the file does not exist."
-        )
-
-    default_candidate = Path(_DEFAULT_STORAGE_STATE)
-    if default_candidate.is_file():
-        return default_candidate
-
-    raise FileNotFoundError(
-        "No Playwright storage state was found. Run login_capture_epgw.py to save a session before scheduling firmware."
-    )
 
 
 async def ensure_option_selected(page: Page, selector: str, value: str, *, timeout: float = 10_000) -> None:
@@ -344,29 +322,39 @@ async def run() -> None:
         print("No rows to process")
         return
 
-    try:
-        storage_state_path = resolve_storage_state()
-    except FileNotFoundError as exc:
-        print(exc)
-        return
+    user_data_dir = USER_DATA_DIR.expanduser()
+    user_data_dir.mkdir(parents=True, exist_ok=True)
 
     async with async_playwright() as p:
-        browser: Browser = await p.chromium.launch(headless=False, channel=BROWSER_CHANNEL)
-        context_options: dict[str, Any] = {"storage_state": str(storage_state_path)}
+        launch_kwargs: dict[str, Any] = {
+            "user_data_dir": str(user_data_dir),
+            "headless": HEADLESS,
+            "channel": BROWSER_CHANNEL,
+            "args": [
+                f"--auth-server-allowlist={ALLOWLIST}",
+                f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
+                "--start-minimized",
+            ],
+        }
         if HTTP_USERNAME and HTTP_PASSWORD:
-            context_options["http_credentials"] = {
+            launch_kwargs["http_credentials"] = {
                 "username": HTTP_USERNAME,
                 "password": HTTP_PASSWORD,
             }
-        context: BrowserContext = await browser.new_context(**context_options)
+
+        context: BrowserContext = await p.chromium.launch_persistent_context(**launch_kwargs)
 
         try:
             page: Page = await context.new_page()
+            page.set_default_navigation_timeout(45_000)
+            page.set_default_timeout(45_000)
+
             if AUTH_WARMUP_URL:
                 try:
                     await page.goto(AUTH_WARMUP_URL, wait_until="domcontentloaded")
                 except PlaywrightError as exc:
                     print(f"Warm-up navigation to {AUTH_WARMUP_URL} failed: {exc}")
+
             await page.goto(DEFAULT_URL, wait_until="domcontentloaded")
             for row in rows:
                 try:
@@ -375,21 +363,19 @@ async def run() -> None:
                     message = str(exc)
                     append_log(row, "Failed", message)
                     record_error(row, "Failed", message)
-
-            await context.storage_state(path=str(storage_state_path))
         except PlaywrightError as exc:
             message = str(exc)
             if "ERR_INVALID_AUTH_CREDENTIALS" in message:
                 print(
                     "Authentication failed when opening the firmware scheduling page. "
-                    "Re-capture storage_state.json after a successful manual login or "
-                    "set FIRMWARE_HTTP_USERNAME/FIRMWARE_HTTP_PASSWORD in your .env."
+                    "Ensure Integrated Windows Authentication is available or set "
+                    "FIRMWARE_HTTP_USERNAME/FIRMWARE_HTTP_PASSWORD in your .env file."
                 )
             else:
                 raise
         finally:
             try:
-                await browser.close()
+                await context.close()
             except PlaywrightError:
                 pass
 
