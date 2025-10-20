@@ -405,7 +405,6 @@ def record_error(row: DeviceRow, status: str, message: str) -> None:
     ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
-
 async def select_time(
     page: Page, *, stepper: StepRecorder | None = None
 ) -> tuple[str, str]:
@@ -522,7 +521,9 @@ async def select_time(
 
             selected_label_locator = dropdown.locator("option:checked")
             if await selected_label_locator.count() > 0:
-                selected_label = (await selected_label_locator.first.inner_text()).strip()
+                selected_label = (
+                    await selected_label_locator.first.inner_text()
+                ).strip()
             else:
                 selected_label = target_label
 
@@ -542,8 +543,6 @@ async def select_time(
             if selected_value:
                 return selected_value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
-
-
 
 
 async def set_schedule_date(page: Page, target: datetime) -> str:
@@ -694,9 +693,12 @@ async def select_timezone(
     else:
         selected_label = target_label
 
-    if target_label and selected_label and _normalise_timezone_label(
-        selected_label
-    ) != _normalise_timezone_label(target_label):
+    if (
+        target_label
+        and selected_label
+        and _normalise_timezone_label(selected_label)
+        != _normalise_timezone_label(target_label)
+    ):
         await dropdown.evaluate(
             "(el, payload) => {"
             "  const normalise = (value) => value.trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\s*:\\s*/g, ':');"
@@ -912,7 +914,9 @@ async def run() -> None:
                 print(message)
                 try:
                     loop = asyncio.get_running_loop()
-                    await loop.run_in_executor(None, input, "Press Enter to close the browser... ")
+                    await loop.run_in_executor(
+                        None, input, "Press Enter to close the browser... "
+                    )
                 except (EOFError, KeyboardInterrupt):
                     pass
             try:
