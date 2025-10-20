@@ -1,1 +1,569 @@
-[]
+[
+  {
+    "serial_number": "100020",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:00"
+  },
+  {
+    "serial_number": "100110",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:01"
+  },
+  {
+    "serial_number": "100133",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:03"
+  },
+  {
+    "serial_number": "100197",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:04"
+  },
+  {
+    "serial_number": "100213",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:06"
+  },
+  {
+    "serial_number": "100225",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:07"
+  },
+  {
+    "serial_number": "100543",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:08"
+  },
+  {
+    "serial_number": "100646",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:10"
+  },
+  {
+    "serial_number": "100679",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:11"
+  },
+  {
+    "serial_number": "100721",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:13"
+  },
+  {
+    "serial_number": "100725",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:14"
+  },
+  {
+    "serial_number": "100727",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:16"
+  },
+  {
+    "serial_number": "100728",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:17"
+  },
+  {
+    "serial_number": "100733",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:19"
+  },
+  {
+    "serial_number": "100763",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:20"
+  },
+  {
+    "serial_number": "100767",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:03:22"
+  },
+  {
+    "serial_number": "100020",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:04"
+  },
+  {
+    "serial_number": "100110",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:05"
+  },
+  {
+    "serial_number": "100133",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:07"
+  },
+  {
+    "serial_number": "100197",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:08"
+  },
+  {
+    "serial_number": "100213",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:10"
+  },
+  {
+    "serial_number": "100225",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:11"
+  },
+  {
+    "serial_number": "100543",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:13"
+  },
+  {
+    "serial_number": "100646",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:14"
+  },
+  {
+    "serial_number": "100679",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:16"
+  },
+  {
+    "serial_number": "100721",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:17"
+  },
+  {
+    "serial_number": "100725",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:18"
+  },
+  {
+    "serial_number": "100727",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:20"
+  },
+  {
+    "serial_number": "100728",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:21"
+  },
+  {
+    "serial_number": "100733",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:23"
+  },
+  {
+    "serial_number": "100763",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:24"
+  },
+  {
+    "serial_number": "100767",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:25"
+  },
+  {
+    "serial_number": "100787",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:27"
+  },
+  {
+    "serial_number": "100815",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:28"
+  },
+  {
+    "serial_number": "100816",
+    "product_code": "TC101307",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:30"
+  },
+  {
+    "serial_number": "100816",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:31"
+  },
+  {
+    "serial_number": "100901",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:32"
+  },
+  {
+    "serial_number": "100921",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:34"
+  },
+  {
+    "serial_number": "100925",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:35"
+  },
+  {
+    "serial_number": "100948",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:37"
+  },
+  {
+    "serial_number": "100949",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:39"
+  },
+  {
+    "serial_number": "100961",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:40"
+  },
+  {
+    "serial_number": "100964",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:42"
+  },
+  {
+    "serial_number": "100971",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:43"
+  },
+  {
+    "serial_number": "100976",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:45"
+  },
+  {
+    "serial_number": "101012",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:46"
+  },
+  {
+    "serial_number": "101055",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:48"
+  },
+  {
+    "serial_number": "101070",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:49"
+  },
+  {
+    "serial_number": "101146",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:50"
+  },
+  {
+    "serial_number": "101178",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:52"
+  },
+  {
+    "serial_number": "101195",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:54"
+  },
+  {
+    "serial_number": "101196",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:55"
+  },
+  {
+    "serial_number": "101206",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:57"
+  },
+  {
+    "serial_number": "101215",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:06:58"
+  },
+  {
+    "serial_number": "101252",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:00"
+  },
+  {
+    "serial_number": "101261",
+    "product_code": "TC101307",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:01"
+  },
+  {
+    "serial_number": "101274",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:02"
+  },
+  {
+    "serial_number": "101278",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:04"
+  },
+  {
+    "serial_number": "101284",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:05"
+  },
+  {
+    "serial_number": "101301",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:07"
+  },
+  {
+    "serial_number": "101303",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:08"
+  },
+  {
+    "serial_number": "101325",
+    "product_code": "TC101672",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:07:10"
+  },
+  {
+    "serial_number": "100020",
+    "product_code": "TC101673",
+    "opco": "FXAU",
+    "state": "VIC",
+    "status": "NotEligible",
+    "message": "Device table not visible after search",
+    "logged_at": "2025-10-20T20:12:11"
+  }
+]
