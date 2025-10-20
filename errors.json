@@ -1,29 +1,11 @@
 [
   {
-    "serial_number": "100197",
-    "product_code": "TC101672",
-    "opco": "FXAU",
-    "state": "VIC",
-    "status": "NotEligible",
-    "message": "Device is in non-communicating state.",
-    "logged_at": "2025-10-20T21:17:14"
-  },
-  {
-    "serial_number": "100725",
-    "product_code": "TC101672",
-    "opco": "FXAU",
-    "state": "VIC",
-    "status": "NotEligible",
-    "message": "Device is in non-communicating state.",
-    "logged_at": "2025-10-20T21:17:29"
-  },
-  {
     "serial_number": "100816",
     "product_code": "TC101307",
     "opco": "FXAU",
     "state": "VIC",
     "status": "Failed",
     "message": "Could not determine a valid time option to select.",
-    "logged_at": "2025-10-20T21:17:47"
+    "logged_at": "2025-10-20T21:50:30"
   }
 ]

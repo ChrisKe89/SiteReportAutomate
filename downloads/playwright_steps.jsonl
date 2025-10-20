@@ -1,0 +1,15 @@
+{"timestamp": "2025-10-20T21:50:27.549", "serial_number": "100816", "action": "step-recorder-initialised", "step_counter": 0, "product_code": "TC101307", "state": "VIC", "opco": "FXAU"}
+{"timestamp": "2025-10-20T21:50:27.551", "serial_number": "100816", "action": "capture", "step_counter": 1, "label": "row-start", "screenshot_path": "downloads\\screenshots\\100816\\01_20251020-215027_row-start.png"}
+{"timestamp": "2025-10-20T21:50:27.741", "serial_number": "100816", "action": "row-processing-started", "step_counter": 1}
+{"timestamp": "2025-10-20T21:50:27.743", "serial_number": "100816", "action": "selecting-opco", "step_counter": 1, "opco": "FXAU"}
+{"timestamp": "2025-10-20T21:50:27.789", "serial_number": "100816", "action": "capture", "step_counter": 2, "label": "opco-selected", "screenshot_path": "downloads\\screenshots\\100816\\02_20251020-215027_opco-selected.png"}
+{"timestamp": "2025-10-20T21:50:27.908", "serial_number": "100816", "action": "filling-product-code", "step_counter": 2, "product_code": "TC101307"}
+{"timestamp": "2025-10-20T21:50:28.040", "serial_number": "100816", "action": "capture", "step_counter": 3, "label": "product-code-filled", "screenshot_path": "downloads\\screenshots\\100816\\03_20251020-215028_product-code-filled.png"}
+{"timestamp": "2025-10-20T21:50:28.180", "serial_number": "100816", "action": "filling-serial-number", "step_counter": 3}
+{"timestamp": "2025-10-20T21:50:28.245", "serial_number": "100816", "action": "capture", "step_counter": 4, "label": "serial-number-filled", "screenshot_path": "downloads\\screenshots\\100816\\04_20251020-215028_serial-number-filled.png"}
+{"timestamp": "2025-10-20T21:50:28.357", "serial_number": "100816", "action": "clicking-search", "step_counter": 4}
+{"timestamp": "2025-10-20T21:50:28.412", "serial_number": "100816", "action": "capture", "step_counter": 5, "label": "search-clicked", "screenshot_path": "downloads\\screenshots\\100816\\05_20251020-215028_search-clicked.png"}
+{"timestamp": "2025-10-20T21:50:29.573", "serial_number": "100816", "action": "setting-schedule-date", "step_counter": 5, "target_date": "2025-10-25T00:00:00"}
+{"timestamp": "2025-10-20T21:50:29.657", "serial_number": "100816", "action": "capture", "step_counter": 6, "label": "schedule-date-set", "screenshot_path": "downloads\\screenshots\\100816\\06_20251020-215029_schedule-date-set.png"}
+{"timestamp": "2025-10-20T21:50:29.823", "serial_number": "100816", "action": "capture", "step_counter": 7, "label": "error", "screenshot_path": "downloads\\screenshots\\100816\\07_20251020-215029_error.png"}
+{"timestamp": "2025-10-20T21:50:29.951", "serial_number": "100816", "action": "row-processing-error", "step_counter": 7}
