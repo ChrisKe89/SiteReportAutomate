@@ -379,11 +379,7 @@ async def select_time(
     page: Page, *, stepper: StepRecorder | None = None
 ) -> tuple[str, str]:
     selectors = [
-        "select#MainContent_ddlTime",
-        "select#MainContent_ddlTimeSlot",
-        "select[id*='ddlTimeSlot']",
-        "select[id*='ddlTime'][id*='Slot']",
-        "select[id*='ddlTime']:not(#MainContent_ddlTimeZone)",
+        "select#MainContent_ddlScheduleTime",
     ]
     for selector in selectors:
         dropdown_group = page.locator(selector)
