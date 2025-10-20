@@ -374,7 +374,7 @@ def remove_row_from_input(path: Path, row: DeviceRow) -> None:
 async def reset_form(page: Page) -> None:
     """Attempt to reset the firmware request form."""
 
-    reset_selector = "#ct100\\$MainContent\\$btnReset"
+    reset_selector = "#ct100$MainContent$btnReset"
     reset_locator = page.locator(reset_selector)
     if await reset_locator.count() == 0:
         return
@@ -551,7 +551,9 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
                 cleaned = " ".join(title_text.split())
                 match = re.match(r"([A-Za-z]+),?\s+(\d{4})", cleaned)
                 if not match:
-                    raise ValueError(f"Unexpected calendar title format: {title_text!r}")
+                    raise ValueError(
+                        f"Unexpected calendar title format: {title_text!r}"
+                    )
                 month_name, year_text = match.groups()
                 month_number = datetime.strptime(month_name, "%B").month
                 return month_number, int(year_text)
@@ -564,9 +566,13 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
                 ):
                     break
                 if (year_number, month_number) < (target_date.year, target_date.month):
-                    await popup.locator("#MainContent_CalendarDateTime_nextArrow").click()
+                    await popup.locator(
+                        "#MainContent_CalendarDateTime_nextArrow"
+                    ).click()
                 else:
-                    await popup.locator("#MainContent_CalendarDateTime_prevArrow").click()
+                    await popup.locator(
+                        "#MainContent_CalendarDateTime_prevArrow"
+                    ).click()
                 await page.wait_for_timeout(200)
 
             day_locator = popup.locator(
