@@ -165,8 +165,8 @@ def load_rows(path: Path) -> list[DeviceRow]:
 
 
 def pick_random_schedule_date() -> datetime:
-    """Return a random date between tomorrow and six days from today (inclusive)."""
-    start = datetime.now().date() + timedelta(days=1)
+    """Return a random date between three and six days from today (inclusive)."""
+    start = datetime.now().date() + timedelta(days=3)
     end = datetime.now().date() + timedelta(days=6)
     span = (end - start).days
     offset = random.randint(0, span)
@@ -174,39 +174,32 @@ def pick_random_schedule_date() -> datetime:
 
 
 def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
-    """Pick a random time option in allowed windows from (value, label) pairs."""
-    allowed: list[tuple[str, str]] = []
-    for value, label in options:
-        if not value or value.lower() == "select":
-            continue
-        match = re.search(r"(\d{1,2})(?::(\d{2}))?\s*([ap]m)?", label, re.IGNORECASE)
-        if not match:
-            match = re.search(r"(\d{1,2}):(\d{2})", value)
-        if not match:
-            continue
-        hour = int(match.group(1))
-        minute = (
-            int(match.group(2))
-            if match.lastindex and match.lastindex >= 2 and match.group(2)
-            else 0
-        )
-        meridiem = (
-            match.group(3).lower()
-            if match.lastindex and match.lastindex >= 3 and match.group(3)
-            else ""
-        )
-        if meridiem:
-            if meridiem == "pm" and hour != 12:
-                hour += 12
-            if meridiem == "am" and hour == 12:
-                hour = 0
-        hour = hour % 24
-        total_minutes = hour * 60 + minute
-        if total_minutes < 8 * 60 or total_minutes >= 18 * 60:
-            allowed.append((value, label))
-    if not allowed:
+    """Pick a random time option that matches the allowed scheduler values."""
+
+    allowed_values = {
+        "00",
+        "01",
+        "02",
+        "03",
+        "04",
+        "05",
+        "06",
+        "18",
+        "19",
+        "20",
+        "21",
+        "22",
+        "23",
+    }
+
+    candidates = [
+        (value, label)
+        for value, label in options
+        if value in allowed_values
+    ]
+    if not candidates:
         return None
-    return random.choice(allowed)
+    return random.choice(candidates)
 
 
 def append_log(
@@ -310,7 +303,7 @@ async def select_time(page: Page) -> tuple[str, str]:
         options: list[tuple[str, str]] = []
         for idx in range(total):
             option = options_locator.nth(idx)
-            value = (await option.get_attribute("value")) or ""
+            value = ((await option.get_attribute("value")) or "").strip()
             label = (await option.inner_text()).strip()
             options.append((value, label))
         choice = pick_time_option(options)
@@ -324,6 +317,44 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
     date_str = target.strftime("%d/%m/%Y")
     locator = page.locator("#MainContent_txtDateTime")
     await locator.wait_for(state="visible")
+    await locator.click()
+
+    # Attempt to use a jQuery UI style date picker if present.
+    datepicker = page.locator("#ui-datepicker-div")
+    if await datepicker.count() > 0:
+        try:
+            await datepicker.wait_for(state="visible")
+
+            target_date = target.date()
+
+            async def current_month_year() -> tuple[int, int]:
+                month_text = (
+                    await datepicker.locator(".ui-datepicker-month").first.inner_text()
+                ).strip()
+                year_text = (
+                    await datepicker.locator(".ui-datepicker-year").first.inner_text()
+                ).strip()
+                month_number = datetime.strptime(month_text, "%B").month
+                return month_number, int(year_text)
+
+            # Navigate to the month containing the target date.
+            for _ in range(12):
+                month_number, year_number = await current_month_year()
+                if year_number == target_date.year and month_number == target_date.month:
+                    break
+                await datepicker.locator(".ui-datepicker-next").click()
+                await page.wait_for_timeout(200)
+
+            day_locator = datepicker.locator(".ui-datepicker-calendar td a").filter(
+                has_text=str(target_date.day)
+            )
+            if await day_locator.count() > 0:
+                await day_locator.first.click()
+                return date_str
+        except Exception:  # noqa: BLE001
+            pass
+
+    # Fallback: directly set the value if date picker interaction fails.
     await locator.evaluate(
         "(el, value) => { el.removeAttribute('readonly'); el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
         date_str,
