@@ -256,11 +256,13 @@ async def fill_input(page: Page, selector: str, value: str) -> None:
         actual = (await locator.input_value()).strip()
     if actual != value:
         await locator.evaluate(
-            "(el, value) => {"
-            "  el.value = value;"
-            "  el.dispatchEvent(new Event('input', { bubbles: true }));"
-            "  el.dispatchEvent(new Event('change', { bubbles: true }));"
-            "}",
+            """
+            (el, value) => {
+              el.value = value;
+              el.dispatchEvent(new Event('input', { bubbles: true }));
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            """,
             value,
         )
         actual = (await locator.input_value()).strip()
@@ -506,14 +508,20 @@ async def select_time(
                     await dropdown.select_option(label=target_label)
                 except PlaywrightError:
                     await dropdown.evaluate(
-                        "(el, payload) => {",
-                        "  el.value = payload.value;",
-                        "  const match = Array.from(el.options).find(o => o.value === payload.value || o.text.trim() === payload.label.trim());",
-                        "  if (match) {",
-                        "    match.selected = true;",
-                        "    el.dispatchEvent(new Event('change', { bubbles: true }));",
-                        "  }",
-                        "}",
+                        """
+                        (el, payload) => {
+                          el.value = payload.value;
+                          const match = Array.from(el.options).find(
+                            (option) =>
+                              option.value === payload.value ||
+                              option.text.trim() === payload.label.trim()
+                          );
+                          if (match) {
+                            match.selected = true;
+                            el.dispatchEvent(new Event('change', { bubbles: true }));
+                          }
+                        }
+                        """,
                         {"value": str(target_value), "label": target_label},
                     )
 
@@ -546,18 +554,35 @@ async def select_time(
 
 
 async def set_schedule_date(page: Page, target: datetime) -> str:
-    date_str = target.strftime("%d/%m/%Y")
+    iso_date = target.strftime("%Y-%m-%d")
+    target_date = target.date()
     locator = page.locator("#MainContent_txtDateTime")
     await locator.wait_for(state="visible")
     await locator.click()
+
+    async def read_input_value() -> str:
+        for _ in range(10):
+            actual = (await locator.input_value()).strip()
+            if actual:
+                return actual
+            await page.wait_for_timeout(100)
+        return ""
+
+    def normalise_date_value(value: str) -> str:
+        cleaned = value.strip()
+        for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y"):
+            try:
+                parsed = datetime.strptime(cleaned, fmt)
+            except ValueError:
+                continue
+            return parsed.strftime("%Y-%m-%d")
+        return cleaned or iso_date
 
     # Attempt to use a jQuery UI style date picker if present.
     datepicker = page.locator("#ui-datepicker-div")
     if await datepicker.count() > 0:
         try:
             await datepicker.wait_for(state="visible")
-
-            target_date = target.date()
 
             async def current_month_year() -> tuple[int, int]:
                 month_text = (
@@ -585,16 +610,73 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
             )
             if await day_locator.count() > 0:
                 await day_locator.first.click()
-                return date_str
+                actual = await read_input_value()
+                if actual:
+                    return normalise_date_value(actual)
+        except Exception:  # noqa: BLE001
+            pass
+
+    # Attempt to use the ASP.NET AJAX calendar widget if present.
+    ajax_calendar = page.locator("#MainContent_CalendarDateTime_container")
+    if await ajax_calendar.count() > 0:
+        try:
+            popup = ajax_calendar.locator(".ajax__calendar_container")
+            await popup.wait_for(state="visible", timeout=2_000)
+
+            title_locator = popup.locator(".ajax__calendar_title").first
+
+            async def current_month_year_ajax() -> tuple[int, int]:
+                title_text = (await title_locator.inner_text()).strip()
+                cleaned = " ".join(title_text.split())
+                match = re.match(r"([A-Za-z]+),?\s+(\d{4})", cleaned)
+                if not match:
+                    raise ValueError(f"Unexpected calendar title format: {title_text!r}")
+                month_name, year_text = match.groups()
+                month_number = datetime.strptime(month_name, "%B").month
+                return month_number, int(year_text)
+
+            for _ in range(24):
+                month_number, year_number = await current_month_year_ajax()
+                if (
+                    year_number == target_date.year
+                    and month_number == target_date.month
+                ):
+                    break
+                if (year_number, month_number) < (target_date.year, target_date.month):
+                    await popup.locator("#MainContent_CalendarDateTime_nextArrow").click()
+                else:
+                    await popup.locator("#MainContent_CalendarDateTime_prevArrow").click()
+                await page.wait_for_timeout(200)
+
+            day_locator = popup.locator(
+                "td:not(.ajax__calendar_invalid) .ajax__calendar_day"
+            ).filter(has_text=str(target_date.day))
+            if await day_locator.count() > 0:
+                await day_locator.first.click()
+                actual = await read_input_value()
+                if actual:
+                    return normalise_date_value(actual)
+        except PlaywrightTimeoutError:
+            pass
         except Exception:  # noqa: BLE001
             pass
 
     # Fallback: directly set the value if date picker interaction fails.
     await locator.evaluate(
-        "(el, value) => { el.removeAttribute('readonly'); el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
-        date_str,
+        """
+        (el, value) => {
+          el.removeAttribute('readonly');
+          el.value = value;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+          el.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        """,
+        iso_date,
     )
-    return date_str
+    actual = await read_input_value()
+    if actual:
+        return normalise_date_value(actual)
+    return iso_date
 
 
 async def select_timezone(
@@ -666,14 +748,16 @@ async def select_timezone(
                 await dropdown.select_option(label=target_label)
             except PlaywrightError:
                 await dropdown.evaluate(
-                    "(el, payload) => {"
-                    "  el.value = payload.value;"
-                    "  const match = Array.from(el.options).find(o => o.value === payload.value);"
-                    "  if (match) {"
-                    "    match.selected = true;"
-                    "    el.dispatchEvent(new Event('change', { bubbles: true }));"
-                    "  }"
-                    "}",
+                    """
+                    (el, payload) => {
+                      el.value = payload.value;
+                      const match = Array.from(el.options).find((option) => option.value === payload.value);
+                      if (match) {
+                        match.selected = true;
+                        el.dispatchEvent(new Event('change', { bubbles: true }));
+                      }
+                    }
+                    """,
                     {"value": target_value},
                 )
         else:
@@ -682,7 +766,12 @@ async def select_timezone(
     selected_value = (await dropdown.input_value()).strip()
     if target_value and selected_value != target_value:
         await dropdown.evaluate(
-            "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
+            """
+            (el, value) => {
+              el.value = value;
+              el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            """,
             target_value,
         )
         selected_value = (await dropdown.input_value()).strip()
@@ -700,16 +789,21 @@ async def select_timezone(
         != _normalise_timezone_label(target_label)
     ):
         await dropdown.evaluate(
-            "(el, payload) => {"
-            "  const normalise = (value) => value.trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\s*:\\s*/g, ':');"
-            "  const options = Array.from(el.options);"
-            "  const match = options.find(o => normalise(o.text) === payload.normalised);"
-            "  if (match) {"
-            "    match.selected = true;"
-            "    el.value = match.value;"
-            "    el.dispatchEvent(new Event('change', { bubbles: true }));"
-            "  }"
-            "}",
+            """
+            (el, payload) => {
+              const normalise = (value) =>
+                value.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\s*:\s*/g, ':');
+              const options = Array.from(el.options);
+              const match = options.find(
+                (option) => normalise(option.text) === payload.normalised
+              );
+              if (match) {
+                match.selected = true;
+                el.value = match.value;
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            }
+            """,
             {
                 "label": target_label,
                 "normalised": _normalise_timezone_label(target_label).lower(),
