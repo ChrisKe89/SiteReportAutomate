@@ -32,6 +32,9 @@ load_dotenv()
 DEFAULT_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"
 INPUT_XLSX = Path(os.getenv("FIRMWARE_INPUT_XLSX", "downloads/VIC.xlsx"))
 LOG_XLSX = Path(os.getenv("FIRMWARE_LOG_XLSX", "downloads/FirmwareLog.xlsx"))
+PLAYWRIGHT_STEPS_LOG = Path(
+    os.getenv("FIRMWARE_STEPS_LOG", "downloads/playwright_steps.jsonl")
+)
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
 ERRORS_JSON = Path(os.getenv("FIRMWARE_ERRORS_JSON", "errors.json")).expanduser()
 HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
@@ -109,12 +112,35 @@ class StepRecorder:
         self.counter = 0
         self.base_dir = SCREENSHOT_DIR / slugify_label(row.serial_number or "row")
         self.base_dir.mkdir(parents=True, exist_ok=True)
+        self.log_path = PLAYWRIGHT_STEPS_LOG.expanduser()
+        self.log_path.parent.mkdir(parents=True, exist_ok=True)
+        self.log(
+            "step-recorder-initialised",
+            extra={
+                "product_code": row.product_code,
+                "state": row.state,
+                "opco": row.opco,
+            },
+        )
+
+    def log(self, action: str, *, extra: dict[str, Any] | None = None) -> None:
+        payload: dict[str, Any] = {
+            "timestamp": datetime.now().isoformat(timespec="milliseconds"),
+            "serial_number": self.row.serial_number,
+            "action": action,
+            "step_counter": self.counter,
+        }
+        if extra:
+            payload.update(extra)
+        with self.log_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload) + "\n")
 
     async def capture(self, label: str) -> None:
         self.counter += 1
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         filename = f"{self.counter:02d}_{timestamp}_{slugify_label(label)}.png"
         path = self.base_dir / filename
+        self.log("capture", extra={"label": label, "screenshot_path": str(path)})
         try:
             await self.page.screenshot(path=str(path), full_page=True)
         except PlaywrightError:
@@ -216,36 +242,24 @@ def pick_random_schedule_date() -> datetime:
     return datetime.combine(start + timedelta(days=offset), datetime.min.time())
 
 
-def _extract_hour(text: str) -> str | None:
-    """Return a two digit hour extracted from a dropdown option."""
-
-    match = re.search(r"(\d{1,2})", text)
-    if not match:
-        return None
-    hour = int(match.group(1))
-    if 0 <= hour <= 23:
-        return f"{hour:02d}"
-    return None
+def _is_midnight(text: str) -> bool:
+    normalised = text.strip().lower()
+    if not normalised:
+        return False
+    compact = normalised.replace(" ", "")
+    if compact in {"0", "00", "0000", "00:00", "0:00"}:
+        return True
+    if "midnight" in compact:
+        return True
+    if "12:00am" in compact or "12:00a.m." in compact:
+        return True
+    if re.search(r"\b00:?00\b", compact):
+        return True
+    return False
 
 
 def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
-    """Pick a random time option that matches the allowed scheduler values."""
-
-    allowed_hours = {
-        "00",
-        "01",
-        "02",
-        "03",
-        "04",
-        "05",
-        "06",
-        "18",
-        "19",
-        "20",
-        "21",
-        "22",
-        "23",
-    }
+    """Return the option corresponding to 12:00 AM (midnight) if available."""
 
     normalised: list[tuple[str, str]] = []
     for value, label in options:
@@ -255,18 +269,9 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
             continue
         normalised.append((cleaned_value, cleaned_label))
 
-    candidates: list[tuple[str, str]] = []
     for value, label in normalised:
-        hour = _extract_hour(value) or _extract_hour(label)
-        if hour and hour in allowed_hours:
-            candidates.append((value, label))
-
-    if candidates:
-        return random.choice(candidates)
-
-    if normalised:
-        # Fall back to the first real option to avoid leaving the field unset.
-        return normalised[0]
+        if _is_midnight(value) or _is_midnight(label):
+            return value, label
 
     return None
 
@@ -355,7 +360,7 @@ def record_error(row: DeviceRow, status: str, message: str) -> None:
     ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
-async def select_time(page: Page) -> tuple[str, str]:
+async def select_time(page: Page, *, stepper: StepRecorder | None = None) -> tuple[str, str]:
     selectors = [
         "select#MainContent_ddlTime",
         "select#MainContent_ddlTimeSlot",
@@ -387,11 +392,30 @@ async def select_time(page: Page) -> tuple[str, str]:
                     continue
                 options.append((value, label))
 
+            if stepper:
+                stepper.log(
+                    "time-options-detected",
+                    extra={
+                        "selector": selector,
+                        "option_count": len(options),
+                        "options": options,
+                    },
+                )
             choice = pick_time_option(options)
             if not choice:
+                if stepper:
+                    stepper.log(
+                        "time-midnight-option-missing",
+                        extra={"selector": selector, "option_count": len(options)},
+                    )
                 continue
 
             value, label = choice
+            if stepper:
+                stepper.log(
+                    "time-option-selected",
+                    extra={"value": value, "label": label, "selector": selector},
+                )
             if value:
                 await dropdown.select_option(value=value)
             else:
@@ -424,6 +448,16 @@ async def select_time(page: Page) -> tuple[str, str]:
                     {"value": value, "label": label},
                 )
                 selected_value = (await dropdown.input_value()).strip()
+
+            if stepper:
+                stepper.log(
+                    "time-option-confirmed",
+                    extra={
+                        "selected_value": selected_value or value,
+                        "selected_label": selected_label,
+                        "selector": selector,
+                    },
+                )
 
             if selected_value or not value:
                 return selected_value or value, selected_label
@@ -492,13 +526,18 @@ async def select_timezone(page: Page, state: str) -> str:
 async def handle_row(page: Page, row: DeviceRow) -> None:
     stepper = StepRecorder(page, row)
     await stepper.capture("row-start")
+    stepper.log("row-processing-started")
     try:
+        stepper.log("selecting-opco", extra={"opco": OPCO_VALUE})
         await ensure_option_selected(page, "#MainContent_ddlOpCoID", OPCO_VALUE)
         await stepper.capture("opco-selected")
+        stepper.log("filling-product-code", extra={"product_code": row.product_code})
         await fill_input(page, "#MainContent_ProductCode", row.product_code)
         await stepper.capture("product-code-filled")
+        stepper.log("filling-serial-number", extra={"serial_number": row.serial_number})
         await fill_input(page, "#MainContent_SerialNumber", row.serial_number)
         await stepper.capture("serial-number-filled")
+        stepper.log("clicking-search")
         await page.click("#MainContent_btnSearch")
         await stepper.capture("search-clicked")
         try:
@@ -513,6 +552,7 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             if "already upgraded" in text:
                 await stepper.capture("already-upgraded")
                 append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
+                stepper.log("row-processing-complete", extra={"status": "AlreadyUpgraded"})
                 return
 
         device_table = page.locator("#MainContent_GridViewDevice")
@@ -523,16 +563,29 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             await stepper.capture("device-table-missing")
             append_log(row, "NotEligible", message)
             record_error(row, "NotEligible", message)
+            stepper.log(
+                "row-processing-complete",
+                extra={"status": "NotEligible", "message": message},
+            )
             return
 
         schedule_date = pick_random_schedule_date()
+        stepper.log(
+            "setting-schedule-date",
+            extra={"target_date": schedule_date.isoformat(timespec="seconds")},
+        )
         scheduled_date_str = await set_schedule_date(page, schedule_date)
         await stepper.capture("schedule-date-set")
-        time_value, time_label = await select_time(page)
+        time_value, time_label = await select_time(page, stepper=stepper)
         await stepper.capture("time-selected")
+        stepper.log(
+            "selecting-timezone",
+            extra={"state": row.state, "timezone_mapping": TIMEZONE_BY_STATE.get(row.state, "")},
+        )
         timezone_value = await select_timezone(page, row.state)
         await stepper.capture("timezone-selected")
 
+        stepper.log("clicking-submit")
         await page.click("#MainContent_submitButton")
         await stepper.capture("submit-clicked")
         try:
@@ -552,9 +605,20 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             scheduled_time=time_label or time_value,
             timezone=timezone_value,
         )
+        stepper.log(
+            "row-processing-complete",
+            extra={
+                "status": "Scheduled",
+                "status_text": status_text,
+                "scheduled_date": scheduled_date_str,
+                "scheduled_time": time_label or time_value,
+                "timezone": timezone_value,
+            },
+        )
         await stepper.capture("row-complete")
     except Exception:
         await stepper.capture("error")
+        stepper.log("row-processing-error")
         raise
 
 
