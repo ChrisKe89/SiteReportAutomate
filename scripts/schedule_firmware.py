@@ -45,6 +45,11 @@ AUTH_WARMUP_URL = os.getenv(
 )
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
+KEEP_BROWSER_OPEN = os.getenv("FIRMWARE_KEEP_BROWSER_OPEN", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+}
 USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
 SCREENSHOT_DIR = Path(os.getenv("FIRMWARE_SCREENSHOT_DIR", "downloads/screenshots"))
 
@@ -400,6 +405,7 @@ def record_error(row: DeviceRow, status: str, message: str) -> None:
     ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
+
 async def select_time(
     page: Page, *, stepper: StepRecorder | None = None
 ) -> tuple[str, str]:
@@ -474,96 +480,70 @@ async def select_time(
             value, label = choice
             cleaned_value = value.strip()
             cleaned_label = label.strip()
-            canonical_label = cleaned_label or ALLOWED_TIME_LABEL_BY_VALUE.get(
-                cleaned_value, ""
+
+            target_value = cleaned_value or PREFERRED_TIME_VALUE
+            target_label = cleaned_label or ALLOWED_TIME_LABEL_BY_VALUE.get(
+                target_value, PREFERRED_TIME_LABEL
             )
-            if not canonical_label:
-                canonical_label = ALLOWED_TIME_LABEL_BY_VALUE.get(
-                    PREFERRED_TIME_VALUE, PREFERRED_TIME_LABEL
-                )
-            target_label = canonical_label
+
             if stepper:
                 stepper.log(
                     "time-option-selected",
                     extra={
                         "value": cleaned_value,
-                        "label": cleaned_label or canonical_label,
-                        "canonical_label": canonical_label,
+                        "label": cleaned_label,
+                        "target_value": target_value,
+                        "target_label": target_label,
                         "selector": selector,
                     },
                 )
 
             try:
-                await dropdown.select_option(label=target_label)
+                selected = await dropdown.select_option(value=str(target_value))
+                if not selected:
+                    raise PlaywrightError("no time option matched value")
             except PlaywrightError:
-                if cleaned_value:
-                    await dropdown.select_option(value=cleaned_value)
-                else:
-                    raise
+                try:
+                    await dropdown.select_option(label=target_label)
+                except PlaywrightError:
+                    await dropdown.evaluate(
+                        "(el, payload) => {",
+                        "  el.value = payload.value;",
+                        "  const match = Array.from(el.options).find(o => o.value === payload.value || o.text.trim() === payload.label.trim());",
+                        "  if (match) {",
+                        "    match.selected = true;",
+                        "    el.dispatchEvent(new Event('change', { bubbles: true }));",
+                        "  }",
+                        "}",
+                        {"value": str(target_value), "label": target_label},
+                    )
 
-            # Confirm the dropdown reflects the selected option; fall back to JS if needed.
-            selected_value = (await dropdown.input_value()).strip()
-            if cleaned_value and selected_value != cleaned_value:
-                await dropdown.evaluate(
-                    "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
-                    cleaned_value,
-                )
-                selected_value = (await dropdown.input_value()).strip()
+            selected_value = (await dropdown.input_value()).strip() or str(target_value)
 
             selected_label_locator = dropdown.locator("option:checked")
             if await selected_label_locator.count() > 0:
-                selected_label = (
-                    await selected_label_locator.first.inner_text()
-                ).strip()
+                selected_label = (await selected_label_locator.first.inner_text()).strip()
             else:
                 selected_label = target_label
 
-            if selected_label.lower().replace(" ", "") != target_label.lower().replace(
-                " ", ""
-            ):
-                await dropdown.evaluate(
-                    "(el, payload) => {"
-                    "  const options = Array.from(el.options);"
-                    "  const match = options.find(o => o.text.trim().toLowerCase() === payload.label.trim().toLowerCase());"
-                    "  if (match) {"
-                    "    match.selected = true;"
-                    "    el.dispatchEvent(new Event('change', { bubbles: true }));"
-                    "  }"
-                    "}",
-                    {"label": target_label},
-                )
-                selected_value = (await dropdown.input_value()).strip()
-                if await selected_label_locator.count() > 0:
-                    selected_label = (
-                        await selected_label_locator.first.inner_text()
-                    ).strip()
-
-            if not selected_value and cleaned_value:
-                # As a last resort, set both value and label to ensure a submission-friendly state.
-                await dropdown.evaluate(
-                    "(el, payload) => {"
-                    "  el.value = payload.value;"
-                    "  const option = Array.from(el.options).find(o => o.value === payload.value || o.text === payload.label);"
-                    "  if (option) option.selected = true;"
-                    "  el.dispatchEvent(new Event('change', { bubbles: true }));"
-                    "}",
-                    {"value": cleaned_value, "label": canonical_label},
-                )
-                selected_value = (await dropdown.input_value()).strip()
+            if not selected_label:
+                selected_label = target_label
 
             if stepper:
                 stepper.log(
                     "time-option-confirmed",
                     extra={
-                        "selected_value": selected_value or cleaned_value,
+                        "selected_value": selected_value,
                         "selected_label": selected_label,
                         "selector": selector,
                     },
                 )
 
-            if selected_value or not cleaned_value:
-                return selected_value or cleaned_value, selected_label
+            if selected_value:
+                return selected_value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
+
+
 
 
 async def set_schedule_date(page: Page, target: datetime) -> str:
@@ -924,6 +904,17 @@ async def run() -> None:
             else:
                 raise
         finally:
+            if KEEP_BROWSER_OPEN:
+                message = (
+                    "Automation complete. Browser left open for inspection. "
+                    "Press Enter once you're finished to close it."
+                )
+                print(message)
+                try:
+                    loop = asyncio.get_running_loop()
+                    await loop.run_in_executor(None, input, "Press Enter to close the browser... ")
+                except (EOFError, KeyboardInterrupt):
+                    pass
             try:
                 await context.close()
             except PlaywrightError:
