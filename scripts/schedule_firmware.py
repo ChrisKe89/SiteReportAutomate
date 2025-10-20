@@ -11,7 +11,6 @@ import json
 import os
 import random
 import re
-import string
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -32,9 +31,6 @@ load_dotenv()
 DEFAULT_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"
 INPUT_XLSX = Path(os.getenv("FIRMWARE_INPUT_XLSX", "downloads/VIC.xlsx"))
 LOG_XLSX = Path(os.getenv("FIRMWARE_LOG_XLSX", "downloads/FirmwareLog.xlsx"))
-PLAYWRIGHT_STEPS_LOG = Path(
-    os.getenv("FIRMWARE_STEPS_LOG", "downloads/playwright_steps.jsonl")
-)
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
 ERRORS_JSON = Path(os.getenv("FIRMWARE_ERRORS_JSON", "errors.json")).expanduser()
 HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
@@ -45,13 +41,7 @@ AUTH_WARMUP_URL = os.getenv(
 )
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
-KEEP_BROWSER_OPEN = os.getenv("FIRMWARE_KEEP_BROWSER_OPEN", "true").lower() in {
-    "1",
-    "true",
-    "yes",
-}
 USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
-SCREENSHOT_DIR = Path(os.getenv("FIRMWARE_SCREENSHOT_DIR", "downloads/screenshots"))
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
@@ -147,60 +137,6 @@ async def ensure_option_selected(
     await page.select_option(selector, value=value)
 
 
-def slugify_label(value: str) -> str:
-    value = value.strip().lower()
-    allowed = set(string.ascii_lowercase + string.digits + "-_")
-    slug = ["-" if ch.isspace() else ch for ch in value]
-    filtered = [ch for ch in slug if ch in allowed]
-    result = "".join(filtered) or "step"
-    while "--" in result:
-        result = result.replace("--", "-")
-    return result.strip("-") or "step"
-
-
-class StepRecorder:
-    def __init__(self, page: Page, row: DeviceRow):
-        self.page = page
-        self.row = row
-        self.counter = 0
-        self.base_dir = SCREENSHOT_DIR / slugify_label(row.serial_number or "row")
-        self.base_dir.mkdir(parents=True, exist_ok=True)
-        self.log_path = PLAYWRIGHT_STEPS_LOG.expanduser()
-        self.log_path.parent.mkdir(parents=True, exist_ok=True)
-        self.log(
-            "step-recorder-initialised",
-            extra={
-                "product_code": row.product_code,
-                "state": row.state,
-                "opco": row.opco,
-            },
-        )
-
-    def log(self, action: str, *, extra: dict[str, Any] | None = None) -> None:
-        payload: dict[str, Any] = {
-            "timestamp": datetime.now().isoformat(timespec="milliseconds"),
-            "serial_number": self.row.serial_number,
-            "action": action,
-            "step_counter": self.counter,
-        }
-        if extra:
-            payload.update(extra)
-        with self.log_path.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps(payload) + "\n")
-
-    async def capture(self, label: str) -> None:
-        self.counter += 1
-        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-        filename = f"{self.counter:02d}_{timestamp}_{slugify_label(label)}.png"
-        path = self.base_dir / filename
-        self.log("capture", extra={"label": label, "screenshot_path": str(path)})
-        try:
-            await self.page.screenshot(path=str(path), full_page=True)
-        except PlaywrightError:
-            # Ignore screenshot failures to avoid blocking the workflow
-            pass
-
-
 async def read_status_messages(page: Page) -> str:
     """Return the latest status message shown on the page."""
 
@@ -263,7 +199,7 @@ async def fill_input(page: Page, selector: str, value: str) -> None:
               el.dispatchEvent(new Event('change', { bubbles: true }));
             }
             """,
-            value,
+            arg=value,
         )
         actual = (await locator.input_value()).strip()
     if actual != value:
@@ -407,9 +343,53 @@ def record_error(row: DeviceRow, status: str, message: str) -> None:
     ERRORS_JSON.write_text(json.dumps(entries, indent=2), encoding="utf-8")
 
 
-async def select_time(
-    page: Page, *, stepper: StepRecorder | None = None
-) -> tuple[str, str]:
+def remove_row_from_input(path: Path, row: DeviceRow) -> None:
+    """Remove the first matching data row from the input workbook."""
+
+    if not path.exists():
+        return
+
+    workbook = load_workbook(path)
+    sheet = workbook.active
+    if sheet is None:
+        workbook.close()
+        raise ValueError("Input workbook has no active worksheet.")
+
+    row_to_delete: int | None = None
+    for idx in range(2, sheet.max_row + 1):
+        serial_cell = sheet.cell(row=idx, column=1).value
+        product_cell = sheet.cell(row=idx, column=2).value
+        serial = "" if serial_cell is None else str(serial_cell).strip()
+        product = "" if product_cell is None else str(product_cell).strip()
+        if serial == row.serial_number and product == row.product_code:
+            row_to_delete = idx
+            break
+
+    if row_to_delete is not None:
+        sheet.delete_rows(row_to_delete)
+        workbook.save(path)
+    workbook.close()
+
+
+async def reset_form(page: Page) -> None:
+    """Attempt to reset the firmware request form."""
+
+    reset_selector = "#ct100\\$MainContent\\$btnReset"
+    reset_locator = page.locator(reset_selector)
+    if await reset_locator.count() == 0:
+        return
+
+    try:
+        await reset_locator.click()
+        try:
+            await page.wait_for_timeout(500)
+        except PlaywrightTimeoutError:
+            pass
+    except PlaywrightError:
+        pass
+
+
+async def select_time(page: Page) -> tuple[str, str]:
     selectors = [
         "select#MainContent_ddlScheduleTime",
     ]
@@ -437,45 +417,8 @@ async def select_time(
                     continue
                 options.append((value, label))
 
-            if stepper:
-                observed_normalised = {
-                    _normalise_time_label(label)
-                    for _, label in options
-                    if label.strip()
-                }
-                missing_expected = [
-                    label
-                    for label in EXPECTED_TIME_LABELS
-                    if _normalise_time_label(label) not in observed_normalised
-                ]
-                unexpected_labels = [
-                    label
-                    for _, label in options
-                    if label.strip()
-                    and _normalise_time_label(label)
-                    not in EXPECTED_TIME_LABELS_NORMALISED
-                ]
-                stepper.log(
-                    "time-options-detected",
-                    extra={
-                        "selector": selector,
-                        "option_count": len(options),
-                        "options": options,
-                        "missing_expected_labels": missing_expected,
-                        "unexpected_labels": unexpected_labels,
-                    },
-                )
             choice = pick_time_option(options)
             if not choice:
-                if stepper:
-                    stepper.log(
-                        "time-allowed-option-missing",
-                        extra={
-                            "selector": selector,
-                            "option_count": len(options),
-                            "allowed_time_options": ALLOWED_TIME_OPTIONS,
-                        },
-                    )
                 continue
 
             value, label = choice
@@ -486,18 +429,6 @@ async def select_time(
             target_label = cleaned_label or ALLOWED_TIME_LABEL_BY_VALUE.get(
                 target_value, PREFERRED_TIME_LABEL
             )
-
-            if stepper:
-                stepper.log(
-                    "time-option-selected",
-                    extra={
-                        "value": cleaned_value,
-                        "label": cleaned_label,
-                        "target_value": target_value,
-                        "target_label": target_label,
-                        "selector": selector,
-                    },
-                )
 
             try:
                 selected = await dropdown.select_option(value=str(target_value))
@@ -522,7 +453,7 @@ async def select_time(
                           }
                         }
                         """,
-                        {"value": str(target_value), "label": target_label},
+                        arg={"value": str(target_value), "label": target_label},
                     )
 
             selected_value = (await dropdown.input_value()).strip() or str(target_value)
@@ -537,16 +468,6 @@ async def select_time(
 
             if not selected_label:
                 selected_label = target_label
-
-            if stepper:
-                stepper.log(
-                    "time-option-confirmed",
-                    extra={
-                        "selected_value": selected_value,
-                        "selected_label": selected_label,
-                        "selector": selector,
-                    },
-                )
 
             if selected_value:
                 return selected_value, selected_label
@@ -671,7 +592,7 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
           el.dispatchEvent(new Event('change', { bubbles: true }));
         }
         """,
-        iso_date,
+        arg=iso_date,
     )
     actual = await read_input_value()
     if actual:
@@ -679,9 +600,7 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
     return iso_date
 
 
-async def select_timezone(
-    page: Page, state: str, *, stepper: StepRecorder | None = None
-) -> tuple[str, str]:
+async def select_timezone(page: Page, state: str) -> tuple[str, str]:
     """Select the timezone matching the provided state and return (value, label)."""
     state_key = state.upper()
     target = STATE_TIMEZONE.get(state_key)
@@ -703,43 +622,6 @@ async def select_timezone(
             continue
         options.append((value, label))
 
-    if stepper:
-        observed_values = {value for value, _ in options if value}
-        observed_labels = {
-            _normalise_timezone_label(label) for _, label in options if label.strip()
-        }
-        missing_expected_labels = [
-            label
-            for _, label in TIMEZONE_OPTIONS
-            if _normalise_timezone_label(label) not in observed_labels
-        ]
-        missing_expected_values = [
-            value for value in EXPECTED_TIMEZONE_VALUES if value not in observed_values
-        ]
-        unexpected_labels = [
-            label
-            for _, label in options
-            if label.strip()
-            and _normalise_timezone_label(label)
-            not in EXPECTED_TIMEZONE_LABELS_NORMALISED
-        ]
-        unexpected_values = [
-            value
-            for value, _ in options
-            if value and value not in EXPECTED_TIMEZONE_VALUES
-        ]
-        stepper.log(
-            "timezone-options-detected",
-            extra={
-                "selector": selector,
-                "options": options,
-                "missing_expected_labels": missing_expected_labels,
-                "missing_expected_values": missing_expected_values,
-                "unexpected_labels": unexpected_labels,
-                "unexpected_values": unexpected_values,
-            },
-        )
-
     try:
         await dropdown.select_option(value=target_value)
     except PlaywrightError:
@@ -758,7 +640,7 @@ async def select_timezone(
                       }
                     }
                     """,
-                    {"value": target_value},
+                    arg={"value": target_value},
                 )
         else:
             raise
@@ -772,7 +654,7 @@ async def select_timezone(
               el.dispatchEvent(new Event('change', { bubbles: true }));
             }
             """,
-            target_value,
+            arg=target_value,
         )
         selected_value = (await dropdown.input_value()).strip()
 
@@ -792,7 +674,7 @@ async def select_timezone(
             """
             (el, payload) => {
               const normalise = (value) =>
-                value.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\s*:\s*/g, ':');
+                value.trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\s*:\\s*/g, ':');
               const options = Array.from(el.options);
               const match = options.find(
                 (option) => normalise(option.text) === payload.normalised
@@ -804,7 +686,7 @@ async def select_timezone(
               }
             }
             """,
-            {
+            arg={
                 "label": target_label,
                 "normalised": _normalise_timezone_label(target_label).lower(),
             },
@@ -813,130 +695,63 @@ async def select_timezone(
         if await selected_label_locator.count() > 0:
             selected_label = (await selected_label_locator.first.inner_text()).strip()
 
-    if stepper:
-        stepper.log(
-            "timezone-option-selected",
-            extra={
-                "state": state_key,
-                "target_value": target_value,
-                "target_label": target_label,
-                "selected_value": selected_value,
-                "selected_label": selected_label,
-            },
-        )
-
     return selected_value or target_value, selected_label
 
 
-async def handle_row(page: Page, row: DeviceRow) -> None:
-    stepper = StepRecorder(page, row)
-    await stepper.capture("row-start")
-    stepper.log("row-processing-started")
+async def handle_row(page: Page, row: DeviceRow) -> str:
+    await ensure_option_selected(page, "#MainContent_ddlOpCoID", OPCO_VALUE)
+    await fill_input(page, "#MainContent_ProductCode", row.product_code)
+    await fill_input(page, "#MainContent_SerialNumber", row.serial_number)
+    await page.click("#MainContent_btnSearch")
     try:
-        stepper.log("selecting-opco", extra={"opco": OPCO_VALUE})
-        await ensure_option_selected(page, "#MainContent_ddlOpCoID", OPCO_VALUE)
-        await stepper.capture("opco-selected")
-        stepper.log("filling-product-code", extra={"product_code": row.product_code})
-        await fill_input(page, "#MainContent_ProductCode", row.product_code)
-        await stepper.capture("product-code-filled")
-        stepper.log("filling-serial-number", extra={"serial_number": row.serial_number})
-        await fill_input(page, "#MainContent_SerialNumber", row.serial_number)
-        await stepper.capture("serial-number-filled")
-        stepper.log("clicking-search")
-        await page.click("#MainContent_btnSearch")
-        await stepper.capture("search-clicked")
-        try:
-            await page.wait_for_timeout(1000)
-            await page.wait_for_load_state("networkidle")
-        except PlaywrightTimeoutError:
-            pass
+        await page.wait_for_timeout(1000)
+        await page.wait_for_load_state("networkidle")
+    except PlaywrightTimeoutError:
+        pass
 
-        eligibility_table = page.locator("#MainContent_GridViewEligibility")
-        if await eligibility_table.count() > 0 and await eligibility_table.is_visible():
-            text = (await eligibility_table.inner_text()).lower()
-            if "already upgraded" in text:
-                await stepper.capture("already-upgraded")
-                append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
-                stepper.log(
-                    "row-processing-complete", extra={"status": "AlreadyUpgraded"}
-                )
-                return
+    eligibility_table = page.locator("#MainContent_GridViewEligibility")
+    if await eligibility_table.count() > 0 and await eligibility_table.is_visible():
+        text = (await eligibility_table.inner_text()).lower()
+        if "already upgraded" in text:
+            append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
+            return "AlreadyUpgraded"
 
-        device_table = page.locator("#MainContent_GridViewDevice")
-        if await device_table.count() == 0 or not await device_table.is_visible():
-            message = await read_status_messages(page)
-            if not message:
-                message = "Device table not visible after search"
-            await stepper.capture("device-table-missing")
-            append_log(row, "NotEligible", message)
-            record_error(row, "NotEligible", message)
-            stepper.log(
-                "row-processing-complete",
-                extra={"status": "NotEligible", "message": message},
-            )
-            return
+    device_table = page.locator("#MainContent_GridViewDevice")
+    if await device_table.count() == 0 or not await device_table.is_visible():
+        message = await read_status_messages(page)
+        if not message:
+            message = "Device table not visible after search"
+        append_log(row, "NotEligible", message)
+        record_error(row, "NotEligible", message)
+        return "NotEligible"
 
-        schedule_date = pick_random_schedule_date()
-        stepper.log(
-            "setting-schedule-date",
-            extra={"target_date": schedule_date.isoformat(timespec="seconds")},
-        )
-        scheduled_date_str = await set_schedule_date(page, schedule_date)
-        await stepper.capture("schedule-date-set")
-        time_value, time_label = await select_time(page, stepper=stepper)
-        await stepper.capture("time-selected")
-        mapping_value, mapping_label = STATE_TIMEZONE.get(row.state.upper(), ("", ""))
-        stepper.log(
-            "selecting-timezone",
-            extra={
-                "state": row.state,
-                "timezone_mapping": {
-                    "value": mapping_value,
-                    "label": mapping_label,
-                },
-            },
-        )
-        timezone_value, timezone_label = await select_timezone(
-            page, row.state, stepper=stepper
-        )
-        await stepper.capture("timezone-selected")
+    schedule_date = pick_random_schedule_date()
+    scheduled_date_str = await set_schedule_date(page, schedule_date)
+    time_value, time_label = await select_time(page)
+    timezone_value, timezone_label = await select_timezone(page, row.state)
 
-        stepper.log("clicking-submit")
-        await page.click("#MainContent_submitButton")
-        await stepper.capture("submit-clicked")
-        try:
-            await page.wait_for_timeout(500)
-        except PlaywrightTimeoutError:
-            pass
+    await page.click("#MainContent_submitButton")
+    try:
+        await page.wait_for_timeout(500)
+    except PlaywrightTimeoutError:
+        pass
 
-        status_text = await read_status_messages(page)
-        if not status_text:
-            status_text = "Scheduled"
+    status_text = await read_status_messages(page)
+    if not status_text:
+        status_text = "Scheduled"
 
-        append_log(
-            row,
-            "Scheduled",
-            status_text,
-            scheduled_date=scheduled_date_str,
-            scheduled_time=time_label or time_value,
-            timezone=timezone_label or timezone_value,
-        )
-        stepper.log(
-            "row-processing-complete",
-            extra={
-                "status": "Scheduled",
-                "status_text": status_text,
-                "scheduled_date": scheduled_date_str,
-                "scheduled_time": time_label or time_value,
-                "timezone_value": timezone_value,
-                "timezone_label": timezone_label,
-            },
-        )
-        await stepper.capture("row-complete")
-    except Exception:
-        await stepper.capture("error")
-        stepper.log("row-processing-error")
-        raise
+    append_log(
+        row,
+        "Scheduled",
+        status_text,
+        scheduled_date=scheduled_date_str,
+        scheduled_time=time_label or time_value,
+        timezone=timezone_label or timezone_value,
+    )
+
+    await reset_form(page)
+
+    return "Scheduled"
 
 
 async def run() -> None:
@@ -981,9 +796,13 @@ async def run() -> None:
                     print(f"Warm-up navigation to {AUTH_WARMUP_URL} failed: {exc}")
 
             await page.goto(DEFAULT_URL, wait_until="domcontentloaded")
-            for row in rows:
+            for row in list(rows):
                 try:
-                    await handle_row(page, row)
+                    status = await handle_row(page, row)
+                    if status == "Scheduled":
+                        remove_row_from_input(INPUT_XLSX, row)
+                        if row in rows:
+                            rows.remove(row)
                 except Exception as exc:  # noqa: BLE001
                     status_text = await read_status_messages(page)
                     message = status_text or str(exc)
@@ -1000,19 +819,6 @@ async def run() -> None:
             else:
                 raise
         finally:
-            if KEEP_BROWSER_OPEN:
-                message = (
-                    "Automation complete. Browser left open for inspection. "
-                    "Press Enter once you're finished to close it."
-                )
-                print(message)
-                try:
-                    loop = asyncio.get_running_loop()
-                    await loop.run_in_executor(
-                        None, input, "Press Enter to close the browser... "
-                    )
-                except (EOFError, KeyboardInterrupt):
-                    pass
             try:
                 await context.close()
             except PlaywrightError:
