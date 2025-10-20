@@ -50,15 +50,35 @@ SCREENSHOT_DIR = Path(os.getenv("FIRMWARE_SCREENSHOT_DIR", "downloads/screenshot
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
-# Map uppercase state abbreviations to timezone dropdown values
-TIMEZONE_BY_STATE = {
-    "NT": "+09:30",
-    "SA": "+10:30",
-    "ACT": "+11:00",
-    "VIC": "+11:00",
-    "NSW": "+11:00",
-    "QLD": "+10:00",
-    "TAS": "+11:00",
+# Enumerate the expected timezone dropdown options and labels.
+TIMEZONE_OPTIONS: list[tuple[str, str]] = [
+    ("+09:30", "(UTC+09: 30) Darwin"),
+    ("+10:30", "(UTC+10: 30) Adelaide"),
+    ("+11:00", "(UTC+11: 00) Canberra, Melbourne, Sydney"),
+    ("+10:00", "(UTC+10: 00) Brisbane"),
+    ("+11:00", "(UTC+11: 00) Hobart"),
+]
+
+
+def _normalise_timezone_label(value: str) -> str:
+    compact = re.sub(r"\s*:\s*", ":", re.sub(r"\s+", " ", value.strip()))
+    return compact.upper()
+
+
+EXPECTED_TIMEZONE_LABELS_NORMALISED = {
+    _normalise_timezone_label(label) for _, label in TIMEZONE_OPTIONS
+}
+EXPECTED_TIMEZONE_VALUES = {value for value, _ in TIMEZONE_OPTIONS if value}
+
+# Map uppercase state abbreviations to timezone dropdown values and labels.
+STATE_TIMEZONE: dict[str, tuple[str, str]] = {
+    "NT": ("+09:30", "(UTC+09: 30) Darwin"),
+    "SA": ("+10:30", "(UTC+10: 30) Adelaide"),
+    "ACT": ("+11:00", "(UTC+11: 00) Canberra, Melbourne, Sydney"),
+    "VIC": ("+11:00", "(UTC+11: 00) Canberra, Melbourne, Sydney"),
+    "NSW": ("+11:00", "(UTC+11: 00) Canberra, Melbourne, Sydney"),
+    "QLD": ("+10:00", "(UTC+10: 00) Brisbane"),
+    "TAS": ("+11:00", "(UTC+11: 00) Hobart"),
 }
 
 
@@ -598,14 +618,138 @@ async def set_schedule_date(page: Page, target: datetime) -> str:
     return date_str
 
 
-async def select_timezone(page: Page, state: str) -> str:
-    value = TIMEZONE_BY_STATE.get(state.upper())
-    if not value:
+async def select_timezone(
+    page: Page, state: str, *, stepper: StepRecorder | None = None
+) -> tuple[str, str]:
+    """Select the timezone matching the provided state and return (value, label)."""
+    state_key = state.upper()
+    target = STATE_TIMEZONE.get(state_key)
+    if not target:
         raise ValueError(f"No timezone mapping for state: {state}")
+    target_value, target_label = target
     selector = "#MainContent_ddlTimeZone"
-    await page.wait_for_selector(selector, state="visible")
-    await page.select_option(selector, value=value)
-    return value
+    dropdown = page.locator(selector)
+    await dropdown.wait_for(state="visible")
+
+    options_locator = dropdown.locator("option")
+    total = await options_locator.count()
+    options: list[tuple[str, str]] = []
+    for idx in range(total):
+        option = options_locator.nth(idx)
+        value = ((await option.get_attribute("value")) or "").strip()
+        label = (await option.inner_text()).strip()
+        if not value and "select" in label.lower():
+            continue
+        options.append((value, label))
+
+    if stepper:
+        observed_values = {value for value, _ in options if value}
+        observed_labels = {
+            _normalise_timezone_label(label) for _, label in options if label.strip()
+        }
+        missing_expected_labels = [
+            label
+            for _, label in TIMEZONE_OPTIONS
+            if _normalise_timezone_label(label) not in observed_labels
+        ]
+        missing_expected_values = [
+            value for value in EXPECTED_TIMEZONE_VALUES if value not in observed_values
+        ]
+        unexpected_labels = [
+            label
+            for _, label in options
+            if label.strip()
+            and _normalise_timezone_label(label)
+            not in EXPECTED_TIMEZONE_LABELS_NORMALISED
+        ]
+        unexpected_values = [
+            value
+            for value, _ in options
+            if value and value not in EXPECTED_TIMEZONE_VALUES
+        ]
+        stepper.log(
+            "timezone-options-detected",
+            extra={
+                "selector": selector,
+                "options": options,
+                "missing_expected_labels": missing_expected_labels,
+                "missing_expected_values": missing_expected_values,
+                "unexpected_labels": unexpected_labels,
+                "unexpected_values": unexpected_values,
+            },
+        )
+
+    try:
+        await dropdown.select_option(value=target_value)
+    except PlaywrightError:
+        if target_label:
+            try:
+                await dropdown.select_option(label=target_label)
+            except PlaywrightError:
+                await dropdown.evaluate(
+                    "(el, payload) => {"
+                    "  el.value = payload.value;"
+                    "  const match = Array.from(el.options).find(o => o.value === payload.value);"
+                    "  if (match) {"
+                    "    match.selected = true;"
+                    "    el.dispatchEvent(new Event('change', { bubbles: true }));"
+                    "  }"
+                    "}",
+                    {"value": target_value},
+                )
+        else:
+            raise
+
+    selected_value = (await dropdown.input_value()).strip()
+    if target_value and selected_value != target_value:
+        await dropdown.evaluate(
+            "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
+            target_value,
+        )
+        selected_value = (await dropdown.input_value()).strip()
+
+    selected_label_locator = dropdown.locator("option:checked")
+    if await selected_label_locator.count() > 0:
+        selected_label = (await selected_label_locator.first.inner_text()).strip()
+    else:
+        selected_label = target_label
+
+    if target_label and selected_label and _normalise_timezone_label(
+        selected_label
+    ) != _normalise_timezone_label(target_label):
+        await dropdown.evaluate(
+            "(el, payload) => {"
+            "  const normalise = (value) => value.trim().toLowerCase().replace(/\\s+/g, ' ').replace(/\\s*:\\s*/g, ':');"
+            "  const options = Array.from(el.options);"
+            "  const match = options.find(o => normalise(o.text) === payload.normalised);"
+            "  if (match) {"
+            "    match.selected = true;"
+            "    el.value = match.value;"
+            "    el.dispatchEvent(new Event('change', { bubbles: true }));"
+            "  }"
+            "}",
+            {
+                "label": target_label,
+                "normalised": _normalise_timezone_label(target_label).lower(),
+            },
+        )
+        selected_value = (await dropdown.input_value()).strip()
+        if await selected_label_locator.count() > 0:
+            selected_label = (await selected_label_locator.first.inner_text()).strip()
+
+    if stepper:
+        stepper.log(
+            "timezone-option-selected",
+            extra={
+                "state": state_key,
+                "target_value": target_value,
+                "target_label": target_label,
+                "selected_value": selected_value,
+                "selected_label": selected_label,
+            },
+        )
+
+    return selected_value or target_value, selected_label
 
 
 async def handle_row(page: Page, row: DeviceRow) -> None:
@@ -665,14 +809,20 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
         await stepper.capture("schedule-date-set")
         time_value, time_label = await select_time(page, stepper=stepper)
         await stepper.capture("time-selected")
+        mapping_value, mapping_label = STATE_TIMEZONE.get(row.state.upper(), ("", ""))
         stepper.log(
             "selecting-timezone",
             extra={
                 "state": row.state,
-                "timezone_mapping": TIMEZONE_BY_STATE.get(row.state, ""),
+                "timezone_mapping": {
+                    "value": mapping_value,
+                    "label": mapping_label,
+                },
             },
         )
-        timezone_value = await select_timezone(page, row.state)
+        timezone_value, timezone_label = await select_timezone(
+            page, row.state, stepper=stepper
+        )
         await stepper.capture("timezone-selected")
 
         stepper.log("clicking-submit")
@@ -693,7 +843,7 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
             status_text,
             scheduled_date=scheduled_date_str,
             scheduled_time=time_label or time_value,
-            timezone=timezone_value,
+            timezone=timezone_label or timezone_value,
         )
         stepper.log(
             "row-processing-complete",
@@ -702,7 +852,8 @@ async def handle_row(page: Page, row: DeviceRow) -> None:
                 "status_text": status_text,
                 "scheduled_date": scheduled_date_str,
                 "scheduled_time": time_label or time_value,
-                "timezone": timezone_value,
+                "timezone_value": timezone_value,
+                "timezone_label": timezone_label,
             },
         )
         await stepper.capture("row-complete")
