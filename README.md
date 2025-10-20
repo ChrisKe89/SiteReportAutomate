@@ -175,6 +175,7 @@ FIRMWARE_BROWSER_CHANNEL=msedge
 FIRMWARE_ERRORS_JSON=errors.json
 FIRMWARE_HTTP_USERNAME=
 FIRMWARE_HTTP_PASSWORD=
+FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
 FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx
 ```
 
@@ -195,6 +196,10 @@ FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/business
 * `FIRMWARE_HTTP_USERNAME` / `FIRMWARE_HTTP_PASSWORD` are optional HTTP Auth
   credentials for environments where the Single Request portal prompts for a
   login dialog before cookies are considered valid.
+* `FIRMWARE_AUTH_ALLOWLIST` controls which hosts Microsoft Edge will
+  automatically challenge with your Windows credentials. The default now covers
+  both the firmware portal (`*.fujixerox.net`) and the gateway warm-up hop
+  (`*.xerox.com`). Extend it if your infrastructure fronts additional domains.
 * `FIRMWARE_WARMUP_URL` lets the scheduler visit a gateway page (captured with
   `login_capture_epgw.py`) before loading the firmware scheduling form. Keep the
   default or clear it if your environment does not require the warm-up hop.

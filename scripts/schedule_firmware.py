@@ -39,7 +39,9 @@ AUTH_WARMUP_URL = os.getenv(
     "FIRMWARE_WARMUP_URL",
     "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
 )
-ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net")
+ALLOWLIST = os.getenv(
+    "FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com"
+)
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
 USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
 
