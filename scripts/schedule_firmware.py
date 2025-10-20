@@ -149,7 +149,8 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
             if meridiem == "am" and hour == 12:
                 hour = 0
         hour = hour % 24
-        if 0 <= hour <= 7 or 18 <= hour <= 23:
+        total_minutes = hour * 60 + minute
+        if total_minutes < 8 * 60 or total_minutes >= 18 * 60:
             allowed.append((value, label))
     if not allowed:
         return None

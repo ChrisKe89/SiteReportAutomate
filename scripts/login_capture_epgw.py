@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Literal, Sequence, TypedDict, cast
 
 from playwright.async_api import (  # type: ignore[import]
     Error as PlaywrightError,
@@ -16,7 +16,19 @@ from playwright.async_api import (  # type: ignore[import]
 DEFAULT_STORAGE_STATE = "storage_state.json"
 DEFAULT_BROWSER_CHANNEL = "msedge"
 
-TARGETS: dict[str, dict[str, str]] = {
+WaitUntilState = Literal["commit", "domcontentloaded", "load", "networkidle"]
+
+
+class TargetConfigBase(TypedDict):
+    label: str
+    url: str
+
+
+class TargetConfig(TargetConfigBase, total=False):
+    wait_until: WaitUntilState
+
+
+TARGETS: dict[str, TargetConfig] = {
     "gateway": {
         "label": "EP Gateway warm-up",
         "url": "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
@@ -83,15 +95,13 @@ async def capture_logins(
         for index, target in enumerate(targets, start=1):
             label = target["label"]
             url = target["url"]
-            wait_until = target.get("wait_until", "networkidle")
+            wait_until = cast(WaitUntilState, target.get("wait_until", "networkidle"))
 
             print(f"\n[{index}/{total}] Opening {label}: {url}")
 
-            navigation_failed = False
             try:
                 await page.goto(url, wait_until=wait_until)
             except PlaywrightError as exc:  # pragma: no cover - interactive workflow
-                navigation_failed = True
                 message = str(exc)
                 if "ERR_INVALID_AUTH_CREDENTIALS" in message:
                     print(
