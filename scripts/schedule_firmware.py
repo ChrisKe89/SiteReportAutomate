@@ -11,6 +11,7 @@ import json
 import os
 import random
 import re
+import string
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -44,6 +45,7 @@ ALLOWLIST = os.getenv(
 )
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
 USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
+SCREENSHOT_DIR = Path(os.getenv("FIRMWARE_SCREENSHOT_DIR", "downloads/screenshots"))
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
@@ -89,11 +91,59 @@ async def ensure_option_selected(
     await page.select_option(selector, value=value)
 
 
+def slugify_label(value: str) -> str:
+    value = value.strip().lower()
+    allowed = set(string.ascii_lowercase + string.digits + "-_")
+    slug = ["-" if ch.isspace() else ch for ch in value]
+    filtered = [ch for ch in slug if ch in allowed]
+    result = "".join(filtered) or "step"
+    while "--" in result:
+        result = result.replace("--", "-")
+    return result.strip("-") or "step"
+
+
+class StepRecorder:
+    def __init__(self, page: Page, row: DeviceRow):
+        self.page = page
+        self.row = row
+        self.counter = 0
+        self.base_dir = SCREENSHOT_DIR / slugify_label(row.serial_number or "row")
+        self.base_dir.mkdir(parents=True, exist_ok=True)
+
+    async def capture(self, label: str) -> None:
+        self.counter += 1
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        filename = f"{self.counter:02d}_{timestamp}_{slugify_label(label)}.png"
+        path = self.base_dir / filename
+        try:
+            await self.page.screenshot(path=str(path), full_page=True)
+        except PlaywrightError:
+            # Ignore screenshot failures to avoid blocking the workflow
+            pass
+
+
 async def fill_input(page: Page, selector: str, value: str) -> None:
     locator = page.locator(selector)
     await locator.wait_for(state="visible")
-    await locator.fill("")
-    await locator.type(value)
+    await locator.click()
+    await locator.fill(value)
+    actual = (await locator.input_value()).strip()
+    if actual != value:
+        await locator.press("Control+A")
+        await locator.type(value)
+        actual = (await locator.input_value()).strip()
+    if actual != value:
+        await locator.evaluate(
+            "(el, value) => {"
+            "  el.value = value;"
+            "  el.dispatchEvent(new Event('input', { bubbles: true }));"
+            "  el.dispatchEvent(new Event('change', { bubbles: true }));"
+            "}",
+            value,
+        )
+        actual = (await locator.input_value()).strip()
+    if actual != value:
+        raise RuntimeError(f"Unable to populate input {selector!r} with value {value!r}")
 
 
 def load_rows(path: Path) -> list[DeviceRow]:
@@ -292,52 +342,69 @@ async def select_timezone(page: Page, state: str) -> str:
 
 
 async def handle_row(page: Page, row: DeviceRow) -> None:
-    await ensure_option_selected(page, "#MainContent_ddlOpCoID", OPCO_VALUE)
-    await fill_input(page, "#MainContent_ProductCode", row.product_code)
-    await fill_input(page, "#MainContent_SerialNumber", row.serial_number)
-    await page.click("#MainContent_btnSearch")
+    stepper = StepRecorder(page, row)
+    await stepper.capture("row-start")
     try:
-        await page.wait_for_timeout(1000)
-        await page.wait_for_load_state("networkidle")
-    except PlaywrightTimeoutError:
-        pass
+        await ensure_option_selected(page, "#MainContent_ddlOpCoID", OPCO_VALUE)
+        await stepper.capture("opco-selected")
+        await fill_input(page, "#MainContent_ProductCode", row.product_code)
+        await stepper.capture("product-code-filled")
+        await fill_input(page, "#MainContent_SerialNumber", row.serial_number)
+        await stepper.capture("serial-number-filled")
+        await page.click("#MainContent_btnSearch")
+        await stepper.capture("search-clicked")
+        try:
+            await page.wait_for_timeout(1000)
+            await page.wait_for_load_state("networkidle")
+        except PlaywrightTimeoutError:
+            pass
 
-    eligibility_table = page.locator("#MainContent_GridViewEligibility")
-    if await eligibility_table.count() > 0 and await eligibility_table.is_visible():
-        text = (await eligibility_table.inner_text()).lower()
-        if "already upgraded" in text:
-            append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
+        eligibility_table = page.locator("#MainContent_GridViewEligibility")
+        if await eligibility_table.count() > 0 and await eligibility_table.is_visible():
+            text = (await eligibility_table.inner_text()).lower()
+            if "already upgraded" in text:
+                await stepper.capture("already-upgraded")
+                append_log(row, "AlreadyUpgraded", "Device already upgraded; skipped")
+                return
+
+        device_table = page.locator("#MainContent_GridViewDevice")
+        if await device_table.count() == 0 or not await device_table.is_visible():
+            message = "Device table not visible after search"
+            await stepper.capture("device-table-missing")
+            append_log(row, "NotEligible", message)
+            record_error(row, "NotEligible", message)
             return
 
-    device_table = page.locator("#MainContent_GridViewDevice")
-    if await device_table.count() == 0 or not await device_table.is_visible():
-        message = "Device table not visible after search"
-        append_log(row, "NotEligible", message)
-        record_error(row, "NotEligible", message)
-        return
+        schedule_date = pick_random_schedule_date()
+        scheduled_date_str = await set_schedule_date(page, schedule_date)
+        await stepper.capture("schedule-date-set")
+        _, time_label = await select_time(page)
+        await stepper.capture("time-selected")
+        timezone_value = await select_timezone(page, row.state)
+        await stepper.capture("timezone-selected")
 
-    schedule_date = pick_random_schedule_date()
-    scheduled_date_str = await set_schedule_date(page, schedule_date)
-    _, time_label = await select_time(page)
-    timezone_value = await select_timezone(page, row.state)
+        await page.click("#MainContent_submitButton")
+        await stepper.capture("submit-clicked")
+        message_locator = page.locator("#MainContent_lblMessage, #MainContent_lblStatus")
+        status_text = ""
+        try:
+            await message_locator.wait_for(state="visible", timeout=10_000)
+            status_text = (await message_locator.inner_text()).strip()
+        except PlaywrightTimeoutError:
+            status_text = "No confirmation message"
 
-    await page.click("#MainContent_submitButton")
-    message_locator = page.locator("#MainContent_lblMessage, #MainContent_lblStatus")
-    status_text = ""
-    try:
-        await message_locator.wait_for(state="visible", timeout=10_000)
-        status_text = (await message_locator.inner_text()).strip()
-    except PlaywrightTimeoutError:
-        status_text = "No confirmation message"
-
-    append_log(
-        row,
-        "Scheduled",
-        status_text or "Scheduled",
-        scheduled_date=scheduled_date_str,
-        scheduled_time=time_label,
-        timezone=timezone_value,
-    )
+        append_log(
+            row,
+            "Scheduled",
+            status_text or "Scheduled",
+            scheduled_date=scheduled_date_str,
+            scheduled_time=time_label,
+            timezone=timezone_value,
+        )
+        await stepper.capture("row-complete")
+    except Exception:
+        await stepper.capture("error")
+        raise
 
 
 async def run() -> None:
