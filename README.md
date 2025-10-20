@@ -26,15 +26,15 @@ Current release: **0.1.3** (2024-05-23)
 > 1. **Create a working folder**
 > 
 > ```powershell
-> New-Item -ItemType Directory -Path C:\EPGW_Automation -Force
-> Set-Location C:\EPGW_Automation
+> New-Item -ItemType Directory -Path C:\Dev\sitereportautomate -Force
+> Set-Location C:\Dev
 > ```
 > 
 > 3. **Clone the repo into that folder**
 > 
 > ```powershell
-> git clone https://github.com/ChrisKe89/gwbusinessrules.git
-> cd .\gwbusinessrules
+> git clone https://github.com/ChrisKe89/SiteReportAutomate.git
+> cd .\sitereportautomate
 > ```
 > 
 > 4. **Open the project in VS Code**

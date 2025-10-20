@@ -1,4 +1,4 @@
-"""Capture Playwright storage state for the remote firmware site."""
+"""Capture Playwright storage state for the EP Gateway + firmware sites."""
 
 from __future__ import annotations
 
@@ -17,14 +17,14 @@ DEFAULT_STORAGE_STATE = "storage_state.json"
 DEFAULT_BROWSER_CHANNEL = "msedge"
 
 TARGETS: dict[str, dict[str, str]] = {
-    "firmware": {
-        "label": "Firmware scheduler",
-        "url": "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx",
+    "gateway": {
+        "label": "EP Gateway warm-up",
+        "url": "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
         "wait_until": "networkidle",
     }
 }
 
-DEFAULT_SEQUENCE: Sequence[str] = ("firmware",)
+DEFAULT_SEQUENCE: Sequence[str] = ("gateway",)
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,7 +41,7 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Capture login for one or more sites. "
             "Repeat the flag to include multiple entries. "
-            "Defaults to the remote firmware scheduler."
+            "Defaults to the EP Gateway warm-up."
         ),
     )
     parser.add_argument(
@@ -98,8 +98,12 @@ async def capture_logins(
                         "\n>>> The gateway rejected the automatic request because it "
                         "requires manual credentials."
                     )
-                    print("    Use the Edge window to complete the login (SSO/NTLM/MFA).")
-                    print("    Once the site finishes loading, return here and continue.")
+                    print(
+                        "    Use the Edge window to complete the login (SSO/NTLM/MFA)."
+                    )
+                    print(
+                        "    Once the site finishes loading, return here and continue."
+                    )
                 else:
                     raise
 

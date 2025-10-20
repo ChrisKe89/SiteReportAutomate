@@ -3,6 +3,7 @@
 This script reads device rows from an Excel workbook, searches the
 SingleRequest firmware page, and schedules upgrades when eligible.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -79,7 +80,9 @@ class DeviceRow:
         )
 
 
-async def ensure_option_selected(page: Page, selector: str, value: str, *, timeout: float = 10_000) -> None:
+async def ensure_option_selected(
+    page: Page, selector: str, value: str, *, timeout: float = 10_000
+) -> None:
     await page.wait_for_selector(selector, state="visible", timeout=timeout)
     await page.select_option(selector, value=value)
 
@@ -130,8 +133,16 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
         if not match:
             continue
         hour = int(match.group(1))
-        minute = int(match.group(2)) if match.lastindex and match.lastindex >= 2 and match.group(2) else 0
-        meridiem = match.group(3).lower() if match.lastindex and match.lastindex >= 3 and match.group(3) else ""
+        minute = (
+            int(match.group(2))
+            if match.lastindex and match.lastindex >= 2 and match.group(2)
+            else 0
+        )
+        meridiem = (
+            match.group(3).lower()
+            if match.lastindex and match.lastindex >= 3 and match.group(3)
+            else ""
+        )
         if meridiem:
             if meridiem == "pm" and hour != 12:
                 hour += 12
@@ -145,7 +156,15 @@ def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
     return random.choice(allowed)
 
 
-def append_log(row: DeviceRow, status: str, message: str, *, scheduled_date: str = "", scheduled_time: str = "", timezone: str = "") -> None:
+def append_log(
+    row: DeviceRow,
+    status: str,
+    message: str,
+    *,
+    scheduled_date: str = "",
+    scheduled_time: str = "",
+    timezone: str = "",
+) -> None:
     LOG_XLSX.parent.mkdir(parents=True, exist_ok=True)
     if LOG_XLSX.exists():
         workbook = load_workbook(LOG_XLSX)
@@ -159,18 +178,20 @@ def append_log(row: DeviceRow, status: str, message: str, *, scheduled_date: str
         if sheet is None:
             workbook.close()
             raise ValueError("Unable to create log worksheet.")
-        sheet.append([
-            "SerialNumber",
-            "Product_Code",
-            "OpcoID",
-            "State",
-            "Status",
-            "Message",
-            "ScheduledDate",
-            "ScheduledTime",
-            "TimeZone",
-            "LoggedAt",
-        ])
+        sheet.append(
+            [
+                "SerialNumber",
+                "Product_Code",
+                "OpcoID",
+                "State",
+                "Status",
+                "Message",
+                "ScheduledDate",
+                "ScheduledTime",
+                "TimeZone",
+                "LoggedAt",
+            ]
+        )
     sheet.append(
         [
             row.serial_number,
@@ -342,7 +363,9 @@ async def run() -> None:
                 "password": HTTP_PASSWORD,
             }
 
-        context: BrowserContext = await p.chromium.launch_persistent_context(**launch_kwargs)
+        context: BrowserContext = await p.chromium.launch_persistent_context(
+            **launch_kwargs
+        )
 
         try:
             page: Page = await context.new_page()

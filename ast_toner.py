@@ -60,9 +60,7 @@ def _resolve_input_workbook() -> Path:
         )
 
     if not DOWNLOAD_DIR.exists():
-        raise FileNotFoundError(
-            f"Download directory '{DOWNLOAD_DIR}' does not exist."
-        )
+        raise FileNotFoundError(f"Download directory '{DOWNLOAD_DIR}' does not exist.")
 
     candidates = sorted(
         (
@@ -75,9 +73,7 @@ def _resolve_input_workbook() -> Path:
     )
 
     if not candidates:
-        raise FileNotFoundError(
-            f"No .xlsx files found in '{DOWNLOAD_DIR}'."
-        )
+        raise FileNotFoundError(f"No .xlsx files found in '{DOWNLOAD_DIR}'.")
 
     return candidates[0]
 
