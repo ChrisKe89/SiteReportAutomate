@@ -1,4 +1,4 @@
-"""Capture Playwright storage state for the EP Gateway + firmware sites."""
+"""Capture Playwright storage state for the remote firmware site."""
 
 from __future__ import annotations
 
@@ -17,14 +17,14 @@ DEFAULT_STORAGE_STATE = "storage_state.json"
 DEFAULT_BROWSER_CHANNEL = "msedge"
 
 TARGETS: dict[str, dict[str, str]] = {
-    "gateway": {
-        "label": "EP Gateway warm-up",
-        "url": "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
+    "firmware": {
+        "label": "Firmware scheduler",
+        "url": "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx",
         "wait_until": "networkidle",
     }
 }
 
-DEFAULT_SEQUENCE: Sequence[str] = ("gateway",)
+DEFAULT_SEQUENCE: Sequence[str] = ("firmware",)
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,7 +41,7 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Capture login for one or more sites. "
             "Repeat the flag to include multiple entries. "
-            "Defaults to the EP Gateway warm-up."
+            "Defaults to the remote firmware scheduler."
         ),
     )
     parser.add_argument(
