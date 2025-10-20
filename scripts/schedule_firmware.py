@@ -66,28 +66,30 @@ def _normalise_time_label(value: str) -> str:
     return re.sub(r"\s+", " ", value.strip()).upper()
 
 
-EXPECTED_TIME_LABELS = [
-    "12 AM",
-    "01 AM",
-    "02 AM",
-    "03 AM",
-    "04 AM",
-    "05 AM",
-    "06 AM",
-    "07 AM",
-    "07 PM",
-    "08 PM",
-    "09 PM",
-    "10 PM",
-    "11 PM",
+ALLOWED_TIME_OPTIONS: list[tuple[str, str]] = [
+    ("00", "12 AM"),
+    ("01", "01 AM"),
+    ("02", "02 AM"),
+    ("03", "03 AM"),
+    ("04", "04 AM"),
+    ("05", "05 AM"),
+    ("06", "06 AM"),
+    ("07", "07 AM"),
+    ("19", "07 PM"),
+    ("20", "08 PM"),
+    ("21", "09 PM"),
+    ("22", "10 PM"),
+    ("23", "11 PM"),
 ]
 
+EXPECTED_TIME_LABELS = [label for _, label in ALLOWED_TIME_OPTIONS]
 EXPECTED_TIME_LABELS_NORMALISED = {
     _normalise_time_label(label) for label in EXPECTED_TIME_LABELS
 }
 
-PREFERRED_TIME_LABEL = "12 AM"
-PREFERRED_TIME_LABEL_NORMALISED = _normalise_time_label(PREFERRED_TIME_LABEL)
+ALLOWED_TIME_LABEL_BY_VALUE = {value: label for value, label in ALLOWED_TIME_OPTIONS}
+
+PREFERRED_TIME_VALUE, PREFERRED_TIME_LABEL = ALLOWED_TIME_OPTIONS[0]
 
 
 @dataclass
@@ -271,22 +273,25 @@ def pick_random_schedule_date() -> datetime:
 
 
 def pick_time_option(options: list[tuple[str, str]]) -> tuple[str, str] | None:
-    """Return the option corresponding to 12:00 AM (midnight) if available."""
+    """Return the first allowed option (preferring midnight) that exists."""
 
-    normalised: list[tuple[str, str]] = []
+    cleaned_options: list[tuple[str, str]] = []
     for value, label in options:
         cleaned_value = value.strip()
         cleaned_label = label.strip()
         if not cleaned_value and not cleaned_label:
             continue
-        normalised.append((cleaned_value, cleaned_label))
+        cleaned_options.append((cleaned_value, cleaned_label))
 
-    for value, label in normalised:
-        candidate_label = label or value
-        if not candidate_label:
-            continue
-        if _normalise_time_label(candidate_label) == PREFERRED_TIME_LABEL_NORMALISED:
-            return value, label or candidate_label
+    for allowed_value, allowed_label in ALLOWED_TIME_OPTIONS:
+        allowed_normalised = _normalise_time_label(allowed_label)
+        for value, label in cleaned_options:
+            candidate_label = label or allowed_label
+            candidate_normalised = _normalise_time_label(candidate_label)
+            if candidate_normalised == allowed_normalised or (
+                value and value == allowed_value
+            ):
+                return value or allowed_value, label or allowed_label
 
     return None
 
@@ -437,45 +442,51 @@ async def select_time(
             if not choice:
                 if stepper:
                     stepper.log(
-                        "time-midnight-option-missing",
-                        extra={"selector": selector, "option_count": len(options)},
+                        "time-allowed-option-missing",
+                        extra={
+                            "selector": selector,
+                            "option_count": len(options),
+                            "allowed_time_options": ALLOWED_TIME_OPTIONS,
+                        },
                     )
                 continue
 
             value, label = choice
+            cleaned_value = value.strip()
+            cleaned_label = label.strip()
+            canonical_label = cleaned_label or ALLOWED_TIME_LABEL_BY_VALUE.get(
+                cleaned_value, ""
+            )
+            if not canonical_label:
+                canonical_label = ALLOWED_TIME_LABEL_BY_VALUE.get(
+                    PREFERRED_TIME_VALUE, PREFERRED_TIME_LABEL
+                )
+            target_label = canonical_label
             if stepper:
                 stepper.log(
                     "time-option-selected",
-                    extra={"value": value, "label": label, "selector": selector},
+                    extra={
+                        "value": cleaned_value,
+                        "label": cleaned_label or canonical_label,
+                        "canonical_label": canonical_label,
+                        "selector": selector,
+                    },
                 )
-
-            target_label = next(
-                (
-                    candidate
-                    for candidate in (label, value, PREFERRED_TIME_LABEL)
-                    if candidate
-                    and _normalise_time_label(candidate)
-                    == PREFERRED_TIME_LABEL_NORMALISED
-                ),
-                PREFERRED_TIME_LABEL,
-            )
-            if not target_label:
-                continue
 
             try:
                 await dropdown.select_option(label=target_label)
             except PlaywrightError:
-                if value:
-                    await dropdown.select_option(value=value)
+                if cleaned_value:
+                    await dropdown.select_option(value=cleaned_value)
                 else:
                     raise
-                
+
             # Confirm the dropdown reflects the selected option; fall back to JS if needed.
             selected_value = (await dropdown.input_value()).strip()
-            if value and selected_value != value:
+            if cleaned_value and selected_value != cleaned_value:
                 await dropdown.evaluate(
                     "(el, value) => { el.value = value; el.dispatchEvent(new Event('change', { bubbles: true })); }",
-                    value,
+                    cleaned_value,
                 )
                 selected_value = (await dropdown.input_value()).strip()
 
@@ -507,7 +518,7 @@ async def select_time(
                         await selected_label_locator.first.inner_text()
                     ).strip()
 
-            if not selected_value and value:
+            if not selected_value and cleaned_value:
                 # As a last resort, set both value and label to ensure a submission-friendly state.
                 await dropdown.evaluate(
                     "(el, payload) => {"
@@ -516,7 +527,7 @@ async def select_time(
                     "  if (option) option.selected = true;"
                     "  el.dispatchEvent(new Event('change', { bubbles: true }));"
                     "}",
-                    {"value": value, "label": label},
+                    {"value": cleaned_value, "label": canonical_label},
                 )
                 selected_value = (await dropdown.input_value()).strip()
 
@@ -524,14 +535,14 @@ async def select_time(
                 stepper.log(
                     "time-option-confirmed",
                     extra={
-                        "selected_value": selected_value or value,
+                        "selected_value": selected_value or cleaned_value,
                         "selected_label": selected_label,
                         "selector": selector,
                     },
                 )
 
-            if selected_value or not value:
-                return selected_value or value, selected_label
+            if selected_value or not cleaned_value:
+                return selected_value or cleaned_value, selected_label
     raise RuntimeError("Could not determine a valid time option to select.")
 
 
