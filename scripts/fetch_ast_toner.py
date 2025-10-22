@@ -236,20 +236,22 @@ async def main() -> None:
     results: list[dict[str, str]] = []
 
     async with async_playwright() as playwright:
-        launch_kwargs = {"headless": AST_HEADLESS}
-        if AST_BROWSER_CHANNEL:
-            launch_kwargs["channel"] = AST_BROWSER_CHANNEL
-        browser = await playwright.chromium.launch(**launch_kwargs)
+        channel: str | None = AST_BROWSER_CHANNEL or None
+        browser = await playwright.chromium.launch(
+            headless=AST_HEADLESS,
+            channel=channel,
+        )
 
-        context_kwargs = {}
         if AST_STORAGE_STATE.exists():
-            context_kwargs["storage_state"] = str(AST_STORAGE_STATE)
+            context = await browser.new_context(
+                storage_state=str(AST_STORAGE_STATE)
+            )
         else:
             logging.warning(
                 "Storage state %s not found. The RDHC session may require a manual login.",
                 AST_STORAGE_STATE,
             )
-        context = await browser.new_context(**context_kwargs)
+            context = await browser.new_context()
 
         try:
             page = await context.new_page()
