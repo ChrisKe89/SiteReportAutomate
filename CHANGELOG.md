@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.7] - 2025-10-22
+### Added
+- Documented the report download workflow and default output path for the cleaned
+  firmware device list.
+- Added a dedicated `fetch_ast_toner.py` automation that exports lookup results
+  to `AST_OUTPUT_CSV` based on the product family mappings in `RDHC.html`.
+
+### Changed
+- Updated `schedule_firmware.py` to load devices from CSV as well as Excel,
+  write structured JSON logs when requested, and require a valid
+  `FIRMWARE_STORAGE_STATE` before launching the browser.
+- Normalised environment variable handling across the scripts so Windows-style
+  paths are safely resolved on any platform.
+
 ## [0.1.6] - 2025-10-21
 ### Fixed
 - Ensure the firmware scheduler presses the Reset button after a successful submission so the form is ready for the next device.

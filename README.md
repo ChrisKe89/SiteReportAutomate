@@ -2,7 +2,7 @@
 
 ## Version
 
-Current release: **0.1.6** (2025-10-21)
+Current release: **0.1.7** (2025-10-22)
 
 
 > [!NOTE]  
@@ -158,6 +158,21 @@ Rows that miss required combinations are **SKIPPED** and the reason is recorded 
 
 ---
 
+## Download the firmware device list
+
+Use `fetch_and_clean.py` to download the Device List report, clean the HTML
+spreadsheet, and place the result where the other scripts expect it.
+
+* The cleaned workbook is written to the path defined by
+  `REPORT_OUTPUT_XLSX` (default `data/EPFirmwareReport.xlsx`). The script
+  always moves the latest download into this location after conversion.
+* The raw HTML-in-XLS downloads remain in `downloads/` with timestamped names
+  so you can archive or audit them later.
+
+```bash
+python fetch_and_clean.py
+```
+
 ## Firmware scheduling automation
 
 The repository now includes **`schedule_firmware.py`** to automate software upgrade
@@ -168,26 +183,27 @@ requests in the Fuji Xerox Single Request portal.
 Add the following keys to your `.env` (or rely on the defaults shown):
 
 ```env
-FIRMWARE_INPUT_XLSX=downloads/VIC.xlsx
-FIRMWARE_LOG_XLSX=downloads/FirmwareLog.xlsx
+FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
+FIRMWARE_LOG_XLSX=logs/fws_log.json
 FIRMWARE_STORAGE_STATE=storage_state.json
 FIRMWARE_BROWSER_CHANNEL=msedge
-FIRMWARE_ERRORS_JSON=errors.json
+FIRMWARE_ERRORS_JSON=logs/fws_error_log.json
 FIRMWARE_HTTP_USERNAME=
 FIRMWARE_HTTP_PASSWORD=
 FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
 FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx
 ```
 
-* `FIRMWARE_INPUT_XLSX` must point to a worksheet that contains the columns
-  **`SerialNumber`**, **`Product_Code`**, **`OpcoID`**, and **`State`**.
-* `FIRMWARE_LOG_XLSX` receives the results for each processed row. Successful
-  schedules, skips (already upgraded/not eligible), and failures are all
-  appended with timestamps.
+* `FIRMWARE_INPUT_XLSX` may reference either a `.xlsx` workbook or a `.csv`
+  file. It must contain the columns **`SerialNumber`**, **`Product_Code`**,
+  **`OpcoID`**, and **`State`**.
+* `FIRMWARE_LOG_XLSX` accepts any path. When the extension is `.json` the
+  scheduler appends structured log entries to that JSON array. Otherwise an
+  Excel workbook is created and updated using the same columns.
 * `FIRMWARE_STORAGE_STATE` should reference a login state captured via
   `login_capture_epgw.py` so the script can reuse your authenticated session.
-  The scheduler now **requires** that this file exists and will prompt you to
-  capture a session if it cannot be found.
+  The scheduler now **requires** that this file exists and will stop with a
+  helpful error if it cannot be found.
 * `FIRMWARE_BROWSER_CHANNEL` defaults to Microsoft Edge. Change it to `chromium`
   or `chrome` if you prefer another browser build installed on your system.
 * `FIRMWARE_ERRORS_JSON` is a JSON ledger that captures failed or skipped rows
@@ -241,20 +257,25 @@ With `.venv` active:
 
 ## Toner status automation companion script
 
-`ast_toner.py` drives the Fuji Xerox parts status portal using Playwright.
+`fetch_ast_toner.py` drives the RDHC parts status portal using Playwright.
 
-* **Input**: The newest `.xlsx` file inside `downloads/` (skipping temporary `~$` files). Override with the `AST_TONER_INPUT` environment variable if you need a specific workbook.
-* **Output**: `output.xlsx` populated with the input columns and fetched status rows.
-* **Resilience**: missing columns are treated as blanks, empty rows are skipped, and
-  timeouts/no-table responses are logged to both the console and output workbook.
-* **Visual trace**: every lookup captures screenshots (pre-search and after each
-  outcome) under `screenshots/` to help diagnose data-entry issues quickly.
-* **Authentication**: set `AST_TONER_STORAGE_STATE` to point at a specific `storage_state.json`. If it is omitted the script falls back to a local `storage_state.json` when present, otherwise it launches without persisted cookies and you will need to log in interactively.
+* **Input**: `AST_INPUT_XLSX` (defaults to `data/EPFirmwareReport.xlsx`). The
+  script reads the serial number from column **A**, the product code from
+  column **B**, and the product family from column **G**.
+* **Dropdown mapping**: the product family string is matched against the
+  options in `RDHC.html` so the correct value is selected when submitting the
+  form. Update the HTML snapshot if the portal introduces new families.
+* **Output**: `AST_OUTPUT_CSV` receives one row per lookup with the serial,
+  product code, product family, and the text extracted from
+  `MainContent_UpdatePanelResult`.
+* **Authentication**: set `AST_TONER_STORAGE_STATE` to point at the same
+  `storage_state.json` captured for the other scripts. When the file is missing
+  the script still launches but warns that a fresh login may be required.
 
-Run it with the same authenticated `storage_state.json` created for the main bot:
+Run it with the same authenticated storage state created for the main bot:
 
 ```bash
-python ast_toner.py
+python fetch_ast_toner.py
 ```
 
 ```powershell

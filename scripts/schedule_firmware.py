@@ -7,6 +7,7 @@ SingleRequest firmware page, and schedules upgrades when eligible.
 from __future__ import annotations
 
 import asyncio
+import csv
 import json
 import os
 import random
@@ -29,10 +30,16 @@ from playwright.async_api import (  # type: ignore[import]
 load_dotenv()
 
 DEFAULT_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"
-INPUT_XLSX = Path(os.getenv("FIRMWARE_INPUT_XLSX", "downloads/VIC.xlsx"))
-LOG_XLSX = Path(os.getenv("FIRMWARE_LOG_XLSX", "downloads/FirmwareLog.xlsx"))
+def _env_path(var_name: str, default: str) -> Path:
+    raw_value = os.getenv(var_name, default)
+    normalised = raw_value.replace("\\", "/")
+    return Path(normalised).expanduser()
+
+
+INPUT_PATH = _env_path("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv")
+LOG_PATH = _env_path("FIRMWARE_LOG_XLSX", "logs/fws_log.json")
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
-ERRORS_JSON = Path(os.getenv("FIRMWARE_ERRORS_JSON", "errors.json")).expanduser()
+ERRORS_JSON = _env_path("FIRMWARE_ERRORS_JSON", "logs/fws_error_log.json")
 HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
 HTTP_PASSWORD = os.getenv("FIRMWARE_HTTP_PASSWORD")
 AUTH_WARMUP_URL = os.getenv(
@@ -41,7 +48,7 @@ AUTH_WARMUP_URL = os.getenv(
 )
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
-USER_DATA_DIR = Path(os.getenv("FIRMWARE_USER_DATA_DIR", "user-data"))
+STORAGE_STATE_PATH = _env_path("FIRMWARE_STORAGE_STATE", "storage_state.json")
 
 OPCO_VALUE = "FXAU"  # FBAU label
 
@@ -211,18 +218,60 @@ async def fill_input(page: Page, selector: str, value: str) -> None:
 def load_rows(path: Path) -> list[DeviceRow]:
     if not path.exists():
         raise FileNotFoundError(f"Input workbook not found: {path}")
+    if path.suffix.lower() == ".csv":
+        return _load_rows_from_csv(path)
+
     workbook = load_workbook(path, read_only=True)
-    sheet = workbook.active
-    if sheet is None:
+    try:
+        sheet = workbook.active
+        if sheet is None:
+            raise ValueError(f"No active worksheet found in workbook: {path}")
+        rows: list[DeviceRow] = []
+        for raw in sheet.iter_rows(min_row=2, values_only=True):
+            item = DeviceRow.from_iterable(raw)
+            if item:
+                rows.append(item)
+        return rows
+    finally:
         workbook.close()
-        raise ValueError(f"No active worksheet found in workbook: {path}")
+
+
+def _load_rows_from_csv(path: Path) -> list[DeviceRow]:
     rows: list[DeviceRow] = []
-    # Skip header row by using min_row=2
-    for raw in sheet.iter_rows(min_row=2, values_only=True):
-        item = DeviceRow.from_iterable(raw)
-        if item:
-            rows.append(item)
-    workbook.close()
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames is None:
+            raise ValueError(f"CSV file '{path}' does not contain a header row.")
+
+        for raw in reader:
+            normalised = {
+                (key or "").strip().lower(): "" if value is None else str(value).strip()
+                for key, value in raw.items()
+            }
+
+            def _value(*candidates: str) -> str:
+                for candidate in candidates:
+                    if candidate in normalised and normalised[candidate]:
+                        return normalised[candidate]
+                return ""
+
+            serial = _value("serialnumber", "serial_number", "serial")
+            product = _value("product_code", "productcode", "product")
+            opco = _value("opcoid", "opco", "opco_id")
+            state = _value("state")
+
+            if not serial or not product:
+                continue
+
+            rows.append(
+                DeviceRow(
+                    serial_number=serial,
+                    product_code=product,
+                    opco=opco,
+                    state=state.upper(),
+                )
+            )
+
     return rows
 
 
@@ -268,9 +317,43 @@ def append_log(
     scheduled_time: str = "",
     timezone: str = "",
 ) -> None:
-    LOG_XLSX.parent.mkdir(parents=True, exist_ok=True)
-    if LOG_XLSX.exists():
-        workbook = load_workbook(LOG_XLSX)
+    entry = {
+        "SerialNumber": row.serial_number,
+        "Product_Code": row.product_code,
+        "OpcoID": row.opco,
+        "State": row.state,
+        "Status": status,
+        "Message": message,
+        "ScheduledDate": scheduled_date,
+        "ScheduledTime": scheduled_time,
+        "TimeZone": timezone,
+        "LoggedAt": datetime.now().isoformat(timespec="seconds"),
+    }
+
+    if LOG_PATH.suffix.lower() == ".json":
+        _append_log_json(entry)
+    else:
+        _append_log_workbook(entry)
+
+
+def _append_log_json(entry: dict[str, str]) -> None:
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    payload: list[dict[str, str]] = []
+    if LOG_PATH.exists():
+        try:
+            existing = json.loads(LOG_PATH.read_text(encoding="utf-8"))
+            if isinstance(existing, list):
+                payload = [item for item in existing if isinstance(item, dict)]
+        except json.JSONDecodeError:
+            payload = []
+    payload.append(entry)
+    LOG_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+
+def _append_log_workbook(entry: dict[str, str]) -> None:
+    LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    if LOG_PATH.exists():
+        workbook = load_workbook(LOG_PATH)
         sheet = workbook.active
         if sheet is None:
             workbook.close()
@@ -281,35 +364,9 @@ def append_log(
         if sheet is None:
             workbook.close()
             raise ValueError("Unable to create log worksheet.")
-        sheet.append(
-            [
-                "SerialNumber",
-                "Product_Code",
-                "OpcoID",
-                "State",
-                "Status",
-                "Message",
-                "ScheduledDate",
-                "ScheduledTime",
-                "TimeZone",
-                "LoggedAt",
-            ]
-        )
-    sheet.append(
-        [
-            row.serial_number,
-            row.product_code,
-            row.opco,
-            row.state,
-            status,
-            message,
-            scheduled_date,
-            scheduled_time,
-            timezone,
-            datetime.now().isoformat(timespec="seconds"),
-        ]
-    )
-    workbook.save(LOG_XLSX)
+        sheet.append(list(entry.keys()))
+    sheet.append(list(entry.values()))
+    workbook.save(LOG_PATH)
     workbook.close()
 
 
@@ -349,6 +406,10 @@ def remove_row_from_input(path: Path, row: DeviceRow) -> None:
     if not path.exists():
         return
 
+    if path.suffix.lower() == ".csv":
+        _remove_row_from_csv(path, row)
+        return
+
     workbook = load_workbook(path)
     sheet = workbook.active
     if sheet is None:
@@ -369,6 +430,42 @@ def remove_row_from_input(path: Path, row: DeviceRow) -> None:
         sheet.delete_rows(row_to_delete)
         workbook.save(path)
     workbook.close()
+
+
+def _remove_row_from_csv(path: Path, row: DeviceRow) -> None:
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames is None:
+            return
+        fieldnames = reader.fieldnames
+        records = list(reader)
+
+    def _normalise(value: Any) -> str:
+        if value is None:
+            return ""
+        return str(value).strip()
+
+    target_serial = row.serial_number.strip()
+    target_product = row.product_code.strip()
+
+    index_to_remove: int | None = None
+    for idx, record in enumerate(records):
+        serial = _normalise(record.get("SerialNumber") or record.get("serialnumber"))
+        product = _normalise(record.get("Product_Code") or record.get("product_code"))
+        if serial == target_serial and product == target_product:
+            index_to_remove = idx
+            break
+
+    if index_to_remove is None:
+        return
+
+    del records[index_to_remove]
+
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for record in records:
+            writer.writerow(record)
 
 
 async def reset_form(page: Page) -> None:
@@ -776,34 +873,41 @@ async def handle_row(page: Page, row: DeviceRow) -> str:
 
 
 async def run() -> None:
-    rows = load_rows(INPUT_XLSX)
+    rows = load_rows(INPUT_PATH)
     if not rows:
         print("No rows to process")
         return
 
-    user_data_dir = USER_DATA_DIR.expanduser()
-    user_data_dir.mkdir(parents=True, exist_ok=True)
+    if not STORAGE_STATE_PATH.exists():
+        raise FileNotFoundError(
+            "Storage state not found. Capture a session with login_capture_epgw.py "
+            f"and ensure it is available at {STORAGE_STATE_PATH}."
+        )
 
     async with async_playwright() as p:
         launch_kwargs: dict[str, Any] = {
-            "user_data_dir": str(user_data_dir),
             "headless": HEADLESS,
-            "channel": BROWSER_CHANNEL,
             "args": [
                 f"--auth-server-allowlist={ALLOWLIST}",
                 f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
                 "--start-minimized",
             ],
         }
+        if BROWSER_CHANNEL:
+            launch_kwargs["channel"] = BROWSER_CHANNEL
+        browser = await p.chromium.launch(**launch_kwargs)
+
+        context_kwargs: dict[str, Any] = {
+            "storage_state": str(STORAGE_STATE_PATH),
+            "accept_downloads": True,
+        }
         if HTTP_USERNAME and HTTP_PASSWORD:
-            launch_kwargs["http_credentials"] = {
+            context_kwargs["http_credentials"] = {
                 "username": HTTP_USERNAME,
                 "password": HTTP_PASSWORD,
             }
 
-        context: BrowserContext = await p.chromium.launch_persistent_context(
-            **launch_kwargs
-        )
+        context: BrowserContext = await browser.new_context(**context_kwargs)
 
         try:
             page: Page = await context.new_page()
@@ -821,7 +925,7 @@ async def run() -> None:
                 try:
                     status = await handle_row(page, row)
                     if status == "Scheduled":
-                        remove_row_from_input(INPUT_XLSX, row)
+                        remove_row_from_input(INPUT_PATH, row)
                         if row in rows:
                             rows.remove(row)
                 except Exception as exc:  # noqa: BLE001
@@ -844,6 +948,7 @@ async def run() -> None:
                 await context.close()
             except PlaywrightError:
                 pass
+            await browser.close()
 
 
 if __name__ == "__main__":

@@ -3,7 +3,9 @@
 # Patched to satisfy mypy/pylance: avoid Optional operands and cast OpenPyXL Worksheet.
 
 import asyncio
+import os
 import re
+import shutil
 from io import BytesIO
 from datetime import datetime
 from pathlib import Path
@@ -17,6 +19,16 @@ from playwright.async_api import (
     async_playwright,
     TimeoutError as PlaywrightTimeoutError,
 )
+from dotenv import load_dotenv  # type: ignore[import-untyped]
+
+load_dotenv()
+
+
+def _env_path(var_name: str, default: str) -> Path:
+    raw_value = os.getenv(var_name, default)
+    normalised = raw_value.replace("\\", "/")
+    return Path(normalised).expanduser()
+
 
 # --- Site config ---
 BASE_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
@@ -27,6 +39,7 @@ DOWNLOAD_DIR = Path("downloads")
 DOWNLOAD_DIR.mkdir(exist_ok=True)
 USER_DATA_DIR = Path("user-data")  # persists browser profile (cookies, IWA trust, etc.)
 USER_DATA_DIR.mkdir(exist_ok=True)
+REPORT_OUTPUT_XLSX = _env_path("REPORT_OUTPUT_XLSX", "data/EPFirmwareReport.xlsx")
 
 # --- Selectors (from page) ---
 DDL_OPCO = "#MainContent_ddlOpCoCode"
@@ -244,6 +257,13 @@ async def main() -> None:
     xlsx_path = raw_path.with_suffix(".xlsx")  # keep same timestamped prefix
     xlsx_path.write_bytes(xlsx_bytes)
     print(f"[OK] Wrote clean XLSX: {xlsx_path.resolve()}")
+
+    REPORT_OUTPUT_XLSX.parent.mkdir(parents=True, exist_ok=True)
+    destination = REPORT_OUTPUT_XLSX
+    if destination.exists():
+        destination.unlink()
+    moved_to = Path(shutil.move(str(xlsx_path), str(destination)))
+    print(f"[OK] Moved cleaned XLSX to: {moved_to.resolve()}")
 
 
 if __name__ == "__main__":
