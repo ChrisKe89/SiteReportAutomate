@@ -736,7 +736,22 @@ async def handle_row(page: Page, row: DeviceRow) -> str:
     time_value, time_label = await select_time(page)
     timezone_value, timezone_label = await select_timezone(page, row.state)
 
-    await page.click("#MainContent_submitButton")
+    schedule_button = page.locator("#MainContent_submitButton")
+    if await schedule_button.count() == 0:
+        message = "Schedule button not found; form reset triggered"
+        await reset_form(page)
+        append_log(row, "Failed", message)
+        record_error(row, "Failed", message)
+        return "Failed"
+
+    if not await schedule_button.is_visible() or await schedule_button.is_disabled():
+        message = "Schedule button unavailable; form reset triggered"
+        await reset_form(page)
+        append_log(row, "Failed", message)
+        record_error(row, "Failed", message)
+        return "Failed"
+
+    await schedule_button.click()
     try:
         await page.wait_for_timeout(500)
     except PlaywrightTimeoutError:
