@@ -826,6 +826,7 @@ async def handle_row(page: Page, row: DeviceRow) -> str:
             message = "Device table not visible after search"
         append_log(row, "NotEligible", message)
         record_error(row, "NotEligible", message)
+        await reset_form(page)
         return "NotEligible"
 
     schedule_date = pick_random_schedule_date()
@@ -933,6 +934,10 @@ async def run() -> None:
                     message = status_text or str(exc)
                     append_log(row, "Failed", message)
                     record_error(row, "Failed", message)
+                    try:
+                        await reset_form(page)
+                    except PlaywrightError:
+                        pass
         except PlaywrightError as exc:
             message = str(exc)
             if "ERR_INVALID_AUTH_CREDENTIALS" in message:
