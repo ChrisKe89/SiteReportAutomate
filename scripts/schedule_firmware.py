@@ -20,12 +20,13 @@ from typing import Any, Iterable
 from dotenv import load_dotenv  # type: ignore[import]
 from openpyxl import Workbook, load_workbook  # type: ignore[import]
 from playwright.async_api import (  # type: ignore[import]
-    BrowserContext,
     Error as PlaywrightError,
     Page,
     TimeoutError as PlaywrightTimeoutError,
     async_playwright,
 )
+
+from playwright_launch import launch_browser
 
 load_dotenv()
 
@@ -38,7 +39,7 @@ def _env_path(var_name: str, default: str) -> Path:
 
 INPUT_PATH = _env_path("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv")
 LOG_PATH = _env_path("FIRMWARE_LOG_XLSX", "logs/fws_log.json")
-BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge")
+BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "").strip()
 ERRORS_JSON = _env_path("FIRMWARE_ERRORS_JSON", "logs/fws_error_log.json")
 HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
 HTTP_PASSWORD = os.getenv("FIRMWARE_HTTP_PASSWORD")
@@ -47,7 +48,7 @@ AUTH_WARMUP_URL = os.getenv(
     "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
 )
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
-HEADLESS = os.getenv("FIRMWARE_HEADLESS", "false").lower() in {"1", "true", "yes"}
+HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
 STORAGE_STATE_PATH = _env_path("FIRMWARE_STORAGE_STATE", "storage_state.json")
 
 OPCO_VALUE = "FXAU"  # FBAU label
@@ -886,29 +887,25 @@ async def run() -> None:
         )
 
     async with async_playwright() as p:
-        launch_kwargs: dict[str, Any] = {
-            "headless": HEADLESS,
-            "args": [
-                f"--auth-server-allowlist={ALLOWLIST}",
-                f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
-                "--start-minimized",
-            ],
-        }
-        if BROWSER_CHANNEL:
-            launch_kwargs["channel"] = BROWSER_CHANNEL
-        browser = await p.chromium.launch(**launch_kwargs)
-
-        context_kwargs: dict[str, Any] = {
-            "storage_state": str(STORAGE_STATE_PATH),
-            "accept_downloads": True,
-        }
+        context_kwargs: dict[str, Any] = {"accept_downloads": True}
         if HTTP_USERNAME and HTTP_PASSWORD:
             context_kwargs["http_credentials"] = {
                 "username": HTTP_USERNAME,
                 "password": HTTP_PASSWORD,
             }
 
-        context: BrowserContext = await browser.new_context(**context_kwargs)
+        browser, context = await launch_browser(
+            p,
+            headless=HEADLESS,
+            channel=BROWSER_CHANNEL or None,
+            storage_state_path=STORAGE_STATE_PATH,
+            browser_args=[
+                f"--auth-server-allowlist={ALLOWLIST}",
+                f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
+                "--start-minimized",
+            ],
+            context_kwargs=context_kwargs,
+        )
 
         try:
             page: Page = await context.new_page()
