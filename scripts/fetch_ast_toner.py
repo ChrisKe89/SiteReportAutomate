@@ -16,11 +16,13 @@ from dotenv import load_dotenv  # type: ignore[import-untyped]
 from openpyxl import load_workbook  # type: ignore[import-untyped]
 from openpyxl.utils import column_index_from_string  # type: ignore[import-untyped]
 from playwright.async_api import (  # type: ignore[import-untyped]
+    Error as PlaywrightError,
     Page,
     TimeoutError as PlaywrightTimeoutError,
     async_playwright,
-    Error as PlaywrightError,
 )
+
+from playwright_launch import launch_browser
 
 load_dotenv()
 
@@ -264,10 +266,22 @@ async def main() -> None:
 
     async with async_playwright() as playwright:
         channel: str | None = AST_BROWSER_CHANNEL.strip() or None
+        storage_state_path: Path | None
+        if AST_STORAGE_STATE.exists():
+            storage_state_path = AST_STORAGE_STATE
+        else:
+            logging.warning(
+                "Storage state %s not found. The RDHC session may require a manual login.",
+                AST_STORAGE_STATE,
+            )
+            storage_state_path = None
+
         try:
-            browser = await playwright.chromium.launch(
+            browser, context = await launch_browser(
+                playwright,
                 headless=AST_HEADLESS,
                 channel=channel,
+                storage_state_path=storage_state_path,
             )
         except PlaywrightError as exc:
             logging.error(
@@ -279,17 +293,6 @@ async def main() -> None:
             )
             logging.debug("Playwright launch error: %s", exc)
             return
-
-        if AST_STORAGE_STATE.exists():
-            context = await browser.new_context(
-                storage_state=str(AST_STORAGE_STATE)
-            )
-        else:
-            logging.warning(
-                "Storage state %s not found. The RDHC session may require a manual login.",
-                AST_STORAGE_STATE,
-            )
-            context = await browser.new_context()
 
         try:
             page = await context.new_page()

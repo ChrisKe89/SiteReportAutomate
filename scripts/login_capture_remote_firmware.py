@@ -13,8 +13,10 @@ from playwright.async_api import (  # type: ignore[import]
     async_playwright,
 )
 
+from playwright_launch import launch_browser
+
 DEFAULT_STORAGE_STATE = "storage_state.json"
-DEFAULT_BROWSER_CHANNEL = "msedge"
+DEFAULT_BROWSER_CHANNEL = ""
 
 WaitUntilState = Literal["commit", "domcontentloaded", "load", "networkidle"]
 
@@ -87,48 +89,54 @@ async def capture_logins(
     targets = [TARGETS[key] for key in site_keys]
 
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False, channel=browser_channel)
-        context = await browser.new_context()
-        page = await context.new_page()
+        browser, context = await launch_browser(
+            p,
+            headless=False,
+            channel=browser_channel.strip() or None,
+            storage_state_path=None,
+        )
+        try:
+            page = await context.new_page()
 
-        total = len(targets)
-        for index, target in enumerate(targets, start=1):
-            label = target["label"]
-            url = target["url"]
-            wait_until = cast(WaitUntilState, target.get("wait_until", "networkidle"))
+            total = len(targets)
+            for index, target in enumerate(targets, start=1):
+                label = target["label"]
+                url = target["url"]
+                wait_until = cast(WaitUntilState, target.get("wait_until", "networkidle"))
 
-            print(f"\n[{index}/{total}] Opening {label}: {url}")
+                print(f"\n[{index}/{total}] Opening {label}: {url}")
 
-            try:
-                await page.goto(url, wait_until=wait_until)
-            except PlaywrightError as exc:  # pragma: no cover - interactive workflow
-                message = str(exc)
-                if "ERR_INVALID_AUTH_CREDENTIALS" in message:
-                    print(
-                        "\n>>> The gateway rejected the automatic request because it "
-                        "requires manual credentials."
-                    )
-                    print(
-                        "    Use the Edge window to complete the login (SSO/NTLM/MFA)."
-                    )
-                    print(
-                        "    Once the site finishes loading, return here and continue."
-                    )
-                else:
-                    raise
+                try:
+                    await page.goto(url, wait_until=wait_until)
+                except PlaywrightError as exc:  # pragma: no cover - interactive workflow
+                    message = str(exc)
+                    if "ERR_INVALID_AUTH_CREDENTIALS" in message:
+                        print(
+                            "\n>>> The gateway rejected the automatic request because it "
+                            "requires manual credentials."
+                        )
+                        print(
+                            "    Use the Edge window to complete the login (SSO/NTLM/MFA)."
+                        )
+                        print(
+                            "    Once the site finishes loading, return here and continue."
+                        )
+                    else:
+                        raise
 
-            print(">>> Complete any interactive login in the Edge window.")
-            input(f"Press ENTER here once '{label}' shows you are signed in... ")
+                print(">>> Complete any interactive login in the Edge window.")
+                input(f"Press ENTER here once '{label}' shows you are signed in... ")
 
-            try:
-                await page.wait_for_load_state("networkidle", timeout=15_000)
-            except PlaywrightTimeoutError:  # pragma: no cover - page may stay busy
-                pass
+                try:
+                    await page.wait_for_load_state("networkidle", timeout=15_000)
+                except PlaywrightTimeoutError:  # pragma: no cover - page may stay busy
+                    pass
 
-        await context.storage_state(path=str(storage_state_path))
-        print(f"\nSaved {storage_state_path}")
-
-        await browser.close()
+            await context.storage_state(path=str(storage_state_path))
+            print(f"\nSaved {storage_state_path}")
+        finally:
+            await context.close()
+            await browser.close()
 
 
 async def main() -> None:

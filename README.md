@@ -204,8 +204,11 @@ FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/business
   `login_capture_epgw.py` so the script can reuse your authenticated session.
   The scheduler now **requires** that this file exists and will stop with a
   helpful error if it cannot be found.
-* `FIRMWARE_BROWSER_CHANNEL` defaults to Microsoft Edge. Change it to `chromium`
-  or `chrome` if you prefer another browser build installed on your system.
+* `FIRMWARE_BROWSER_CHANNEL` defaults to the bundled Chromium build (empty
+  value). Set it to `msedge`, `chromium`, or `chrome` if you prefer another
+  locally installed browser.
+* `FIRMWARE_HEADLESS` controls whether the scheduler runs without a visible
+  window. It now defaults to `true` so unattended automation remains silent.
 * `FIRMWARE_ERRORS_JSON` is a JSON ledger that captures failed or skipped rows
   (for example, when a device table is missing). Leave it at the default or
   point it to a shared location if multiple team members are running the bot.
@@ -278,6 +281,26 @@ With `.venv` active:
 * **Authentication**: set `AST_TONER_STORAGE_STATE` to point at the same
   `storage_state.json` captured for the other scripts. When the file is missing
   the script still launches but warns that a fresh login may be required.
+
+## Firmware HAR utilities
+
+Use the helper scripts at the repository root to capture and analyse the
+network traffic generated during a manual firmware lookup:
+
+```bash
+python capture_har.py
+```
+
+Follow the prompts to perform a single lookup in the browser window. The HAR is
+saved to `logs/firmware_lookup.har.zip`. To review likely JSON endpoints inside
+the capture, run:
+
+```bash
+python scan_har.py
+```
+
+The scanner prints a sorted list of candidate API calls, including preview
+snippets for any POST bodies that were recorded.
 
 Run it with the same authenticated storage state created for the main bot:
 
