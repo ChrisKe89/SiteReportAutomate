@@ -226,6 +226,13 @@ FIRMWARE_WARMUP_URL=http://epgateway.sgp.xerox.com:8041/AlertManagement/business
 python schedule_firmware.py
 ```
 
+To run the automation in a forced headless browser session, use the dedicated
+entry point:
+
+```bash
+python scripts/schedule_firmware_headless.py
+```
+
 For each Excel row the bot:
 
 1. Selects **FBAU** in the OpCo dropdown.
