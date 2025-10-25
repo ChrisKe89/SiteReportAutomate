@@ -19,6 +19,7 @@ from playwright.async_api import (  # type: ignore[import-untyped]
     Page,
     TimeoutError as PlaywrightTimeoutError,
     async_playwright,
+    Error as PlaywrightError,
 )
 
 load_dotenv()
@@ -36,8 +37,8 @@ DEFAULT_RDHC_HTML = Path(__file__).resolve().parent.parent / "RDHC.html"
 RDHC_HTML_PATH = _env_path("RDHC_HTML_PATH", str(DEFAULT_RDHC_HTML))
 AST_PAGE_URL = os.getenv("AST_TONER_PAGE_URL", Path(RDHC_HTML_PATH).resolve().as_uri())
 AST_STORAGE_STATE = _env_path("AST_TONER_STORAGE_STATE", "storage_state.json")
-AST_BROWSER_CHANNEL = os.getenv("AST_BROWSER_CHANNEL", "msedge")
-AST_HEADLESS = os.getenv("AST_HEADLESS", "false").lower() in {"1", "true", "yes"}
+AST_BROWSER_CHANNEL = os.getenv("AST_BROWSER_CHANNEL", "")
+AST_HEADLESS = os.getenv("AST_HEADLESS", "true").lower() in {"1", "true", "yes"}
 PRODUCT_FAMILY_COLUMN = os.getenv(
     "PRODUCT_FAMILY_COLUMN", os.getenv("PRODUCT_FAMILY", "G")
 )
@@ -102,6 +103,8 @@ def load_input_rows(path: Path) -> list[InputRow]:
     if not path.exists():
         raise FileNotFoundError(f"AST input workbook not found: {path}")
 
+    logging.info("Reading AST input workbook from %s", path)
+
     family_col = _column_index(PRODUCT_FAMILY_COLUMN, label="Product Family")
     product_col = _column_index(PRODUCT_CODE_COLUMN, label="Product Code")
     serial_col = _column_index(SERIAL_COLUMN, label="Serial Number")
@@ -112,18 +115,41 @@ def load_input_rows(path: Path) -> list[InputRow]:
         if sheet is None:
             raise ValueError("AST input workbook does not contain an active worksheet")
 
+        start_col = min(serial_col, product_col, family_col)
+        end_col = max(serial_col, product_col, family_col)
+        serial_idx = serial_col - start_col
+        product_idx = product_col - start_col
+        family_idx = family_col - start_col
+
         rows: list[InputRow] = []
-        for idx in range(2, sheet.max_row + 1):
-            serial = sheet.cell(row=idx, column=serial_col).value
-            product = sheet.cell(row=idx, column=product_col).value
-            family = sheet.cell(row=idx, column=family_col).value
+        empty_streak = 0
+        for row_values in sheet.iter_rows(
+            min_row=2,
+            min_col=start_col,
+            max_col=end_col,
+            values_only=True,
+        ):
+            serial = (
+                row_values[serial_idx] if len(row_values) > serial_idx else None
+            )
+            product = (
+                row_values[product_idx] if len(row_values) > product_idx else None
+            )
+            family = (
+                row_values[family_idx] if len(row_values) > family_idx else None
+            )
 
             serial_text = "" if serial is None else str(serial).strip()
             product_text = "" if product is None else str(product).strip()
             family_text = "" if family is None else str(family).strip()
 
             if not serial_text and not product_text and not family_text:
+                empty_streak += 1
+                if rows and empty_streak >= 50:
+                    break
                 continue
+
+            empty_streak = 0
 
             rows.append(
                 InputRow(
@@ -229,6 +255,7 @@ async def main() -> None:
 
     family_mapping = load_product_family_map(RDHC_HTML_PATH)
     rows = load_input_rows(AST_INPUT_XLSX)
+    logging.info("Loaded %d AST input rows from %s", len(rows), AST_INPUT_XLSX)
     if not rows:
         logging.warning("No AST rows found in %s", AST_INPUT_XLSX)
         return
@@ -236,11 +263,22 @@ async def main() -> None:
     results: list[dict[str, str]] = []
 
     async with async_playwright() as playwright:
-        channel: str | None = AST_BROWSER_CHANNEL or None
-        browser = await playwright.chromium.launch(
-            headless=AST_HEADLESS,
-            channel=channel,
-        )
+        channel: str | None = AST_BROWSER_CHANNEL.strip() or None
+        try:
+            browser = await playwright.chromium.launch(
+                headless=AST_HEADLESS,
+                channel=channel,
+            )
+        except PlaywrightError as exc:
+            logging.error(
+                "Failed to launch Chromium browser. %s",
+                (
+                    "Install the Playwright browsers by running 'playwright install chromium' "
+                    "or set AST_BROWSER_CHANNEL to a locally installed browser."
+                ),
+            )
+            logging.debug("Playwright launch error: %s", exc)
+            return
 
         if AST_STORAGE_STATE.exists():
             context = await browser.new_context(
