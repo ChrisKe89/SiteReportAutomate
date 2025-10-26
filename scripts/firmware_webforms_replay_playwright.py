@@ -4,18 +4,19 @@ Headless Playwright replayer for SingleRequest.aspx (SEARCH only).
 - Uses the browser (Chromium/Edge) to satisfy NTLM/Negotiate automatically.
 - Loads cookies from storage_state.json (optional but recommended).
 - Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- Posts the WebForms UpdatePanel "Search" request and writes <input>_out.csv.
+- Posts the WebForms UpdatePanel "Search" request via in-page fetch()
+  (so it uses the browser's TLS & auth), writes <input>_out.csv.
 
 Env:
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
-  FIRMWARE_STORAGE_STATE=storage_state.json      # optional, but helpful
-  FIRMWARE_BROWSER_CHANNEL=msedge                # or "chrome", "msedge", "" (Chromium)
+  FIRMWARE_STORAGE_STATE=storage_state.json
+  FIRMWARE_BROWSER_CHANNEL=msedge
   FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
   FIRMWARE_OPCO=FXAU
   FIRMWARE_HEADLESS=true
 
 Requires:
-  pip install playwright openpyxl
+  pip install playwright openpyxl bs4
   playwright install
 """
 
@@ -36,13 +37,12 @@ URL = f"{BASE}/firmware/SingleRequest.aspx"
 SEARCH_PANEL = "ctl00$MainContent$searchForm"
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
 
-HEADERS = {
+# These headers (except Origin/Referer which browser sets automatically) are safe to include.
+XHR_HEADERS = {
     "User-Agent": "Mozilla/5.0",
     "X-Requested-With": "XMLHttpRequest",
     "X-MicrosoftAjax": "Delta=true",
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-    "Origin": BASE,
-    "Referer": URL,
 }
 
 DEFAULT_OPCO = os.getenv("FIRMWARE_OPCO", "FXAU")
@@ -132,8 +132,8 @@ def parse_status_from_html(html: str) -> str:
 
 # ---------- WebForms helpers via Playwright ----------
 async def get_state(page) -> Dict[str, str]:
+    # Navigate to ensure IWA handshake completes
     await page.goto(URL, wait_until="domcontentloaded")
-    # Read hidden fields inside the DOM
     names = [
         "__VIEWSTATE",
         "__VIEWSTATEGENERATOR",
@@ -153,7 +153,6 @@ async def get_state(page) -> Dict[str, str]:
 
 
 def urlencode_form(d: Dict[str, str]) -> str:
-    # url-encode without importing urllib just to keep this file self-contained
     from urllib.parse import urlencode
 
     return urlencode(d)
@@ -179,15 +178,26 @@ async def post_search(
         SEARCH_TRIGGER: "Search",
     }
     payload = urlencode_form(form)
-    resp = await page.request.post(URL, headers=HEADERS, data=payload)
-    status = resp.status
-    text = await resp.text()
-    return status, text
+
+    # Do the POST INSIDE THE PAGE so it uses browser TLS + IWA + cookies.
+    result = await page.evaluate(
+        """async ({url, headers, body}) => {
+            const res = await fetch(url, {
+              method: 'POST',
+              headers,
+              body,
+              credentials: 'include'
+            });
+            const text = await res.text();
+            return { status: res.status, text };
+        }""",
+        {"url": URL, "headers": XHR_HEADERS, "body": payload},
+    )
+    return int(result["status"]), str(result["text"])
 
 
 async def main() -> None:
     out_path = INPUT_PATH.with_name(INPUT_PATH.stem + "_out.csv")
-
     browser_args = [
         f"--auth-server-allowlist={ALLOWLIST}",
         f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
@@ -224,17 +234,13 @@ async def main() -> None:
             writer = csv.DictWriter(fout, fieldnames=fieldnames)
             writer.writeheader()
 
-            # Fetch hidden fields once per run (they can change per request; refresh per row to be safest)
             for item in rows:
                 serial = item["serial"]
                 product = item["product_code"]
                 if not serial or not product:
                     continue
 
-                hidden = await get_state(
-                    page
-                )  # reload per row to keep __VIEWSTATE fresh
-
+                hidden = await get_state(page)  # fresh __VIEWSTATE per row
                 code, html = await post_search(
                     page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
