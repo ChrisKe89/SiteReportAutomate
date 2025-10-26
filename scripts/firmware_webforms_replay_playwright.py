@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """
-Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE)
+Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE) via DOM.
 
-- Uses a real browser context so NTLM/Negotiate and TLS "just work".
-- Loads cookies from storage_state.json (optional but recommended).
-- Reads devices from FIRMWARE_INPUT_XLSX (CSV or XLSX).
-- SEARCH: posts the UpdatePanel payload via in-page fetch() (browser cookies/auth).
-- SCHEDULE: performs a real WebForms postback (robust click, with manual form submit fallback).
-- Writes <input>_out.csv with search & schedule results.
+Why this version?
+- WebForms + UpdatePanel only renders the scheduling controls after a real in-page
+  "Search" postback. Fetching the delta doesn't update the DOM, so we now do the
+  search by clicking the Search button in the page.
+
+Flow:
+  1) Navigate to the page (IWA/NTLM handled by the browser, optional storage_state).
+  2) Fill OpCo/Product/Serial, click Search (DOM postback).
+  3) Wait for result message and for schedule controls (if eligible).
+  4) Fill Date/Time/Timezone, click Schedule (DOM postback or full reload).
+  5) Read message and write CSV row.
 
 Env:
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
@@ -20,7 +25,7 @@ Env:
   FIRMWARE_TIME_VALUE=03
   FIRMWARE_DAYS_MIN=3
   FIRMWARE_DAYS_MAX=6
-  FIRMWARE_DEBUG_TZ=0   # set 1/true to print timezone options and selection
+  FIRMWARE_DEBUG_TZ=0
 """
 
 from __future__ import annotations
@@ -41,20 +46,6 @@ from playwright.async_api import async_playwright, Error as PWError  # type: ign
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
-# UpdatePanel targets (from captured posts)
-SEARCH_PANEL = "ctl00$MainContent$searchForm"
-SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
-SCHEDULE_PANEL = "ctl00$MainContent$pnlFWTimesssss"
-SCHEDULE_TRIGGER = "ctl00$MainContent$submitButton"
-
-# Headers for XHR; Origin/Referer/Cookies are handled by the browser.
-XHR_HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-    "X-Requested-With": "XMLHttpRequest",
-    "X-MicrosoftAjax": "Delta=true",
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-}
-
 DEFAULT_OPCO = os.getenv("FIRMWARE_OPCO", "FXAU")
 INPUT_PATH = Path(os.getenv("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv"))
 STORAGE_STATE_PATH = Path(os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.json"))
@@ -67,7 +58,7 @@ PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
 DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
 
-# AU state → timezone dropdown value (server expects the <option value>, not label)
+# AU state → timezone dropdown value
 STATE_TZ = {
     "ACT": "+11:00",
     "NSW": "+11:00",
@@ -79,7 +70,7 @@ STATE_TZ = {
 }
 
 
-# ---------- Input helpers ----------
+# ---------- CSV input ----------
 def normalize_row(raw: dict) -> dict:
     lower = {
         (k or "").strip().lower(): "" if v is None else str(v).strip()
@@ -138,161 +129,17 @@ def read_rows(path: Path) -> Iterable[dict]:
     raise ValueError(f"Unsupported input type: {path.suffix}")
 
 
-# ---------- MicrosoftAjax delta parsing ----------
-def _extract_from_msajax_delta(delta: str) -> str:
-    if not delta.startswith("|"):
-        return ""
-    tokens: List[str] = delta.split("|")
-    i = 0
-    snippets: List[str] = []
-    while i < len(tokens):
-        if tokens[i] == "updatePanel" and i + 3 < len(tokens):
-            html = tokens[i + 3]
-            snippets.append(html)
-            i += 4
-            continue
-        i += 1
-    for html in snippets:
-        soup = BeautifulSoup(html, "html.parser")
-        for sel in [
-            "#MainContent_MessageLabel",
-            "#MainContent_lblMessage",
-            "#MainContent_lblStatus",
-        ]:
-            node = soup.select_one(sel)
-            if node:
-                txt = " ".join(node.get_text(" ", strip=True).split())
-                if txt:
-                    return txt
-    for html in snippets:
-        cleaned = " ".join(
-            BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split()
-        )
-        if cleaned:
-            return cleaned[:300]
-    return ""
-
-
-def parse_status_from_html(html: str) -> str:
-    # Use for raw XHR response bodies (delta-encoded or full)
-    if html.startswith("|"):
-        return _extract_from_msajax_delta(html)
-    soup = BeautifulSoup(html, "html.parser")
-    for sel in [
-        "#MainContent_MessageLabel",
-        "#MainContent_lblMessage",
-        "#MainContent_lblStatus",
-    ]:
-        node = soup.select_one(sel)
-        if node:
-            return " ".join(node.get_text(" ", strip=True).split())
-    upper = html.upper()
-    for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
-        if key in upper:
-            return key
-    return ""
-
-
-def parse_status_from_page_html(html: str) -> str:
-    # Use for page.content() after a click/postback
-    soup = BeautifulSoup(html, "html.parser")
-    for sel in [
-        "#MainContent_MessageLabel",
-        "#MainContent_lblMessage",
-        "#MainContent_lblStatus",
-    ]:
-        node = soup.select_one(sel)
-        if node:
-            return " ".join(node.get_text(" ", strip=True).split())
-    return ""
-
-
-# ---------- Scheduling helpers ----------
+# ---------- Helpers ----------
 def pick_schedule_date() -> str:
     start = datetime.now().date() + timedelta(days=DAYS_MIN)
     end = datetime.now().date() + timedelta(days=DAYS_MAX)
     span = (end - start).days
     offset = random.randint(0, max(0, span))
-    return (start + timedelta(days=offset)).strftime("%Y-%m-%d")  # ISO; matches capture
+    return (start + timedelta(days=offset)).strftime("%Y-%m-%d")  # ISO
 
 
 def timezone_for_state(state: str) -> str:
     return STATE_TZ.get(state.upper(), "+11:00")
-
-
-async def select_timezone_on_page(
-    page, desired_value: str, label_hint: str | None = None
-) -> str:
-    """
-    Selects timezone in the DOM so VIEWSTATE reflects the selection.
-    Returns the actually selected option value.
-    """
-    ok = await page.evaluate(
-        """
-        (val) => {
-          const sel = document.querySelector('select#MainContent_ddlTimeZone');
-          if (!sel) return false;
-          sel.value = val;
-          if (sel.value === val) {
-            sel.dispatchEvent(new Event('change', { bubbles: true }));
-            return true;
-          }
-          return false;
-        }
-    """,
-        desired_value,
-    )
-    if ok:
-        return (
-            await page.eval_on_selector(
-                "select#MainContent_ddlTimeZone", "el => el.value"
-            )
-            or desired_value
-        )
-
-    if label_hint:
-        matched_val = await page.evaluate(
-            """
-            (needle) => {
-              const sel = document.querySelector('select#MainContent_ddlTimeZone');
-              if (!sel) return '';
-              const m = Array.from(sel.options).find(o => (o.text||'').toUpperCase().includes(needle.toUpperCase()));
-              return m ? m.value : '';
-            }
-        """,
-            label_hint,
-        )
-        if matched_val:
-            ok2 = await page.evaluate(
-                """
-                (val) => {
-                  const sel = document.querySelector('select#MainContent_ddlTimeZone');
-                  if (!sel) return false;
-                  sel.value = val;
-                  if (sel.value === val) {
-                    sel.dispatchEvent(new Event('change', { bubbles: true }));
-                    return true;
-                  }
-                  return false;
-                }
-            """,
-                matched_val,
-            )
-            if ok2:
-                return matched_val
-
-    fallback = await page.evaluate("""
-        () => {
-          const sel = document.querySelector('select#MainContent_ddlTimeZone');
-          if (!sel) return '';
-          const opt = Array.from(sel.options).find(o => o.value);
-          if (!opt) return '';
-          sel.value = opt.value;
-          sel.dispatchEvent(new Event('change', { bubbles: true }));
-          return sel.value;
-        }
-    """)
-    return fallback or desired_value
 
 
 async def debug_dump_timezone(page) -> None:
@@ -313,96 +160,148 @@ async def debug_dump_timezone(page) -> None:
         print("TZ option:", o)
 
 
-# ---------- WebForms via Playwright ----------
-async def get_state(page) -> Dict[str, str]:
-    # Navigating ensures IWA handshake + the form exists
-    await page.goto(URL, wait_until="domcontentloaded")
-    names = [
-        "__VIEWSTATE",
-        "__VIEWSTATEGENERATOR",
-        "__EVENTVALIDATION",
-        "__EVENTTARGET",
-        "__EVENTARGUMENT",
-        "__LASTFOCUS",
-    ]
-    values: Dict[str, str] = {}
-    for name in names:
+def parse_status_from_page_html(html: str) -> str:
+    soup = BeautifulSoup(html, "html.parser")
+    for sel in [
+        "#MainContent_MessageLabel",
+        "#MainContent_lblMessage",
+        "#MainContent_lblStatus",
+    ]:
+        node = soup.select_one(sel)
+        if node:
+            return " ".join(node.get_text(" ", strip=True).split())
+    return ""
+
+
+async def read_status_from_dom(page) -> str:
+    for sel in [
+        "#MainContent_MessageLabel",
+        "#MainContent_lblMessage",
+        "#MainContent_lblStatus",
+    ]:
         try:
-            val = await page.eval_on_selector(f'input[name="{name}"]', "el => el.value")
+            el = await page.query_selector(sel)
         except PWError:
-            val = ""
-        values[name] = val or ""
-    return values
+            el = None
+        if el:
+            try:
+                txt = (await el.inner_text()).strip()
+            except PWError:
+                txt = ""
+            if txt:
+                return " ".join(txt.split())
+    return ""
 
 
-def urlencode_form(d: Dict[str, str]) -> str:
-    from urllib.parse import urlencode
+async def _race_and_cancel(*aws, timeout: float | None = None):
+    tasks = [asyncio.create_task(coro) for coro in aws]
+    try:
+        done, pending = await asyncio.wait(
+            tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
+        )
+        for t in pending:
+            with contextlib.suppress(Exception):
+                t.cancel()
+        if done:
+            return await next(iter(done))
+        return None
+    finally:
+        for t in tasks:
+            if not t.done():
+                with contextlib.suppress(Exception):
+                    t.cancel()
 
-    return urlencode(d)
 
+# ---------- DOM actions ----------
+async def fill_search_fields(page, opco: str, product_code: str, serial: str) -> None:
+    # Ensure we're on the page
+    await page.goto(URL, wait_until="domcontentloaded")
 
-async def post_search(
-    page, hidden: Dict[str, str], opco: str, product_code: str, serial: str
-) -> Tuple[int, str]:
-    form = {
-        "ctl00$ScriptManager1": f"{SEARCH_PANEL}|{SEARCH_TRIGGER}",
-        "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
-        "__EVENTARGUMENT": hidden.get("__EVENTARGUMENT", ""),
-        "__LASTFOCUS": hidden.get("__LASTFOCUS", ""),
-        "__VIEWSTATE": hidden.get("__VIEWSTATE", ""),
-        "__VIEWSTATEGENERATOR": hidden.get("__VIEWSTATEGENERATOR", ""),
-        "__EVENTVALIDATION": hidden.get("__EVENTVALIDATION", ""),
-        "ctl00$MainContent$ddlOpCoID": opco,
-        "ctl00$MainContent$ProductCode": product_code,
-        "ctl00$MainContent$SerialNumber": serial,
-        "ctl00$ucAsync1$hdnTimeout": "30",
-        "ctl00$ucAsync1$hdnSetTimeoutID": "4",
-        "__ASYNCPOST": "true",
-        SEARCH_TRIGGER: "Search",
-    }
-    payload = urlencode_form(form)
-    result = await page.evaluate(
-        """async ({url, headers, body}) => {
-            const res = await fetch(url, { method: 'POST', headers, body, credentials: 'include' });
-            const text = await res.text();
-            return { status: res.status, text };
-        }""",
-        {"url": URL, "headers": XHR_HEADERS, "body": payload},
+    # Set values and fire change/input so WebForms tracks state
+    await page.evaluate(
+        """
+        ({opco, product, serial}) => {
+          const setVal = (sel, val) => {
+            const el = document.querySelector(sel);
+            if (!el) return;
+            el.value = val;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          };
+
+          // IDs from earlier inspection/capture
+          setVal('select#MainContent_ddlOpCoID', opco);
+          setVal('#MainContent_ProductCode', product);
+          setVal('#MainContent_SerialNumber', serial);
+        }
+        """,
+        {"opco": opco, "product": product_code, "serial": serial},
     )
-    return int(result["status"]), str(result["text"])
 
 
-async def force_enable_controls(page) -> None:
-    # Remove disabled attribute if JS kept them disabled
+async def click_search(page) -> None:
+    selectors = [
+        'input[name="ctl00$MainContent$btnSearch"]',
+        "#MainContent_btnSearch",
+        '//input[contains(@value,"Search")]',
+        '//button[contains(normalize-space(),"Search")]',
+    ]
+    for sel in selectors:
+        try:
+            loc = page.locator(sel)
+            if await loc.count() == 0:
+                continue
+            await loc.first.scroll_into_view_if_needed()
+            await loc.first.click(timeout=3000)
+            return
+        except Exception:
+            continue
+    raise RuntimeError("Search button not found")
+
+
+async def wait_after_search(page) -> str:
+    # After clicking Search, the page may do UpdatePanel partial update (no nav)
+    # or it may update various bits. We wait for either a message or the date box.
+    try:
+        await _race_and_cancel(
+            page.wait_for_selector(
+                "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
+                timeout=12000,
+            ),
+            page.wait_for_selector("#MainContent_txtDateTime", timeout=12000),
+            timeout=12,
+        )
+    except Exception:
+        pass
+
+    msg = await read_status_from_dom(page)
+    if not msg:
+        try:
+            html = await page.content()
+            msg = parse_status_from_page_html(html) or msg
+        except PWError:
+            pass
+    return msg
+
+
+async def wait_for_schedule_controls(page):
+    # Controls appear only if the device is eligible to schedule
+    await page.wait_for_selector(
+        "#MainContent_txtDateTime, #MainContent_ddlScheduleTime, #MainContent_ddlTimeZone",
+        timeout=12000,
+    )
+    # If any is present but disabled, try to enable
     await page.evaluate("""
       () => {
-        const ids = ['#MainContent_txtDateTime', '#MainContent_ddlScheduleTime', '#MainContent_ddlTimeZone'];
-        for (const sel of ids) {
+        for (const sel of ['#MainContent_txtDateTime', '#MainContent_ddlScheduleTime', '#MainContent_ddlTimeZone']) {
           const el = document.querySelector(sel);
-          if (el && el.disabled) {
-            el.disabled = false;
-          }
+          if (el && el.disabled) el.disabled = false;
         }
       }
     """)
 
 
-async def wait_for_schedule_controls_enabled(page):
-    await page.wait_for_selector("#MainContent_txtDateTime", timeout=12000)
-    await page.wait_for_selector("#MainContent_ddlScheduleTime", timeout=12000)
-    await page.wait_for_selector("#MainContent_ddlTimeZone", timeout=12000)
-    try:
-        await page.wait_for_selector("#MainContent_txtDateTime:enabled", timeout=3000)
-        await page.wait_for_selector(
-            "#MainContent_ddlScheduleTime:enabled", timeout=3000
-        )
-        await page.wait_for_selector("#MainContent_ddlTimeZone:enabled", timeout=3000)
-    except Exception:
-        await force_enable_controls(page)
-
-
 async def fill_schedule_fields(page, date_iso: str, time_val: str, tz_val: str) -> None:
-    # Use ISO date (yyyy-mm-dd) to match your captured POST
     await page.evaluate(
         """
         ({date, time, tz}) => {
@@ -428,10 +327,8 @@ async def click_schedule(page) -> None:
         "#MainContent_submitButton",
         'input[type="submit"][value="Schedule"]',
         'input[value="Schedule"]',
-        "button#MainContent_submitButton",
-        'button[name="ctl00$MainContent$submitButton"]',
-        '//input[contains(@value,"Schedule")]',
-        '//button[contains(normalize-space(),"Schedule")]',
+        "//input[contains(@value,'Schedule')]",
+        "//button[contains(normalize-space(),'Schedule')]",
     ]
     for sel in selectors:
         try:
@@ -439,12 +336,20 @@ async def click_schedule(page) -> None:
             if await loc.count() == 0:
                 continue
             await loc.first.scroll_into_view_if_needed()
+            # race: message OR reload
+            nav = page.wait_for_load_state("domcontentloaded", timeout=15000)
+            msg = page.wait_for_selector(
+                "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
+                timeout=15000,
+            )
             await loc.first.click(timeout=3000)
+            with contextlib.suppress(Exception):
+                await _race_and_cancel(nav, msg, timeout=15)
             return
         except Exception:
             continue
 
-    # Manual full postback (avoid Sys.WebForms strict-mode error path)
+    # Manual full postback fallback
     await page.evaluate(
         """
         (eventTarget) => {
@@ -459,75 +364,10 @@ async def click_schedule(page) -> None:
           f.submit();
         }
         """,
-        SCHEDULE_TRIGGER,
+        "ctl00$MainContent$submitButton",
     )
-
-
-async def read_status_from_dom(page) -> str:
-    for sel in [
-        "#MainContent_MessageLabel",
-        "#MainContent_lblMessage",
-        "#MainContent_lblStatus",
-    ]:
-        try:
-            el = await page.query_selector(sel)
-        except PWError:
-            el = None
-        if el:
-            try:
-                txt = (await el.inner_text()).strip()
-            except PWError:
-                txt = ""
-            if txt:
-                return " ".join(txt.split())
-    return ""
-
-
-# ---------- Robust waits (no dangling tasks) ----------
-async def _race_and_cancel(*aws, timeout: float | None = None):
-    tasks = [asyncio.create_task(coro) for coro in aws]
-    try:
-        done, pending = await asyncio.wait(
-            tasks, return_when=asyncio.FIRST_COMPLETED, timeout=timeout
-        )
-        if not done:
-            for t in tasks:
-                with contextlib.suppress(Exception):
-                    t.cancel()
-            return None
-        winner = next(iter(done))
-        for t in pending:
-            with contextlib.suppress(Exception):
-                t.cancel()
-        return await winner
-    finally:
-        for t in tasks:
-            if not t.done():
-                with contextlib.suppress(Exception):
-                    t.cancel()
-
-
-async def wait_after_search(page) -> str:
-    try:
-        await _race_and_cancel(
-            page.wait_for_selector(
-                "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
-                timeout=12000,
-            ),
-            page.wait_for_selector("#MainContent_txtDateTime", timeout=12000),
-            timeout=12,
-        )
-    except Exception:
-        pass
-
-    msg = await read_status_from_dom(page)
-    if not msg:
-        try:
-            html = await page.content()
-            msg = parse_status_from_page_html(html) or msg
-        except PWError:
-            pass
-    return msg
+    with contextlib.suppress(Exception):
+        await page.wait_for_load_state("domcontentloaded", timeout=15000)
 
 
 async def wait_after_schedule(page) -> str:
@@ -542,7 +382,6 @@ async def wait_after_schedule(page) -> str:
         )
     except Exception:
         pass
-
     msg = await read_status_from_dom(page)
     if not msg:
         try:
@@ -603,32 +442,99 @@ async def main() -> None:
                 if not serial or not product:
                     continue
 
-                # 1) SEARCH via UpdatePanel XHR
-                hidden = await get_state(page)
-                code_s, html_s = await post_search(
-                    page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
+                # 1) SEARCH via DOM (ensures UpdatePanel actually updates the page)
+                await fill_search_fields(
+                    page, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
-                status_s = parse_status_from_html(html_s)
-                if not status_s:
-                    # also check the live DOM (sometimes page updates quietly)
-                    status_s = await wait_after_search(page)
+                await click_search(page)
+                status_s = await wait_after_search(page)
+                code_s = 200
+                print(f"[SEARCH] {serial}/{product} -> {status_s or '(no message)'}")
 
-                # 2) SCHEDULE
-                await page.goto(URL, wait_until="domcontentloaded")
-                await wait_for_schedule_controls_enabled(page)
+                # If the page didn’t render schedule controls (e.g., not eligible), record and continue
+                has_controls = False
+                try:
+                    await page.wait_for_selector(
+                        "#MainContent_txtDateTime, #MainContent_ddlScheduleTime, #MainContent_ddlTimeZone",
+                        timeout=3000,
+                    )
+                    # at least one exists; check if all three exist:
+                    txt = await page.query_selector("#MainContent_txtDateTime")
+                    tim = await page.query_selector("#MainContent_ddlScheduleTime")
+                    tzz = await page.query_selector("#MainContent_ddlTimeZone")
+                    has_controls = bool(txt and tim and tzz)
+                except Exception:
+                    has_controls = False
+
+                if not has_controls:
+                    writer.writerow(
+                        {
+                            "serial": serial,
+                            "product_code": product,
+                            "state": item.get("state", ""),
+                            "opco": item.get("opco", ""),
+                            "http_status_search": code_s,
+                            "status_text_search": status_s,
+                            "http_status_schedule": 200,
+                            "status_text_schedule": "",  # no schedule possible
+                            "scheduled_date": "",
+                            "scheduled_time": "",
+                            "timezone_value": "",
+                        }
+                    )
+                    continue
+
+                # 2) SCHEDULE (controls exist)
+                await wait_for_schedule_controls(page)
 
                 date_iso = pick_schedule_date()
                 time_val = PREFERRED_TIME_VALUE
                 desired_tz_val = timezone_for_state(item.get("state", ""))
 
+                # Try selecting by value; give a helpful label hint for +11:00
                 label_hint = (
                     "Canberra, Melbourne, Sydney"
                     if desired_tz_val == "+11:00"
                     else None
                 )
-                actual_tz_val = await select_timezone_on_page(
-                    page, desired_tz_val, label_hint
+                # Select tz in DOM (ensures ViewState tracks it)
+                await page.evaluate(
+                    """
+                    (val) => {
+                      const sel = document.querySelector('select#MainContent_ddlTimeZone');
+                      if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                    }
+                    """,
+                    desired_tz_val,
                 )
+                # If not applied, try a smarter selection routine
+                applied_val = (
+                    await page.eval_on_selector(
+                        "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
+                    )
+                    or ""
+                )
+                if not applied_val or applied_val != desired_tz_val:
+                    # Try matching by label
+                    await page.evaluate(
+                        """
+                        (needle) => {
+                          const sel = document.querySelector('select#MainContent_ddlTimeZone');
+                          if (!sel) return;
+                          const m = Array.from(sel.options).find(o => (o.text||'').toUpperCase().includes((needle||'').toUpperCase()));
+                          if (m) { sel.value = m.value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                        }
+                        """,
+                        label_hint or "",
+                    )
+
+                actual_tz_val = (
+                    await page.eval_on_selector(
+                        "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
+                    )
+                    or desired_tz_val
+                )
+
                 if DEBUG_TZ:
                     await debug_dump_timezone(page)
 
@@ -637,6 +543,7 @@ async def main() -> None:
 
                 status_c = await wait_after_schedule(page)
                 code_c = 200
+                print(f"[SCHEDULE] {serial}/{product} -> {status_c or '(no message)'}")
 
                 writer.writerow(
                     {
@@ -654,7 +561,7 @@ async def main() -> None:
                     }
                 )
 
-        # Close cleanly after all awaits complete (prevents “Task exception…” logs)
+        # Clean close—prevents “Task exception was never retrieved” noise
         await page.close()
         await context.close()
         await browser.close()
