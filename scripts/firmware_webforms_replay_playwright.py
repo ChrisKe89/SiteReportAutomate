@@ -5,7 +5,7 @@ Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE).
 - Uses the browser (Chromium/Edge) so NTLM/Negotiate and TLS Just Work™.
 - Loads cookies from storage_state.json (optional but recommended).
 - Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- SEARCH: posts the UpdatePanel payload via in-page fetch() (browser cookies/auth).
+- SEARCH: perform a real WebForms postback by clicking the Search button (so MicrosoftAjax updates the DOM).
 - SCHEDULE: performs a real WebForms postback (robust click with manual form fallback).
 - Writes <input>_out.csv with search & schedule results.
 
@@ -40,19 +40,9 @@ from playwright.async_api import async_playwright, Error as PWError  # type: ign
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
-# UpdatePanel targets (from captured posts)
-SEARCH_PANEL = "ctl00$MainContent$searchForm"
+# Known server IDs
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
-SCHEDULE_PANEL = "ctl00$MainContent$pnlFWTimesssss"
 SCHEDULE_TRIGGER = "ctl00$MainContent$submitButton"
-
-# Headers for XHR; Origin/Referer/Cookies are handled by the browser.
-XHR_HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-    "X-Requested-With": "XMLHttpRequest",
-    "X-MicrosoftAjax": "Delta=true",
-    "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-}
 
 DEFAULT_OPCO = os.getenv("FIRMWARE_OPCO", "FXAU")
 INPUT_PATH = Path(os.getenv("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv"))
@@ -172,9 +162,7 @@ def _extract_from_msajax_delta(delta: str) -> str:
     return ""
 
 
-def parse_status_from_html(html: str) -> str:
-    if html.startswith("|"):
-        return _extract_from_msajax_delta(html)
+def parse_status_from_page_html(html: str) -> str:
     soup = BeautifulSoup(html, "html.parser")
     for sel in [
         "#MainContent_MessageLabel",
@@ -188,6 +176,24 @@ def parse_status_from_html(html: str) -> str:
     for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
         if key in upper:
             return key
+    return ""
+
+
+async def read_status_from_dom(page) -> str:
+    # prefer DOM (postback may not give us raw html)
+    for sel in [
+        "#MainContent_MessageLabel",
+        "#MainContent_lblMessage",
+        "#MainContent_lblStatus",
+    ]:
+        try:
+            el = await page.query_selector(sel)
+            if el:
+                txt = (await el.inner_text()).strip()
+                if txt:
+                    return " ".join(txt.split())
+        except PWError:
+            pass
     return ""
 
 
@@ -207,12 +213,7 @@ def timezone_for_state(state: str) -> str:
 async def select_timezone_on_page(
     page, desired_value: str, label_hint: str | None = None
 ) -> str:
-    """
-    Selects timezone in the DOM so VIEWSTATE reflects the selection.
-    Returns the actually selected option value.
-    """
-    # small wait + force-enable
-    await page.wait_for_timeout(100)
+    # Make sure it's enabled (sometimes disabled until SEARCH completes)
     await page.evaluate("""
       () => {
         const sel = document.querySelector('select#MainContent_ddlTimeZone');
@@ -306,105 +307,15 @@ async def debug_dump_timezone(page) -> None:
         print("TZ option:", o)
 
 
-# ---------- WebForms via Playwright ----------
-async def get_state(page) -> Dict[str, str]:
-    # Navigating ensures IWA handshake + the form exists
+# ---------- Page actions ----------
+async def navigate_and_ready(page) -> None:
     await page.goto(URL, wait_until="domcontentloaded")
-    names = [
-        "__VIEWSTATE",
-        "__VIEWSTATEGENERATOR",
-        "__EVENTVALIDATION",
-        "__EVENTTARGET",
-        "__EVENTARGUMENT",
-        "__LASTFOCUS",
-    ]
-    values: Dict[str, str] = {}
-    for name in names:
-        try:
-            val = await page.eval_on_selector(f'input[name="{name}"]', "el => el.value")
-        except PWError:
-            val = ""
-        values[name] = val or ""
-    return values
 
 
-def urlencode_form(d: Dict[str, str]) -> str:
-    from urllib.parse import urlencode
-
-    return urlencode(d)
-
-
-async def post_search(
-    page, hidden: Dict[str, str], opco: str, product_code: str, serial: str
-) -> Tuple[int, str]:
-    form = {
-        "ctl00$ScriptManager1": f"{SEARCH_PANEL}|{SEARCH_TRIGGER}",
-        "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
-        "__EVENTARGUMENT": hidden.get("__EVENTARGUMENT", ""),
-        "__LASTFOCUS": hidden.get("__LASTFOCUS", ""),
-        "__VIEWSTATE": hidden.get("__VIEWSTATE", ""),
-        "__VIEWSTATEGENERATOR": hidden.get("__VIEWSTATEGENERATOR", ""),
-        "__EVENTVALIDATION": hidden.get("__EVENTVALIDATION", ""),
-        "ctl00$MainContent$ddlOpCoID": opco,
-        "ctl00$MainContent$ProductCode": product_code,
-        "ctl00$MainContent$SerialNumber": serial,
-        "ctl00$ucAsync1$hdnTimeout": "30",
-        "ctl00$ucAsync1$hdnSetTimeoutID": "4",
-        "__ASYNCPOST": "true",
-        SEARCH_TRIGGER: "Search",
-    }
-    payload = urlencode_form(form)
-    result = await page.evaluate(
-        """async ({url, headers, body}) => {
-            const res = await fetch(url, { method: 'POST', headers, body, credentials: 'include' });
-            const text = await res.text();
-            return { status: res.status, text };
-        }""",
-        {"url": URL, "headers": XHR_HEADERS, "body": payload},
-    )
-    return int(result["status"]), str(result["text"])
-
-
-async def wait_for_schedule_controls_enabled(page) -> None:
-    # Wait until all three are present and enabled (after SEARCH UpdatePanel refresh)
-    await page.wait_for_selector("#MainContent_txtDateTime:enabled", timeout=15000)
-    await page.wait_for_selector("#MainContent_ddlScheduleTime:enabled", timeout=15000)
-    await page.wait_for_selector("#MainContent_ddlTimeZone:enabled", timeout=15000)
-
-
-async def force_enable_controls(page) -> None:
-    # In case the page kept them disabled, force-enable so they submit
-    await page.evaluate("""
-      () => {
-        const drop = el => { if (!el) return; el.removeAttribute('disabled'); el.disabled = false; el.readOnly = false; };
-        drop(document.querySelector('#MainContent_txtDateTime'));
-        drop(document.querySelector('#MainContent_ddlScheduleTime'));
-        drop(document.querySelector('#MainContent_ddlTimeZone'));
-      }
-    """)
-
-
-async def dom_submit_schedule(
-    page,
-    opco: str,
-    product_code: str,
-    serial: str,
-    date_iso: str,
-    time_val: str,
-    tz_val: str,
-) -> tuple[int, str]:
-    """
-    Fill fields in the existing DOM (produced by SEARCH) and trigger a real WebForms postback.
-    Handles both UpdatePanel (no navigation) and full postback (navigation).
-    Returns (status_code, parsed_status_text).
-    """
-    # DO NOT navigate here—stay on the current DOM unlocked by SEARCH.
-    await force_enable_controls(page)
-
-    # Fill inputs/selects; trigger change so WebForms tracks state
+async def fill_search_fields(page, opco: str, product_code: str, serial: str) -> None:
     await page.evaluate(
         """
-        ({opco, product, serial, date, time, tz}) => {
+        ({opco, product, serial}) => {
           const setVal = (sel, val) => {
             const el = document.querySelector(sel);
             if (!el) return;
@@ -415,54 +326,115 @@ async def dom_submit_schedule(
           setVal('select#MainContent_ddlOpCoID', opco);
           setVal('#MainContent_ProductCode', product);
           setVal('#MainContent_SerialNumber', serial);
+        }
+        """,
+        {"opco": opco, "product": product_code, "serial": serial},
+    )
+
+
+async def click_search(page) -> None:
+    candidates = [
+        'input[name="ctl00$MainContent$btnSearch"]',
+        "#MainContent_btnSearch",
+        '//input[@type="submit" and (translate(@value,"SEARCH","search")="search")]',
+        '//button[contains(translate(.,"SEARCH","search"),"search")]',
+    ]
+    for sel in candidates:
+        try:
+            loc = page.locator(sel)
+            if await loc.count() == 0:
+                continue
+            await loc.first.scroll_into_view_if_needed()
+            await loc.first.click(timeout=3000)
+            return
+        except Exception:
+            continue
+    # fallback: manual __doPostBack
+    await page.evaluate(
+        """
+        (eventTarget) => {
+          var f = document.forms && document.forms[0];
+          if (!f) return;
+          var et = f.__EVENTTARGET || f.querySelector('input[name="__EVENTTARGET"]');
+          if (!et) { et = document.createElement('input'); et.type='hidden'; et.name='__EVENTTARGET'; f.appendChild(et); }
+          et.value = eventTarget;
+          var ea = f.__EVENTARGUMENT || f.querySelector('input[name="__EVENTARGUMENT"]');
+          if (!ea) { ea = document.createElement('input'); ea.type='hidden'; ea.name='__EVENTARGUMENT'; f.appendChild(ea); }
+          ea.value = '';
+          f.submit();
+        }
+        """,
+        SEARCH_TRIGGER,
+    )
+
+
+async def wait_after_search(page) -> str:
+    """
+    Wait for either a status message to appear or
+    the scheduling controls to become present (not necessarily enabled).
+    Returns any status message found (may be '').
+    """
+    # race: message label vs controls presence vs small timeout loop
+    try:
+        await asyncio.wait(
+            [
+                asyncio.create_task(
+                    page.wait_for_selector(
+                        "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
+                        timeout=12000,
+                    )
+                ),
+                asyncio.create_task(
+                    page.wait_for_selector("#MainContent_txtDateTime", timeout=12000)
+                ),
+            ],
+            return_when=asyncio.FIRST_COMPLETED,
+            timeout=12000,
+        )
+    except Exception:
+        pass
+    # read any message if present
+    return await read_status_from_dom(page)
+
+
+async def force_enable_controls(page) -> None:
+    await page.evaluate("""
+      () => {
+        const drop = el => { if (!el) return; el.removeAttribute('disabled'); el.disabled = false; el.readOnly = false; };
+        drop(document.querySelector('#MainContent_txtDateTime'));
+        drop(document.querySelector('#MainContent_ddlScheduleTime'));
+        drop(document.querySelector('#MainContent_ddlTimeZone'));
+      }
+    """)
+
+
+async def fill_schedule_fields(page, date_iso: str, time_val: str, tz_val: str) -> None:
+    # Convert 2025-11-01 to dd/MM/yyyy in case the input expects that
+    ddmmyyyy = date_iso
+    if "-" in date_iso:
+        y, m, d = date_iso.split("-")
+        ddmmyyyy = f"{d}/{m}/{y}"
+
+    await page.evaluate(
+        """
+        ({date, time, tz}) => {
+          const setVal = (sel, val) => {
+            const el = document.querySelector(sel);
+            if (!el) return;
+            el.value = val;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          };
           setVal('#MainContent_txtDateTime', date);
           setVal('select#MainContent_ddlScheduleTime', time);
           setVal('select#MainContent_ddlTimeZone', tz);
         }
-    """,
-        {
-            "opco": opco,
-            "product": product_code,
-            "serial": serial,
-            "date": date_iso,
-            "time": time_val,
-            "tz": tz_val,
-        },
+        """,
+        {"date": ddmmyyyy, "time": time_val, "tz": tz_val},
     )
 
-    # Verify values stuck; if date looks yyyy-mm-dd and page expects dd/MM/yyyy, rewrite it
-    ok_set = await page.evaluate("""
-      () => {
-        const d = document.querySelector('#MainContent_txtDateTime')?.value || '';
-        const t = document.querySelector('select#MainContent_ddlScheduleTime')?.value || '';
-        const z = document.querySelector('select#MainContent_ddlTimeZone')?.value || '';
-        return { d, t, z };
-      }
-    """)
-    if ok_set and isinstance(ok_set, dict):
-        d = ok_set.get("d") or ""
-        if d and "-" in d and len(d.split("-")) == 3:
-            y, m, dd = d.split("-")
-            ddmmyyyy = f"{dd}/{m}/{y}"
-            await page.evaluate(
-                """
-              (val) => {
-                const el = document.querySelector('#MainContent_txtDateTime');
-                if (!el) return;
-                el.value = val;
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                el.dispatchEvent(new Event('change', { bubbles: true }));
-              }
-            """,
-                ddmmyyyy,
-            )
 
-    await page.wait_for_timeout(150)  # let client-side validators settle
-
-    if DEBUG_TZ:
-        await debug_dump_timezone(page)
-
-    # Try to click schedule (async delta or full postback)
+async def click_schedule(page) -> None:
     selectors = [
         'input[name="ctl00$MainContent$submitButton"]',
         "#MainContent_submitButton",
@@ -473,87 +445,59 @@ async def dom_submit_schedule(
         '//input[contains(@value,"Schedule")]',
         '//button[contains(normalize-space(),"Schedule")]',
     ]
-    clicked = False
     for sel in selectors:
         try:
             loc = page.locator(sel)
             if await loc.count() == 0:
                 continue
-            await loc.first.wait_for(state="visible", timeout=3000)
-            if await loc.first.is_disabled():
-                continue
             await loc.first.scroll_into_view_if_needed()
-            # Race: maybe nav, maybe just partial update
-            nav_wait = page.wait_for_load_state("domcontentloaded", timeout=15000)
-            msg_wait = page.wait_for_selector(
-                "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
-                timeout=15000,
-            )
             await loc.first.click(timeout=3000)
-            try:
-                await asyncio.wait(
-                    [asyncio.create_task(nav_wait), asyncio.create_task(msg_wait)],
-                    return_when=asyncio.FIRST_COMPLETED,
-                    timeout=15000,
-                )
-            except Exception:
-                pass
-            clicked = True
-            break
+            return
         except Exception:
             continue
-
-    if not clicked:
-        # Manual full postback without Sys.WebForms (avoids strict-mode issues)
-        await page.evaluate(
-            """
-            (eventTarget) => {
-              var f = document.forms && document.forms[0];
-              if (!f) return;
-              var et = f.__EVENTTARGET || f.querySelector('input[name="__EVENTTARGET"]');
-              if (!et) { et = document.createElement('input'); et.type='hidden'; et.name='__EVENTTARGET'; f.appendChild(et); }
-              et.value = eventTarget;
-              var ea = f.__EVENTARGUMENT || f.querySelector('input[name="__EVENTARGUMENT"]');
-              if (!ea) { ea = document.createElement('input'); ea.type='hidden'; ea.name='__EVENTARGUMENT'; f.appendChild(ea); }
-              ea.value = '';
-              f.submit();
-            }
+    # fallback: manual postback
+    await page.evaluate(
+        """
+        (eventTarget) => {
+          var f = document.forms && document.forms[0];
+          if (!f) return;
+          var et = f.__EVENTTARGET || f.querySelector('input[name="__EVENTTARGET"]');
+          if (!et) { et = document.createElement('input'); et.type='hidden'; et.name='__EVENTTARGET'; f.appendChild(et); }
+          et.value = eventTarget;
+          var ea = f.__EVENTARGUMENT || f.querySelector('input[name="__EVENTARGUMENT"]');
+          if (!ea) { ea = document.createElement('input'); ea.type='hidden'; ea.name='__EVENTARGUMENT'; f.appendChild(ea); }
+          ea.value = '';
+          f.submit();
+        }
         """,
-            "ctl00$MainContent$submitButton",
+        SCHEDULE_TRIGGER,
+    )
+
+
+async def wait_after_schedule(page) -> str:
+    """
+    Wait for either an UpdatePanel message or navigation,
+    then read whatever message is present in the DOM.
+    """
+    try:
+        await asyncio.wait(
+            [
+                asyncio.create_task(
+                    page.wait_for_selector(
+                        "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
+                        timeout=15000,
+                    )
+                ),
+                asyncio.create_task(
+                    page.wait_for_load_state("domcontentloaded", timeout=15000)
+                ),
+            ],
+            return_when=asyncio.FIRST_COMPLETED,
+            timeout=15000,
         )
-        try:
-            await page.wait_for_load_state("domcontentloaded", timeout=15000)
-        except Exception:
-            pass
-
-    # Helper: safe status read that tolerates navigation during the loop
-    async def read_status_safe() -> str:
-        try:
-            for sel in [
-                "#MainContent_MessageLabel",
-                "#MainContent_lblMessage",
-                "#MainContent_lblStatus",
-            ]:
-                el = await page.query_selector(sel)
-                if el:
-                    txt = (await el.inner_text()).strip()
-                    if txt:
-                        return " ".join(txt.split())
-        except PWError:
-            try:
-                await page.wait_for_load_state("domcontentloaded", timeout=5000)
-            except Exception:
-                pass
-        return ""
-
-    # Poll for message (works for both partial update and full reload)
-    for _ in range(60):  # ~12s
-        msg = await read_status_safe()
-        if msg:
-            return 200, msg
-        await page.wait_for_timeout(200)
-
-    return 200, ""
+    except Exception:
+        pass
+    return await read_status_from_dom(page)
 
 
 # ---------- Main ----------
@@ -606,22 +550,24 @@ async def main() -> None:
                 if not serial or not product:
                     continue
 
-                # 1) SEARCH via UpdatePanel XHR (this navigation inside get_state is OK)
-                hidden = await get_state(page)
-                code_s, html_s = await post_search(
-                    page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
+                # Navigate fresh for each row (keeps state simple/clean)
+                await navigate_and_ready(page)
+
+                # SEARCH via DOM so UpdatePanel applies and unlocks controls
+                await fill_search_fields(
+                    page, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
-                status_s = parse_status_from_html(html_s)
+                await click_search(page)
+                status_s = await wait_after_search(page)
+                code_s = 200  # if we got here, the page handled the postback
 
-                # 2) Wait for schedule controls to be enabled in THIS DOM (no navigation!)
-                await wait_for_schedule_controls_enabled(page)
-
-                # 3) Prepare schedule inputs/values
+                # Prepare schedule inputs
                 date_iso = pick_schedule_date()
                 time_val = PREFERRED_TIME_VALUE
                 desired_tz_val = timezone_for_state(item.get("state", ""))
 
-                # Ensure timezone is actually selected in this DOM (so VIEWSTATE agrees)
+                # Ensure controls are at least present; force-enable if they stayed disabled
+                await force_enable_controls(page)
                 label_hint = (
                     "Canberra, Melbourne, Sydney"
                     if desired_tz_val == "+11:00"
@@ -631,16 +577,13 @@ async def main() -> None:
                     page, desired_tz_val, label_hint
                 )
 
-                # 4) SCHEDULE via real postback on the same DOM
-                code_c, status_c = await dom_submit_schedule(
-                    page,
-                    item.get("opco") or DEFAULT_OPCO,
-                    product,
-                    serial,
-                    date_iso,
-                    time_val,
-                    actual_tz_val,
-                )
+                # Fill schedule fields & submit
+                await fill_schedule_fields(page, date_iso, time_val, actual_tz_val)
+                if DEBUG_TZ:
+                    await debug_dump_timezone(page)
+                await click_schedule(page)
+                status_c = await wait_after_schedule(page)
+                code_c = 200
 
                 writer.writerow(
                     {
