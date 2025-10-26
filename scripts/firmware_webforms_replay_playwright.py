@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Headless Playwright replayer for SingleRequest.aspx (SEARCH only).
+Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE).
 - Uses the browser (Chromium/Edge) to satisfy NTLM/Negotiate automatically.
 - Loads cookies from storage_state.json (optional but recommended).
 - Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- Posts the WebForms UpdatePanel "Search" request via in-page fetch()
-  (so it uses the browser's TLS & auth), writes <input>_out.csv.
+- Posts WebForms UpdatePanel requests via in-page fetch() so browser TLS/auth is used.
+- Writes <input>_out.csv with search & schedule results.
 
 Env:
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
@@ -14,10 +14,10 @@ Env:
   FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
   FIRMWARE_OPCO=FXAU
   FIRMWARE_HEADLESS=true
-
-Requires:
-  pip install playwright openpyxl bs4
-  playwright install
+  # Optional overrides:
+  FIRMWARE_TIME_VALUE=03        # dropdown value like 00,01,02,...,23
+  FIRMWARE_DAYS_MIN=3           # schedule >= today + this many days
+  FIRMWARE_DAYS_MAX=6           # and <= today + this many days
 """
 
 from __future__ import annotations
@@ -25,7 +25,8 @@ from __future__ import annotations
 import asyncio
 import csv
 import os
-import time
+import random
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple, List
 
@@ -35,10 +36,15 @@ from playwright.async_api import async_playwright, Error as PWError  # type: ign
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
+# UpdatePanel targets
 SEARCH_PANEL = "ctl00$MainContent$searchForm"
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
 
-# These headers (except Origin/Referer which browser sets automatically) are safe to include.
+# From your capture (odd id but that’s what the page posts)
+SCHEDULE_PANEL = "ctl00$MainContent$pnlFWTimesssss"
+SCHEDULE_TRIGGER = "ctl00$MainContent$submitButton"
+
+# These headers (browser will add Origin/Referer/cookies)
 XHR_HEADERS = {
     "User-Agent": "Mozilla/5.0",
     "X-Requested-With": "XMLHttpRequest",
@@ -53,8 +59,20 @@ BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge") or None
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
 
-LOG_DIR = Path("logs")
-LOG_DIR.mkdir(parents=True, exist_ok=True)
+PREFERRED_TIME_VALUE = os.getenv("FIRMWARE_TIME_VALUE", "03").strip() or "03"
+DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
+DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
+
+# AU state → timezone dropdown value
+STATE_TZ = {
+    "ACT": "+11:00",
+    "NSW": "+11:00",
+    "VIC": "+11:00",
+    "TAS": "+11:00",
+    "QLD": "+10:00",
+    "SA": "+10:30",
+    "NT": "+09:30",
+}
 
 
 # ---------- IO helpers ----------
@@ -73,7 +91,7 @@ def normalize_row(raw: dict) -> dict:
     return {
         "serial": get("serial", "serialnumber", "serial_number"),
         "product_code": get("product_code", "product", "productcode"),
-        "state": get("state", "region"),
+        "state": get("state", "region").upper(),
         "opco": get("opco", "opcoid", "opco_id") or DEFAULT_OPCO,
     }
 
@@ -118,35 +136,18 @@ def read_rows(path: Path) -> Iterable[dict]:
 
 # ---------- MicrosoftAjax delta parsing ----------
 def _extract_from_msajax_delta(delta: str) -> str:
-    """
-    Parse ASP.NET ScriptManager pipe-delimited delta.
-    Look for 'updatePanel' entries and parse their HTML fragments for message labels.
-    """
-    # Defensive: ensure it's a delta
     if not delta.startswith("|"):
         return ""
-
     tokens: List[str] = delta.split("|")
-    # Walk tokens looking for: ... | updatePanel | <id> | <len> | <html> | ...
     i = 0
     snippets: List[str] = []
     while i < len(tokens):
         if tokens[i] == "updatePanel" and i + 3 < len(tokens):
-            panel_id = tokens[i + 1]
-            length_str = tokens[i + 2]
             html = tokens[i + 3]
-            # Sometimes the HTML may include more pipes; trust length if it looks numeric
-            try:
-                _ = int(length_str)
-                # html is supposed to be the next token, but if length doesn't match it's fine—we still try it.
-            except ValueError:
-                pass
             snippets.append(html)
             i += 4
             continue
         i += 1
-
-    # Parse any found fragments and scrape likely message nodes.
     for html in snippets:
         soup = BeautifulSoup(html, "html.parser")
         for sel in [
@@ -156,11 +157,9 @@ def _extract_from_msajax_delta(delta: str) -> str:
         ]:
             node = soup.select_one(sel)
             if node:
-                text = " ".join(node.get_text(" ", strip=True).split())
-                if text:
-                    return text
-
-    # Fallback: return a short cleaned preview of the first sizable non-empty snippet
+                txt = " ".join(node.get_text(" ", strip=True).split())
+                if txt:
+                    return txt
     for html in snippets:
         cleaned = " ".join(
             BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split()
@@ -171,9 +170,8 @@ def _extract_from_msajax_delta(delta: str) -> str:
 
 
 def parse_status_from_html(html: str) -> str:
-    if html.startswith("|"):  # MicrosoftAjax delta
+    if html.startswith("|"):
         return _extract_from_msajax_delta(html)
-
     soup = BeautifulSoup(html, "html.parser")
     for sel in [
         "#MainContent_MessageLabel",
@@ -183,7 +181,6 @@ def parse_status_from_html(html: str) -> str:
         node = soup.select_one(sel)
         if node:
             return " ".join(node.get_text(" ", strip=True).split())
-    # Very last resort: keyword sniff
     upper = html.upper()
     for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
         if key in upper:
@@ -191,9 +188,21 @@ def parse_status_from_html(html: str) -> str:
     return ""
 
 
-# ---------- WebForms helpers via Playwright ----------
+# ---------- Helpers ----------
+def pick_schedule_date() -> str:
+    start = datetime.now().date() + timedelta(days=DAYS_MIN)
+    end = datetime.now().date() + timedelta(days=DAYS_MAX)
+    span = (end - start).days
+    offset = random.randint(0, max(0, span))
+    return (start + timedelta(days=offset)).strftime("%Y-%m-%d")
+
+
+def timezone_for_state(state: str) -> str:
+    return STATE_TZ.get(state.upper(), "+11:00")
+
+
+# ---------- WebForms via Playwright ----------
 async def get_state(page) -> Dict[str, str]:
-    # Navigate to ensure IWA handshake completes
     await page.goto(URL, wait_until="domcontentloaded")
     names = [
         "__VIEWSTATE",
@@ -239,16 +248,50 @@ async def post_search(
         SEARCH_TRIGGER: "Search",
     }
     payload = urlencode_form(form)
-
-    # Do the POST INSIDE THE PAGE so it uses browser TLS + IWA + cookies.
     result = await page.evaluate(
         """async ({url, headers, body}) => {
-            const res = await fetch(url, {
-              method: 'POST',
-              headers,
-              body,
-              credentials: 'include'
-            });
+            const res = await fetch(url, { method: 'POST', headers, body, credentials: 'include' });
+            const text = await res.text();
+            return { status: res.status, text };
+        }""",
+        {"url": URL, "headers": XHR_HEADERS, "body": payload},
+    )
+    return int(result["status"]), str(result["text"])
+
+
+async def post_schedule(
+    page,
+    hidden: Dict[str, str],
+    opco: str,
+    product_code: str,
+    serial: str,
+    date_iso: str,
+    time_val: str,
+    tz_val: str,
+) -> Tuple[int, str]:
+    form = {
+        "ctl00$ScriptManager1": f"{SCHEDULE_PANEL}|{SCHEDULE_TRIGGER}",
+        "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
+        "__EVENTARGUMENT": hidden.get("__EVENTARGUMENT", ""),
+        "__LASTFOCUS": hidden.get("__LASTFOCUS", ""),
+        "__VIEWSTATE": hidden.get("__VIEWSTATE", ""),
+        "__VIEWSTATEGENERATOR": hidden.get("__VIEWSTATEGENERATOR", ""),
+        "__EVENTVALIDATION": hidden.get("__EVENTVALIDATION", ""),
+        "ctl00$MainContent$ddlOpCoID": opco,
+        "ctl00$MainContent$ProductCode": product_code,
+        "ctl00$MainContent$SerialNumber": serial,
+        "ctl00$MainContent$txtDateTime": date_iso,  # yyyy-mm-dd
+        "ctl00$MainContent$ddlScheduleTime": time_val,  # e.g. "03"
+        "ctl00$MainContent$ddlTimeZone": tz_val,  # e.g. "+11:00"
+        "ctl00$ucAsync1$hdnTimeout": "30",
+        "ctl00$ucAsync1$hdnSetTimeoutID": "7",
+        "__ASYNCPOST": "true",
+        SCHEDULE_TRIGGER: "Schedule",
+    }
+    payload = urlencode_form(form)
+    result = await page.evaluate(
+        """async ({url, headers, body}) => {
+            const res = await fetch(url, { method: 'POST', headers, body, credentials: 'include' });
             const text = await res.text();
             return { status: res.status, text };
         }""",
@@ -291,26 +334,49 @@ async def main() -> None:
                 "opco",
                 "http_status_search",
                 "status_text_search",
+                "http_status_schedule",
+                "status_text_schedule",
+                "scheduled_date",
+                "scheduled_time",
+                "timezone_value",
             ]
             writer = csv.DictWriter(fout, fieldnames=fieldnames)
             writer.writeheader()
 
-            for idx, item in enumerate(rows):
+            for item in rows:
                 serial = item["serial"]
                 product = item["product_code"]
                 if not serial or not product:
                     continue
 
-                hidden = await get_state(page)  # fresh __VIEWSTATE per row
-                code, html = await post_search(
+                # GET fresh hidden fields
+                hidden = await get_state(page)
+
+                # 1) SEARCH
+                code_s, html_s = await post_search(
                     page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
-                status_text = parse_status_from_html(html)
+                status_s = parse_status_from_html(html_s)
 
-                # If we still can't parse, dump the raw response for inspection (only first 3 rows)
-                if not status_text and idx < 3:
-                    dump_path = LOG_DIR / f"search_response_{serial or idx}.txt"
-                    dump_path.write_text(html, encoding="utf-8")
+                # Refresh hidden fields before schedule (VIEWSTATE often changes)
+                hidden = await get_state(page)
+
+                # 2) SCHEDULE
+                date_iso = pick_schedule_date()
+                time_val = PREFERRED_TIME_VALUE
+                tz_val = timezone_for_state(item.get("state", ""))
+
+                code_c, html_c = await post_schedule(
+                    page,
+                    hidden,
+                    item.get("opco") or DEFAULT_OPCO,
+                    product,
+                    serial,
+                    date_iso,
+                    time_val,
+                    tz_val,
+                )
+                status_c = parse_status_from_html(html_c)
 
                 writer.writerow(
                     {
@@ -318,19 +384,20 @@ async def main() -> None:
                         "product_code": product,
                         "state": item.get("state", ""),
                         "opco": item.get("opco", ""),
-                        "http_status_search": code,
-                        "status_text_search": status_text,
+                        "http_status_search": code_s,
+                        "status_text_search": status_s,
+                        "http_status_schedule": code_c,
+                        "status_text_schedule": status_c,
+                        "scheduled_date": date_iso,
+                        "scheduled_time": time_val,
+                        "timezone_value": tz_val,
                     }
                 )
-                await asyncio.sleep(0.2)
 
         await context.close()
         await browser.close()
 
     print(f"Done. Wrote: {out_path}")
-    print(
-        "If any status_text is empty, check logs\\search_response_<serial>.txt for the raw delta/html."
-    )
 
 
 if __name__ == "__main__":
