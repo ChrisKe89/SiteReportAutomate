@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE).
-- Uses the browser (Chromium/Edge) to satisfy NTLM/Negotiate automatically.
-- Loads cookies from storage_state.json (optional but recommended).
+
+- Uses the browser (Chromium/Edge) so NTLM/Negotiate and TLS Just Work™.
 - Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- Posts WebForms UpdatePanel requests via in-page fetch() so browser TLS/auth is used.
-- Writes <input>_out.csv with search & schedule results.
+- Posts the WebForms UpdatePanel requests via in-page fetch(), so it reuses the
+  browser’s cookies/auth stack.
+- Writes <input>_out.csv with both search & schedule results.
 
 Env:
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
@@ -14,10 +15,10 @@ Env:
   FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
   FIRMWARE_OPCO=FXAU
   FIRMWARE_HEADLESS=true
-  # Optional overrides:
-  FIRMWARE_TIME_VALUE=03        # dropdown value like 00,01,02,...,23
-  FIRMWARE_DAYS_MIN=3           # schedule >= today + this many days
-  FIRMWARE_DAYS_MAX=6           # and <= today + this many days
+  # Optional:
+  FIRMWARE_TIME_VALUE=03
+  FIRMWARE_DAYS_MIN=3
+  FIRMWARE_DAYS_MAX=6
 """
 
 from __future__ import annotations
@@ -33,18 +34,17 @@ from typing import Any, Dict, Iterable, Tuple, List
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Error as PWError  # type: ignore
 
+# ---------- Constants ----------
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
-# UpdatePanel targets
+# UpdatePanel targets (from your captures)
 SEARCH_PANEL = "ctl00$MainContent$searchForm"
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
-
-# From your capture (odd id but that’s what the page posts)
 SCHEDULE_PANEL = "ctl00$MainContent$pnlFWTimesssss"
 SCHEDULE_TRIGGER = "ctl00$MainContent$submitButton"
 
-# These headers (browser will add Origin/Referer/cookies)
+# Headers for XHR; Origin/Referer/Cookies are handled by the browser.
 XHR_HEADERS = {
     "User-Agent": "Mozilla/5.0",
     "X-Requested-With": "XMLHttpRequest",
@@ -59,11 +59,11 @@ BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge") or None
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
 
-PREFERRED_TIME_VALUE = os.getenv("FIRMWARE_TIME_VALUE", "03").strip() or "03"
+PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
 DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
 
-# AU state → timezone dropdown value
+# AU state → timezone dropdown value (server expects the <option value>, not label)
 STATE_TZ = {
     "ACT": "+11:00",
     "NSW": "+11:00",
@@ -75,7 +75,7 @@ STATE_TZ = {
 }
 
 
-# ---------- IO helpers ----------
+# ---------- Input helpers ----------
 def normalize_row(raw: dict) -> dict:
     lower = {
         (k or "").strip().lower(): "" if v is None else str(v).strip()
@@ -99,26 +99,25 @@ def normalize_row(raw: dict) -> dict:
 def read_rows(path: Path) -> Iterable[dict]:
     if not path.exists():
         raise FileNotFoundError(f"Input not found: {path}")
+
     if path.suffix.lower() == ".csv":
         with path.open(newline="", encoding="utf-8-sig") as f:
             for row in csv.DictReader(f):
                 yield normalize_row(row)
         return
+
     if path.suffix.lower() in {".xlsx", ".xlsm"}:
         try:
             from openpyxl import load_workbook  # type: ignore
         except Exception as exc:
             raise RuntimeError("openpyxl is required for .xlsx files") from exc
+
         wb = load_workbook(path, read_only=True)
         try:
             ws = wb.active
             if ws is None:
                 raise RuntimeError(f"No active worksheet in workbook: {path}")
-            header_iter = ws.iter_rows(min_row=1, max_row=1)
-            try:
-                header_cells = next(header_iter)
-            except StopIteration:
-                return
+            header_cells = next(ws.iter_rows(min_row=1, max_row=1))
             headers = [
                 "" if c.value is None else str(c.value).strip() for c in header_cells
             ]
@@ -131,6 +130,7 @@ def read_rows(path: Path) -> Iterable[dict]:
         finally:
             wb.close()
         return
+
     raise ValueError(f"Unsupported input type: {path.suffix}")
 
 
@@ -188,7 +188,7 @@ def parse_status_from_html(html: str) -> str:
     return ""
 
 
-# ---------- Helpers ----------
+# ---------- Scheduling helpers ----------
 def pick_schedule_date() -> str:
     start = datetime.now().date() + timedelta(days=DAYS_MIN)
     end = datetime.now().date() + timedelta(days=DAYS_MAX)
@@ -201,8 +201,87 @@ def timezone_for_state(state: str) -> str:
     return STATE_TZ.get(state.upper(), "+11:00")
 
 
+async def select_timezone_on_page(
+    page, desired_value: str, label_hint: str | None = None
+) -> str:
+    """
+    Selects timezone in the DOM so VIEWSTATE reflects the selection.
+    Returns the actually selected option value.
+    """
+    # Try by exact value
+    ok = await page.evaluate(
+        """
+        (val) => {
+          const sel = document.querySelector('select#MainContent_ddlTimeZone');
+          if (!sel) return false;
+          sel.value = val;
+          if (sel.value === val) {
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            return true;
+          }
+          return false;
+        }
+    """,
+        desired_value,
+    )
+    if ok:
+        return (
+            await page.eval_on_selector(
+                "select#MainContent_ddlTimeZone", "el => el.value"
+            )
+            or desired_value
+        )
+
+    # Try by fuzzy label match (useful for "+11:00" cases with duplicated labels)
+    if label_hint:
+        matched_val = await page.evaluate(
+            """
+            (needle) => {
+              const sel = document.querySelector('select#MainContent_ddlTimeZone');
+              if (!sel) return '';
+              const m = Array.from(sel.options).find(o => (o.text||'').toUpperCase().includes(needle.toUpperCase()));
+              return m ? m.value : '';
+            }
+        """,
+            label_hint,
+        )
+        if matched_val:
+            ok2 = await page.evaluate(
+                """
+                (val) => {
+                  const sel = document.querySelector('select#MainContent_ddlTimeZone');
+                  if (!sel) return false;
+                  sel.value = val;
+                  if (sel.value === val) {
+                    sel.dispatchEvent(new Event('change', { bubbles: true }));
+                    return true;
+                  }
+                  return false;
+                }
+            """,
+                matched_val,
+            )
+            if ok2:
+                return matched_val
+
+    # Fallback: first non-empty option
+    fallback = await page.evaluate("""
+        () => {
+          const sel = document.querySelector('select#MainContent_ddlTimeZone');
+          if (!sel) return '';
+          const opt = Array.from(sel.options).find(o => o.value);
+          if (!opt) return '';
+          sel.value = opt.value;
+          sel.dispatchEvent(new Event('change', { bubbles: true }));
+          return sel.value;
+        }
+    """)
+    return fallback or desired_value
+
+
 # ---------- WebForms via Playwright ----------
 async def get_state(page) -> Dict[str, str]:
+    # Navigating ensures IWA handshake + the form exists
     await page.goto(URL, wait_until="domcontentloaded")
     names = [
         "__VIEWSTATE",
@@ -273,7 +352,7 @@ async def post_schedule(
         "ctl00$ScriptManager1": f"{SCHEDULE_PANEL}|{SCHEDULE_TRIGGER}",
         "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
         "__EVENTARGUMENT": hidden.get("__EVENTARGUMENT", ""),
-        "__LASTFOCUS": hidden.get("__LASTFOCUS", ""),
+        "__LASTFOCUS": hidden.get("__LASTFOCUS", "ctl00$MainContent$ddlTimeZone"),
         "__VIEWSTATE": hidden.get("__VIEWSTATE", ""),
         "__VIEWSTATEGENERATOR": hidden.get("__VIEWSTATEGENERATOR", ""),
         "__EVENTVALIDATION": hidden.get("__EVENTVALIDATION", ""),
@@ -281,7 +360,7 @@ async def post_schedule(
         "ctl00$MainContent$ProductCode": product_code,
         "ctl00$MainContent$SerialNumber": serial,
         "ctl00$MainContent$txtDateTime": date_iso,  # yyyy-mm-dd
-        "ctl00$MainContent$ddlScheduleTime": time_val,  # e.g. "03"
+        "ctl00$MainContent$ddlScheduleTime": time_val,  # "00".."23"
         "ctl00$MainContent$ddlTimeZone": tz_val,  # e.g. "+11:00"
         "ctl00$ucAsync1$hdnTimeout": "30",
         "ctl00$ucAsync1$hdnSetTimeoutID": "7",
@@ -300,6 +379,7 @@ async def post_schedule(
     return int(result["status"]), str(result["text"])
 
 
+# ---------- Main ----------
 async def main() -> None:
     out_path = INPUT_PATH.with_name(INPUT_PATH.stem + "_out.csv")
     browser_args = [
@@ -349,23 +429,33 @@ async def main() -> None:
                 if not serial or not product:
                     continue
 
-                # GET fresh hidden fields
+                # 1) Fresh hidden fields, then SEARCH
                 hidden = await get_state(page)
-
-                # 1) SEARCH
                 code_s, html_s = await post_search(
                     page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
                 status_s = parse_status_from_html(html_s)
 
-                # Refresh hidden fields before schedule (VIEWSTATE often changes)
-                hidden = await get_state(page)
-
-                # 2) SCHEDULE
+                # 2) Prepare schedule inputs
                 date_iso = pick_schedule_date()
                 time_val = PREFERRED_TIME_VALUE
-                tz_val = timezone_for_state(item.get("state", ""))
+                desired_tz_val = timezone_for_state(item.get("state", ""))
 
+                # Select timezone IN THE DOM to bake into VIEWSTATE
+                await page.goto(URL, wait_until="domcontentloaded")
+                label_hint = (
+                    "Canberra, Melbourne, Sydney"
+                    if desired_tz_val == "+11:00"
+                    else None
+                )
+                actual_tz_val = await select_timezone_on_page(
+                    page, desired_tz_val, label_hint
+                )
+
+                # Re-read hidden fields now that timezone is selected
+                hidden = await get_state(page)
+
+                # 3) SCHEDULE
                 code_c, html_c = await post_schedule(
                     page,
                     hidden,
@@ -374,7 +464,7 @@ async def main() -> None:
                     serial,
                     date_iso,
                     time_val,
-                    tz_val,
+                    actual_tz_val,
                 )
                 status_c = parse_status_from_html(html_c)
 
@@ -390,7 +480,7 @@ async def main() -> None:
                         "status_text_schedule": status_c,
                         "scheduled_date": date_iso,
                         "scheduled_time": time_val,
-                        "timezone_value": tz_val,
+                        "timezone_value": actual_tz_val,
                     }
                 )
 
