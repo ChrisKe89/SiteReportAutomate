@@ -367,12 +367,12 @@ async def dom_submit_schedule(
 ) -> tuple[int, str]:
     """
     Fill fields in the DOM and trigger a real WebForms postback.
-    Tries robust click first; falls back to manual form submission to avoid strict-mode issues.
+    Handles both UpdatePanel (no navigation) and full postback (navigation).
     Returns (status_code, parsed_status_text).
     """
     await page.goto(URL, wait_until="domcontentloaded")
 
-    # Fill the inputs/selects; order helps some validators
+    # Fill inputs/selects; trigger change so WebForms tracks state
     await page.evaluate(
         """
         ({opco, product, serial, date, time, tz}) => {
@@ -401,12 +401,9 @@ async def dom_submit_schedule(
         },
     )
 
-    await page.wait_for_timeout(150)  # let client-side scripts settle
+    await page.wait_for_timeout(150)  # let client-side validators settle
 
-    # Optional: dump timezone choice when debugging
-    # await debug_dump_timezone(page)
-
-    # Robust click on any plausible "Schedule" control
+    # Try to click schedule
     selectors = [
         'input[name="ctl00$MainContent$submitButton"]',
         "#MainContent_submitButton",
@@ -427,70 +424,80 @@ async def dom_submit_schedule(
             if await loc.first.is_disabled():
                 continue
             await loc.first.scroll_into_view_if_needed()
+            # Prepare a race: maybe nav, maybe just partial update
+            nav_wait = page.wait_for_load_state("domcontentloaded", timeout=15000)
+            msg_wait = page.wait_for_selector(
+                "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
+                timeout=15000,
+            )
             await loc.first.click(timeout=3000)
+            # whichever happens first is fine
+            try:
+                await asyncio.wait(
+                    [asyncio.create_task(nav_wait), asyncio.create_task(msg_wait)],
+                    return_when=asyncio.FIRST_COMPLETED,
+                    timeout=15000,
+                )
+            except Exception:
+                pass
             clicked = True
             break
         except Exception:
             continue
 
     if not clicked:
-        # Fallback: manual full postback without Sys.WebForms to avoid strict-mode errors
+        # Manual full postback without Sys.WebForms (avoids strict-mode errors)
         await page.evaluate(
             """
             (eventTarget) => {
               var f = document.forms && document.forms[0];
               if (!f) return;
-
               var et = f.__EVENTTARGET || f.querySelector('input[name="__EVENTTARGET"]');
-              if (!et) {
-                et = document.createElement('input');
-                et.type = 'hidden';
-                et.name = '__EVENTTARGET';
-                f.appendChild(et);
-              }
+              if (!et) { et = document.createElement('input'); et.type='hidden'; et.name='__EVENTTARGET'; f.appendChild(et); }
               et.value = eventTarget;
-
               var ea = f.__EVENTARGUMENT || f.querySelector('input[name="__EVENTARGUMENT"]');
-              if (!ea) {
-                ea = document.createElement('input');
-                ea.type = 'hidden';
-                ea.name = '__EVENTARGUMENT';
-                f.appendChild(ea);
-              }
+              if (!ea) { ea = document.createElement('input'); ea.type='hidden'; ea.name='__EVENTARGUMENT'; f.appendChild(ea); }
               ea.value = '';
-
               f.submit();
             }
         """,
-            SCHEDULE_TRIGGER,
+            "ctl00$MainContent$submitButton",
         )
-
+        # Full postback likely navigates
         try:
-            await page.wait_for_load_state("domcontentloaded", timeout=10000)
+            await page.wait_for_load_state("domcontentloaded", timeout=15000)
         except Exception:
             pass
 
-    # Extract a status message whether it was an async delta or full reload
-    async def read_status() -> str:
-        for sel in [
-            "#MainContent_MessageLabel",
-            "#MainContent_lblMessage",
-            "#MainContent_lblStatus",
-        ]:
-            el = await page.query_selector(sel)
-            if el:
-                txt = (await el.inner_text()).strip()
-                if txt:
-                    return " ".join(txt.split())
+    # Helper: safe status read that tolerates navigation during the loop
+    async def read_status_safe() -> str:
+        try:
+            for sel in [
+                "#MainContent_MessageLabel",
+                "#MainContent_lblMessage",
+                "#MainContent_lblStatus",
+            ]:
+                el = await page.query_selector(sel)
+                if el:
+                    txt = (await el.inner_text()).strip()
+                    if txt:
+                        return " ".join(txt.split())
+        except PWError:
+            # Probably navigated; wait and retry on next tick
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout=5000)
+            except Exception:
+                pass
         return ""
 
-    # Poll for message; works for both UpdatePanel and full reload
-    for _ in range(60):  # ~12s
-        msg = await read_status()
+    # Poll for up to ~12s; works for both partial update and full reload
+    for _ in range(60):
+        msg = await read_status_safe()
         if msg:
             return 200, msg
         await page.wait_for_timeout(200)
 
+    # No explicit message found; still likely OK if no error bubble
     return 200, ""
 
 
