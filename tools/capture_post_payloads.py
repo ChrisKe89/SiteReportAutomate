@@ -97,11 +97,12 @@ async def main() -> None:
 
             print("\n> Do ONE normal lookup on the page (fill & submit).")
             print("> When the result appears, return here and press Enter.")
-            input()
+            await asyncio.to_thread(input, "")
 
             with OUT.open("a", encoding="utf-8") as fout:
                 for item in captured:
                     fout.write(json.dumps(item, ensure_ascii=False) + "\n")
+            print(f"\nCaptured {len(captured)} POST request(s).")
         finally:
             await context.close()
             await browser.close()
