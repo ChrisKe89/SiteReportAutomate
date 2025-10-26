@@ -1,1 +1,2 @@
 serial,product_code,state,opco,http_status_search,status_text_search,http_status_schedule,status_text_schedule,scheduled_date,scheduled_time,timezone_value
+152244,TC101639,VIC,FXAU,200,SCHEDULE,200,Please select Date. Please select Time. Please select Time Zone.,2025-11-01,03,+11:00
