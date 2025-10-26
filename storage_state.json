@@ -1,1 +1,25 @@
-{"cookies": [{"name": "ASP.NET_SessionId", "value": "h20aygi4mvd15kf0htnx4k05", "domain": "sgpaphq-epbbcs3.dc01.fujixerox.net", "path": "/", "expires": -1, "httpOnly": true, "secure": false, "sameSite": "Lax"}, {"name": "__AntiXsrfToken", "value": "195e7c91efde47ba83926573385bdc9d", "domain": "sgpaphq-epbbcs3.dc01.fujixerox.net", "path": "/", "expires": -1, "httpOnly": true, "secure": false, "sameSite": "Lax"}], "origins": []}
+{
+    "cookies": [
+        {
+            "name": "ASP.NET_SessionId",
+            "value": "h20aygi4mvd15kf0htnx4k05",
+            "domain": "sgpaphq-epbbcs3.dc01.fujixerox.net",
+            "path": "/",
+            "expires": -1,
+            "httpOnly": true,
+            "secure": false,
+            "sameSite": "Lax"
+        },
+        {
+            "name": "__AntiXsrfToken",
+            "value": "195e7c91efde47ba83926573385bdc9d",
+            "domain": "sgpaphq-epbbcs3.dc01.fujixerox.net",
+            "path": "/",
+            "expires": -1,
+            "httpOnly": true,
+            "secure": false,
+            "sameSite": "Lax"
+        }
+    ],
+    "origins": []
+}
