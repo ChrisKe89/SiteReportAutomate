@@ -1,38 +1,3 @@
-#!/usr/bin/env python3
-"""
-Concurrent Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE) via DOM.
-
-What it does
-------------
-- Uses the browser (Chromium/Edge) so NTLM/Negotiate & TLS are handled by the OS.
-- Loads cookies from storage_state.json (optional but recommended).
-- Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- SEARCH: clicks the in-page Search button so UpdatePanel actually updates the DOM.
-- SCHEDULE: fills Date/Time/Timezone and clicks Schedule (postback or full reload).
-- Runs many workers in parallel (default 10); each worker has its own context/page.
-- Writes results to <input>_out.csv as each device completes.
-
-Environment
------------
-  FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
-  FIRMWARE_STORAGE_STATE=storage_state.json
-  FIRMWARE_BROWSER_CHANNEL=msedge
-  FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
-  FIRMWARE_OPCO=FXAU
-  FIRMWARE_HEADLESS=true
-
-Optional:
-  FIRMWARE_TIME_VALUE=03
-  FIRMWARE_DAYS_MIN=3
-  FIRMWARE_DAYS_MAX=6
-  FIRMWARE_DEBUG_TZ=0
-  FIRMWARE_CONCURRENCY=10    # number of parallel contexts/pages
-
-Requires:
-  pip install playwright bs4 openpyxl
-  playwright install msedge  (or chromium, if you use that channel)
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -43,7 +8,7 @@ import random
 import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List
 
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv  # type: ignore[import-untyped]
@@ -57,16 +22,29 @@ URL = f"{BASE}/firmware/SingleRequest.aspx"
 
 DEFAULT_OPCO = os.getenv("FIRMWARE_OPCO", "FXAU")
 INPUT_PATH = Path(os.getenv("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv"))
+OUTPUT_PATH = Path(os.getenv("FIRMWARE_OUTPUT_CSV", "data/firmware_schedule_out.csv"))
 STORAGE_STATE_PATH = Path(os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.json"))
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge") or None
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
 DEBUG_TZ = os.getenv("FIRMWARE_DEBUG_TZ", "0").lower() in {"1", "true", "yes"}
 
-PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
+def _time_choices() -> List[str]:
+    values_raw = os.getenv("FIRMWARE_TIME_VALUES")
+    if values_raw:
+        candidates = [v.strip() for v in values_raw.split(",") if v.strip()]
+    else:
+        fallback = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
+        candidates = [v.strip() for v in fallback.split(",") if v.strip()]
+
+    return candidates or ["03", "04", "05"]
+
+
+TIME_VALUE_CHOICES = _time_choices()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
 DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
 CONCURRENCY = max(1, int(os.getenv("FIRMWARE_CONCURRENCY", "10")))
+
 
 # ---------- Helpers for bookkeeping ----------
 def iso_now() -> str:
@@ -123,7 +101,9 @@ async def remove_row_from_input_csv(item: dict, lock: asyncio.Lock) -> None:
         await asyncio.to_thread(_remove_row_from_csv_sync, INPUT_PATH, item)
 
 
-def _apply_run_completion_sync(path: Path, fieldnames: List[str], finished_at: str) -> None:
+def _apply_run_completion_sync(
+    path: Path, fieldnames: List[str], finished_at: str
+) -> None:
     if not path.exists():
         return
     with path.open("r", newline="", encoding="utf-8") as handle:
@@ -143,6 +123,7 @@ def _apply_run_completion_sync(path: Path, fieldnames: List[str], finished_at: s
         writer = csv.DictWriter(handle, fieldnames=fieldnames)
         writer.writeheader()
         writer.writerows(rows)
+
 
 # AU state → timezone dropdown value
 STATE_TZ = {
@@ -593,7 +574,7 @@ async def process_one_device(
             await wait_for_schedule_controls(page)
 
             date_iso = pick_schedule_date()
-            time_val = PREFERRED_TIME_VALUE
+            time_val = random.choice(TIME_VALUE_CHOICES)
             desired_tz_val = timezone_for_state(state)
 
             # Select timezone (by value, with label fallback for +11:00)
@@ -703,14 +684,16 @@ async def process_one_device(
 
     await remove_row_from_input_csv(item, input_lock)
 
+
 # ---------- Main (concurrent) ----------
 async def main() -> None:
     run_started_dt = datetime.now().astimezone()
     run_started_at = run_started_dt.isoformat(timespec="seconds")
     run_token = run_started_dt.strftime("%Y%m%d-%H%M%S")
 
-    out_path = INPUT_PATH.with_name(INPUT_PATH.stem + "_out.csv")
+    out_path = OUTPUT_PATH
     timestamped_out_path = out_path.with_name(f"{out_path.stem}_{run_token}.csv")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     browser_args = [
         f"--auth-server-allowlist={ALLOWLIST}",
         f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
@@ -770,7 +753,9 @@ async def main() -> None:
             await browser.close()
 
     run_finished_at = iso_now()
-    await asyncio.to_thread(_apply_run_completion_sync, out_path, fieldnames, run_finished_at)
+    await asyncio.to_thread(
+        _apply_run_completion_sync, out_path, fieldnames, run_finished_at
+    )
     shutil.copy2(out_path, timestamped_out_path)
 
     print(f"Done. Wrote: {out_path}")

@@ -44,9 +44,9 @@ USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
 REPORT_OUTPUT_XLSX = _env_path("REPORT_OUTPUT_XLSX", "data/EPFirmwareReport.xlsx")
 
 # --- Selectors (from page) ---
-DDL_OPCO = "#MainContent_ddlOpCoCode"
-BTN_SEARCH = "#MainContent_btnSearch"
-BTN_EXPORT = "#MainContent_btnExport"
+DDL_OPCO = os.getenv("FETCH_SELECTOR_DDL_OPCO", "#MainContent_ddlOpCoCode")
+BTN_SEARCH = os.getenv("FETCH_SELECTOR_BTN_SEARCH", "#MainContent_btnSearch")
+BTN_EXPORT = os.getenv("FETCH_SELECTOR_BTN_EXPORT", "#MainContent_btnExport")
 
 # --- Options ---
 HEADLESS = os.getenv("FETCH_HEADLESS", "false").lower() in {"1", "true", "yes"}

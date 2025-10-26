@@ -379,7 +379,8 @@ async def main() -> None:
             writer.writeheader()
 
             for item in rows:
-                serial = item["serial"]; product = item["product_code"]
+                serial = item["serial"]
+                product = item["product_code"]
                 if not serial or not product:
                     continue
 

@@ -7,6 +7,7 @@ import csv
 import logging
 import os
 import re
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Optional
@@ -22,7 +23,11 @@ from playwright.async_api import (  # type: ignore[import-untyped]
     async_playwright,
 )
 
-from playwright_launch import launch_browser
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
+from playwright_launch import launch_browser  # noqa: E402
 
 load_dotenv()
 
@@ -35,9 +40,9 @@ def _env_path(var_name: str, default: str) -> Path:
 
 AST_INPUT_XLSX = _env_path("AST_INPUT_XLSX", "data/EPFirmwareReport.xlsx")
 AST_OUTPUT_CSV = _env_path("AST_OUTPUT_CSV", "data/AST_Toner_Levels.csv")
-DEFAULT_RDHC_HTML = Path(__file__).resolve().parent.parent / "RDHC.html"
+DEFAULT_RDHC_HTML = Path(__file__).resolve().parents[2] / "RDHC.html"
 RDHC_HTML_PATH = _env_path("RDHC_HTML_PATH", str(DEFAULT_RDHC_HTML))
-AST_PAGE_URL = os.getenv("AST_TONER_PAGE_URL", Path(RDHC_HTML_PATH).resolve().as_uri())
+AST_PAGE_URL = os.getenv("AST_TONER_PAGE_URL") or Path(RDHC_HTML_PATH).resolve().as_uri()
 AST_STORAGE_STATE = _env_path("AST_TONER_STORAGE_STATE", "storage_state.json")
 AST_BROWSER_CHANNEL = os.getenv("AST_BROWSER_CHANNEL", "")
 AST_HEADLESS = os.getenv("AST_HEADLESS", "true").lower() in {"1", "true", "yes"}

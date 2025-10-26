@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import sys
 from pathlib import Path
 from typing import Iterable, Literal, Sequence, TypedDict, cast
 
@@ -13,7 +14,11 @@ from playwright.async_api import (  # type: ignore[import]
     async_playwright,
 )
 
-from playwright_launch import launch_browser
+ROOT_DIR = Path(__file__).resolve().parents[2]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
+
+from playwright_launch import launch_browser  # noqa: E402
 
 DEFAULT_STORAGE_STATE = "storage_state.json"
 DEFAULT_BROWSER_CHANNEL = ""
