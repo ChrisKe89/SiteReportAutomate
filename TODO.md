@@ -1,109 +1,83 @@
-"""Capture POST payloads made during a manual firmware lookup (WebForms-safe)."""
-from __future__ import annotations
+(.venv) PS C:\Dev\SiteReportAutomate> & C:/Dev/SiteReportAutomate/.venv/Scripts/python.exe c:/Dev/SiteReportAutomate/scripts/firmware_webforms_replay.py
+Traceback (most recent call last):
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_sync\connection.py", line 101, in handle_request
+    raise exc
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_sync\connection.py", line 78, in handle_request
+    stream = self._connect(request)
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_sync\connection.py", line 156, in _connect
+    stream = stream.start_tls(**kwargs)
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_backends\sync.py", line 154, in start_tls
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\au016207\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1028)
 
-import asyncio, json, os
-from pathlib import Path
-from typing import Any
-from dotenv import load_dotenv  # type: ignore[import]
-from playwright.async_api import Error as PlaywrightError, Request, Route, async_playwright  # type: ignore[import]
-from scripts.playwright_launch import launch_browser
+The above exception was the direct cause of the following exception:
 
-def _env_path(var_name: str, default: str) -> Path:
-    raw_value = os.getenv(var_name, default)
-    normalised = raw_value.replace("\\", "/")
-    return Path(normalised).expanduser()
-
-load_dotenv()
-
-URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"
-OUT = Path("logs/post_payloads.ndjson")
-BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "").strip() or None
-ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
-AUTH_WARMUP_URL = os.getenv(
-    "FIRMWARE_WARMUP_URL",
-    "http://epgateway.sgp.xerox.com:8041/AlertManagement/businessrule.aspx",
-)
-STORAGE_STATE_PATH = _env_path("FIRMWARE_STORAGE_STATE", "storage_state.json")
-HTTP_USERNAME = os.getenv("FIRMWARE_HTTP_USERNAME")
-HTTP_PASSWORD = os.getenv("FIRMWARE_HTTP_PASSWORD")
-
-async def main() -> None:
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-
-    storage_state = STORAGE_STATE_PATH if STORAGE_STATE_PATH.exists() else None
-    context_kwargs: dict[str, Any] = {}
-    if HTTP_USERNAME and HTTP_PASSWORD:
-        context_kwargs["http_credentials"] = {
-            "username": HTTP_USERNAME,
-            "password": HTTP_PASSWORD,
-        }
-
-    browser_args = [
-        f"--auth-server-allowlist={ALLOWLIST}",
-        f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
-    ]
-
-    async with async_playwright() as playwright:
-        browser, context = await launch_browser(
-            playwright,
-            headless=False,
-            channel=BROWSER_CHANNEL,
-            storage_state_path=storage_state,
-            browser_args=browser_args,
-            context_kwargs=context_kwargs,
-        )
-
-        captured: list[dict[str, Any]] = []
-
-        async def handle_route(route: Route, request: Request) -> None:
-            try:
-                if request.method.upper() == "POST" and "SingleRequest.aspx" in request.url:
-                    # Try all ways to get the body
-                    body = request.post_data or ""
-                    # Some Playwright builds expose a bytes buffer; stringify if present
-                    try:
-                        if not body and hasattr(request, "post_data_json") and request.post_data_json is not None:
-                            body = json.dumps(request.post_data_json, ensure_ascii=False)
-                    except Exception:
-                        pass
-
-                    captured.append({
-                        "url": request.url,
-                        "method": request.method,
-                        "resource_type": request.resource_type,  # often "document"
-                        "headers": request.headers,
-                        "post_data": body,
-                    })
-            finally:
-                await route.continue_()
-
-        await context.route("**/firmware/SingleRequest.aspx", handle_route)
-
-        page = await context.new_page()
-        page.set_default_navigation_timeout(45_000)
-        page.set_default_timeout(45_000)
-
-        # Optional gateway warmup (Basic/NTLM/Kerberos)
-        if AUTH_WARMUP_URL:
-            try:
-                await page.goto(AUTH_WARMUP_URL, wait_until="domcontentloaded")
-            except PlaywrightError as exc:
-                print(f"Warm-up navigation to {AUTH_WARMUP_URL} failed: {exc}")
-
-        await page.goto(URL, wait_until="domcontentloaded")
-
-        print("\n> Do ONE normal lookup on the page (fill & submit).")
-        print("> When the result appears, return here and press Enter.")
-        input()
-
-        with OUT.open("a", encoding="utf-8") as fout:
-            for item in captured:
-                fout.write(json.dumps(item, ensure_ascii=False) + "\n")
-
-        await context.close()
-        await browser.close()
-
-    print(f"\nSaved POST bodies to: {OUT.resolve()}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+Traceback (most recent call last):
+  File "c:\Dev\SiteReportAutomate\scripts\firmware_webforms_replay.py", line 256, in <module>
+    main()
+    ~~~~^^
+  File "c:\Dev\SiteReportAutomate\scripts\firmware_webforms_replay.py", line 236, in main
+    code, html = post_search(
+                 ~~~~~~~~~~~^
+        client, item.get("opco") or DEFAULT_OPCO, product, serial
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "c:\Dev\SiteReportAutomate\scripts\firmware_webforms_replay.py", line 164, in post_search
+    hidden = get_state(client)
+  File "c:\Dev\SiteReportAutomate\scripts\firmware_webforms_replay.py", line 156, in get_state
+    r = client.get(URL, headers={"User-Agent": HEADERS["User-Agent"]})
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 1053, in get
+    return self.request(
+           ~~~~~~~~~~~~^
+        "GET",
+        ^^^^^^
+    ...<7 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\au016207\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Dev\SiteReportAutomate\.venv\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ConnectError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1028)
