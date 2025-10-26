@@ -14,6 +14,7 @@ Optional envs:
 Requires:
   pip install httpx beautifulsoup4
   (and if using .xlsx) pip install openpyxl
+  (for Windows corp certs) pip install truststore
 """
 
 from __future__ import annotations
@@ -23,6 +24,14 @@ import os
 import time
 from pathlib import Path
 from typing import Any, Dict, Iterable, Tuple
+
+# --- Windows / corp TLS trust (safe no-op if unavailable) ---
+try:
+    import truststore  # type: ignore
+
+    truststore.inject_into_ssl()  # use Windows certificate store
+except Exception:
+    pass
 
 import httpx
 from bs4 import BeautifulSoup, Tag
@@ -208,8 +217,9 @@ def main() -> None:
     in_path = INPUT_PATH
     out_path = in_path.with_name(in_path.stem + "_out.csv")
 
+    # trust_env=True allows system proxy/cert settings to be used as well
     with (
-        httpx.Client(follow_redirects=True, timeout=60.0) as client,
+        httpx.Client(follow_redirects=True, timeout=60.0, trust_env=True) as client,
         open(out_path, "w", newline="", encoding="utf-8") as fout,
     ):
         rows = list(read_rows(in_path))
