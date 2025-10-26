@@ -1,6 +1,7 @@
 playwright>=1.47
 openpyxl>=3.1
 python-dotenv>=1.0
+httpx>=0.27
 types-openpyxl
 types-beautifulsoup4
 beautifulsoup4>=4.12
