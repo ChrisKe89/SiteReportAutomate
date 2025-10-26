@@ -448,6 +448,29 @@ async def main() -> None:
                 )
                 await click_search(page)
                 status_s = await wait_after_search(page)
+                # Skip devices already scheduled or ineligible
+                skip_phrases = [
+                    "pending fwud request exists",
+                    "device does not meet the firmware upgrade criteria",
+                ]
+                if any(p in (status_s or "").lower() for p in skip_phrases):
+                    writer.writerow(
+                        {
+                            "serial": serial,
+                            "product_code": product,
+                            "state": item.get("state", ""),
+                            "opco": item.get("opco", ""),
+                            "http_status_search": 200,
+                            "status_text_search": status_s,
+                            "http_status_schedule": 200,
+                            "status_text_schedule": "",  # intentionally skipped
+                            "scheduled_date": "",
+                            "scheduled_time": "",
+                            "timezone_value": "",
+                        }
+                    )
+                    print(f"[SKIP] {serial}/{product} -> {status_s}")
+                    continue
                 code_s = 200
                 print(f"[SEARCH] {serial}/{product} -> {status_s or '(no message)'}")
 
