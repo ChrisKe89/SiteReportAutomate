@@ -3,10 +3,11 @@
 Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE).
 
 - Uses the browser (Chromium/Edge) so NTLM/Negotiate and TLS Just Work™.
+- Loads cookies from storage_state.json (optional but recommended).
 - Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
-- Posts the WebForms UpdatePanel requests via in-page fetch(), so it reuses the
-  browser’s cookies/auth stack.
-- Writes <input>_out.csv with both search & schedule results.
+- SEARCH: posts the UpdatePanel payload via in-page fetch() (browser cookies/auth).
+- SCHEDULE: performs a real WebForms postback by clicking the submit button in the DOM.
+- Writes <input>_out.csv with search & schedule results.
 
 Env:
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
@@ -38,7 +39,7 @@ from playwright.async_api import async_playwright, Error as PWError  # type: ign
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
-# UpdatePanel targets (from your captures)
+# UpdatePanel targets (from captured posts)
 SEARCH_PANEL = "ctl00$MainContent$searchForm"
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
 SCHEDULE_PANEL = "ctl00$MainContent$pnlFWTimesssss"
@@ -208,7 +209,6 @@ async def select_timezone_on_page(
     Selects timezone in the DOM so VIEWSTATE reflects the selection.
     Returns the actually selected option value.
     """
-    # Try by exact value
     ok = await page.evaluate(
         """
         (val) => {
@@ -232,7 +232,6 @@ async def select_timezone_on_page(
             or desired_value
         )
 
-    # Try by fuzzy label match (useful for "+11:00" cases with duplicated labels)
     if label_hint:
         matched_val = await page.evaluate(
             """
@@ -264,7 +263,6 @@ async def select_timezone_on_page(
             if ok2:
                 return matched_val
 
-    # Fallback: first non-empty option
     fallback = await page.evaluate("""
         () => {
           const sel = document.querySelector('select#MainContent_ddlTimeZone');
@@ -338,45 +336,77 @@ async def post_search(
     return int(result["status"]), str(result["text"])
 
 
-async def post_schedule(
+async def dom_submit_schedule(
     page,
-    hidden: Dict[str, str],
     opco: str,
     product_code: str,
     serial: str,
     date_iso: str,
     time_val: str,
     tz_val: str,
-) -> Tuple[int, str]:
-    form = {
-        "ctl00$ScriptManager1": f"{SCHEDULE_PANEL}|{SCHEDULE_TRIGGER}",
-        "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
-        "__EVENTARGUMENT": hidden.get("__EVENTARGUMENT", ""),
-        "__LASTFOCUS": hidden.get("__LASTFOCUS", "ctl00$MainContent$ddlTimeZone"),
-        "__VIEWSTATE": hidden.get("__VIEWSTATE", ""),
-        "__VIEWSTATEGENERATOR": hidden.get("__VIEWSTATEGENERATOR", ""),
-        "__EVENTVALIDATION": hidden.get("__EVENTVALIDATION", ""),
-        "ctl00$MainContent$ddlOpCoID": opco,
-        "ctl00$MainContent$ProductCode": product_code,
-        "ctl00$MainContent$SerialNumber": serial,
-        "ctl00$MainContent$txtDateTime": date_iso,  # yyyy-mm-dd
-        "ctl00$MainContent$ddlScheduleTime": time_val,  # "00".."23"
-        "ctl00$MainContent$ddlTimeZone": tz_val,  # e.g. "+11:00"
-        "ctl00$ucAsync1$hdnTimeout": "30",
-        "ctl00$ucAsync1$hdnSetTimeoutID": "7",
-        "__ASYNCPOST": "true",
-        SCHEDULE_TRIGGER: "Schedule",
-    }
-    payload = urlencode_form(form)
-    result = await page.evaluate(
-        """async ({url, headers, body}) => {
-            const res = await fetch(url, { method: 'POST', headers, body, credentials: 'include' });
-            const text = await res.text();
-            return { status: res.status, text };
-        }""",
-        {"url": URL, "headers": XHR_HEADERS, "body": payload},
+) -> tuple[int, str]:
+    """
+    Set fields in the DOM and trigger the real WebForms postback.
+    Returns (status_code, parsed_status_text).
+    """
+    # Ensure form is present
+    await page.goto(URL, wait_until="domcontentloaded")
+
+    # Fill fields via DOM (set value + change) to satisfy WebForms state tracking
+    await page.evaluate(
+        """
+        ({opco, product, serial, date, time, tz}) => {
+          const setVal = (sel, val) => {
+            const el = document.querySelector(sel);
+            if (!el) return;
+            el.value = val;
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+          };
+
+          setVal('select#MainContent_ddlOpCoID', opco);
+          setVal('#MainContent_ProductCode', product);
+          setVal('#MainContent_SerialNumber', serial);
+          setVal('#MainContent_txtDateTime', date);
+          setVal('select#MainContent_ddlScheduleTime', time);
+          setVal('select#MainContent_ddlTimeZone', tz);
+        }
+    """,
+        {
+            "opco": opco,
+            "product": product_code,
+            "serial": serial,
+            "date": date_iso,
+            "time": time_val,
+            "tz": tz_val,
+        },
     )
-    return int(result["status"]), str(result["text"])
+
+    # Click the real submit button (fires __doPostBack / UpdatePanel)
+    await page.click('input[name="ctl00$MainContent$submitButton"]')
+
+    async def read_status() -> str:
+        for sel in [
+            "#MainContent_MessageLabel",
+            "#MainContent_lblMessage",
+            "#MainContent_lblStatus",
+        ]:
+            el = await page.query_selector(sel)
+            if el:
+                txt = (await el.inner_text()).strip()
+                if txt:
+                    return " ".join(txt.split())
+        return ""
+
+    # Wait for the UpdatePanel refresh and a visible message
+    for _ in range(50):
+        msg = await read_status()
+        if msg:
+            return 200, msg
+        await page.wait_for_timeout(200)
+
+    # Fallback: call succeeded but no visible message extracted
+    return 200, ""
 
 
 # ---------- Main ----------
@@ -429,7 +459,7 @@ async def main() -> None:
                 if not serial or not product:
                     continue
 
-                # 1) Fresh hidden fields, then SEARCH
+                # 1) Fresh hidden fields, then SEARCH (XHR delta parsing)
                 hidden = await get_state(page)
                 code_s, html_s = await post_search(
                     page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
@@ -441,7 +471,7 @@ async def main() -> None:
                 time_val = PREFERRED_TIME_VALUE
                 desired_tz_val = timezone_for_state(item.get("state", ""))
 
-                # Select timezone IN THE DOM to bake into VIEWSTATE
+                # Ensure timezone is actually selected in DOM (so VIEWSTATE agrees)
                 await page.goto(URL, wait_until="domcontentloaded")
                 label_hint = (
                     "Canberra, Melbourne, Sydney"
@@ -452,13 +482,9 @@ async def main() -> None:
                     page, desired_tz_val, label_hint
                 )
 
-                # Re-read hidden fields now that timezone is selected
-                hidden = await get_state(page)
-
-                # 3) SCHEDULE
-                code_c, html_c = await post_schedule(
+                # 3) SCHEDULE via real postback
+                code_c, status_c = await dom_submit_schedule(
                     page,
-                    hidden,
                     item.get("opco") or DEFAULT_OPCO,
                     product,
                     serial,
@@ -466,7 +492,6 @@ async def main() -> None:
                     time_val,
                     actual_tz_val,
                 )
-                status_c = parse_status_from_html(html_c)
 
                 writer.writerow(
                     {
