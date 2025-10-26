@@ -1,31 +1,36 @@
 #!/usr/bin/env python3
 """
-Headless Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE) via DOM.
+Concurrent Playwright replayer for SingleRequest.aspx (SEARCH + SCHEDULE) via DOM.
 
-Why this version?
-- WebForms + UpdatePanel only renders the scheduling controls after a real in-page
-  "Search" postback. Fetching the delta doesn't update the DOM, so we now do the
-  search by clicking the Search button in the page.
+What it does
+------------
+- Uses the browser (Chromium/Edge) so NTLM/Negotiate & TLS are handled by the OS.
+- Loads cookies from storage_state.json (optional but recommended).
+- Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX).
+- SEARCH: clicks the in-page Search button so UpdatePanel actually updates the DOM.
+- SCHEDULE: fills Date/Time/Timezone and clicks Schedule (postback or full reload).
+- Runs many workers in parallel (default 10); each worker has its own context/page.
+- Writes results to <input>_out.csv as each device completes.
 
-Flow:
-  1) Navigate to the page (IWA/NTLM handled by the browser, optional storage_state).
-  2) Fill OpCo/Product/Serial, click Search (DOM postback).
-  3) Wait for result message and for schedule controls (if eligible).
-  4) Fill Date/Time/Timezone, click Schedule (DOM postback or full reload).
-  5) Read message and write CSV row.
-
-Env:
+Environment
+-----------
   FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
   FIRMWARE_STORAGE_STATE=storage_state.json
   FIRMWARE_BROWSER_CHANNEL=msedge
   FIRMWARE_AUTH_ALLOWLIST=*.fujixerox.net,*.xerox.com
   FIRMWARE_OPCO=FXAU
   FIRMWARE_HEADLESS=true
-  # Optional:
+
+Optional:
   FIRMWARE_TIME_VALUE=03
   FIRMWARE_DAYS_MIN=3
   FIRMWARE_DAYS_MAX=6
   FIRMWARE_DEBUG_TZ=0
+  FIRMWARE_CONCURRENCY=10    # number of parallel contexts/pages
+
+Requires:
+  pip install playwright bs4 openpyxl
+  playwright install msedge  (or chromium, if you use that channel)
 """
 
 from __future__ import annotations
@@ -42,7 +47,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Error as PWError  # type: ignore
 
-# ---------- Constants ----------
+# ---------- Constants & Env ----------
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
@@ -57,6 +62,7 @@ DEBUG_TZ = os.getenv("FIRMWARE_DEBUG_TZ", "0").lower() in {"1", "true", "yes"}
 PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
 DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
+CONCURRENCY = max(1, int(os.getenv("FIRMWARE_CONCURRENCY", "10")))
 
 # AU state → timezone dropdown value
 STATE_TZ = {
@@ -68,6 +74,11 @@ STATE_TZ = {
     "SA": "+10:30",
     "NT": "+09:30",
 }
+
+SKIP_PHRASES = [
+    "pending fwud request exists",
+    "device does not meet the firmware upgrade criteria",
+]
 
 
 # ---------- CSV input ----------
@@ -214,10 +225,7 @@ async def _race_and_cancel(*aws, timeout: float | None = None):
 
 # ---------- DOM actions ----------
 async def fill_search_fields(page, opco: str, product_code: str, serial: str) -> None:
-    # Ensure we're on the page
     await page.goto(URL, wait_until="domcontentloaded")
-
-    # Set values and fire change/input so WebForms tracks state
     await page.evaluate(
         """
         ({opco, product, serial}) => {
@@ -228,8 +236,6 @@ async def fill_search_fields(page, opco: str, product_code: str, serial: str) ->
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
           };
-
-          // IDs from earlier inspection/capture
           setVal('select#MainContent_ddlOpCoID', opco);
           setVal('#MainContent_ProductCode', product);
           setVal('#MainContent_SerialNumber', serial);
@@ -260,8 +266,6 @@ async def click_search(page) -> None:
 
 
 async def wait_after_search(page) -> str:
-    # After clicking Search, the page may do UpdatePanel partial update (no nav)
-    # or it may update various bits. We wait for either a message or the date box.
     try:
         await _race_and_cancel(
             page.wait_for_selector(
@@ -273,7 +277,6 @@ async def wait_after_search(page) -> str:
         )
     except Exception:
         pass
-
     msg = await read_status_from_dom(page)
     if not msg:
         try:
@@ -285,12 +288,11 @@ async def wait_after_search(page) -> str:
 
 
 async def wait_for_schedule_controls(page):
-    # Controls appear only if the device is eligible to schedule
     await page.wait_for_selector(
         "#MainContent_txtDateTime, #MainContent_ddlScheduleTime, #MainContent_ddlTimeZone",
         timeout=12000,
     )
-    # If any is present but disabled, try to enable
+    # Best effort: ensure not disabled
     await page.evaluate("""
       () => {
         for (const sel of ['#MainContent_txtDateTime', '#MainContent_ddlScheduleTime', '#MainContent_ddlTimeZone']) {
@@ -336,7 +338,6 @@ async def click_schedule(page) -> None:
             if await loc.count() == 0:
                 continue
             await loc.first.scroll_into_view_if_needed()
-            # race: message OR reload
             nav = page.wait_for_load_state("domcontentloaded", timeout=15000)
             msg = page.wait_for_selector(
                 "#MainContent_MessageLabel, #MainContent_lblMessage, #MainContent_lblStatus",
@@ -392,7 +393,206 @@ async def wait_after_schedule(page) -> str:
     return msg
 
 
-# ---------- Main ----------
+# ---------- Per-row runner (one context/page per row) ----------
+async def process_one_device(
+    browser,
+    item: dict,
+    storage_state_path: Path | None,
+    writer,
+    writer_lock: asyncio.Lock,
+    *,
+    retries: int = 2,
+):
+    opco = item.get("opco") or DEFAULT_OPCO
+    serial = item.get("serial", "")
+    product = item.get("product_code", "")
+    state = item.get("state", "")
+    if not serial or not product:
+        return
+
+    context_kwargs: Dict[str, Any] = {}
+    if storage_state_path and storage_state_path.exists():
+        context_kwargs["storage_state"] = str(storage_state_path)
+
+    for attempt in range(retries + 1):
+        context = await browser.new_context(**context_kwargs)
+        page = await context.new_page()
+        page.set_default_navigation_timeout(45_000)
+        page.set_default_timeout(45_000)
+
+        try:
+            # SEARCH (DOM click flow)
+            await fill_search_fields(page, opco, product, serial)
+            await click_search(page)
+            status_s = await wait_after_search(page)
+            code_s = 200
+
+            # Skip conditions
+            if any(p in (status_s or "").lower() for p in SKIP_PHRASES):
+                async with writer_lock:
+                    writer.writerow(
+                        {
+                            "serial": serial,
+                            "product_code": product,
+                            "state": state,
+                            "opco": opco,
+                            "http_status_search": code_s,
+                            "status_text_search": status_s,
+                            "http_status_schedule": 200,
+                            "status_text_schedule": "",  # skipped
+                            "scheduled_date": "",
+                            "scheduled_time": "",
+                            "timezone_value": "",
+                        }
+                    )
+                print(f"[SKIP] {serial}/{product} -> {status_s}")
+                break  # done
+
+            # Check if controls exist; if not, record and finish
+            has_controls = False
+            try:
+                await page.wait_for_selector(
+                    "#MainContent_txtDateTime, #MainContent_ddlScheduleTime, #MainContent_ddlTimeZone",
+                    timeout=3000,
+                )
+                txt = await page.query_selector("#MainContent_txtDateTime")
+                tim = await page.query_selector("#MainContent_ddlScheduleTime")
+                tzz = await page.query_selector("#MainContent_ddlTimeZone")
+                has_controls = bool(txt and tim and tzz)
+            except Exception:
+                has_controls = False
+
+            if not has_controls:
+                async with writer_lock:
+                    writer.writerow(
+                        {
+                            "serial": serial,
+                            "product_code": product,
+                            "state": state,
+                            "opco": opco,
+                            "http_status_search": code_s,
+                            "status_text_search": status_s,
+                            "http_status_schedule": 200,
+                            "status_text_schedule": "",  # cannot schedule
+                            "scheduled_date": "",
+                            "scheduled_time": "",
+                            "timezone_value": "",
+                        }
+                    )
+                print(
+                    f"[SEARCH] {serial}/{product} -> {status_s or '(no message)'} (no schedule controls)"
+                )
+                break  # done
+
+            # SCHEDULE
+            await wait_for_schedule_controls(page)
+
+            date_iso = pick_schedule_date()
+            time_val = PREFERRED_TIME_VALUE
+            desired_tz_val = timezone_for_state(state)
+
+            # Select timezone (by value, with label fallback for +11:00)
+            label_hint = (
+                "Canberra, Melbourne, Sydney" if desired_tz_val == "+11:00" else None
+            )
+            await page.evaluate(
+                """
+                (val) => {
+                  const sel = document.querySelector('select#MainContent_ddlTimeZone');
+                  if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                }
+                """,
+                desired_tz_val,
+            )
+            applied_val = (
+                await page.eval_on_selector(
+                    "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
+                )
+                or ""
+            )
+            if not applied_val or applied_val != desired_tz_val:
+                await page.evaluate(
+                    """
+                    (needle) => {
+                      const sel = document.querySelector('select#MainContent_ddlTimeZone');
+                      if (!sel) return;
+                      const m = Array.from(sel.options).find(o => (o.text||'').toUpperCase().includes((needle||'').toUpperCase()));
+                      if (m) { sel.value = m.value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+                    }
+                    """,
+                    label_hint or "",
+                )
+            actual_tz_val = (
+                await page.eval_on_selector(
+                    "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
+                )
+                or desired_tz_val
+            )
+
+            if DEBUG_TZ:
+                await debug_dump_timezone(page)
+
+            await fill_schedule_fields(page, date_iso, time_val, actual_tz_val)
+            await click_schedule(page)
+            status_c = await wait_after_schedule(page)
+            code_c = 200
+
+            async with writer_lock:
+                writer.writerow(
+                    {
+                        "serial": serial,
+                        "product_code": product,
+                        "state": state,
+                        "opco": opco,
+                        "http_status_search": code_s,
+                        "status_text_search": status_s,
+                        "http_status_schedule": code_c,
+                        "status_text_schedule": status_c,
+                        "scheduled_date": date_iso,
+                        "scheduled_time": time_val,
+                        "timezone_value": actual_tz_val,
+                    }
+                )
+            print(
+                f"[DONE] {serial}/{product} -> {status_s or '(no search msg)'} | {status_c or '(no sched msg)'}"
+            )
+            break  # success; no retry
+
+        except Exception as e:
+            if attempt < retries:
+                print(f"[RETRY {attempt + 1}] {serial}/{product}: {e}")
+                with contextlib.suppress(Exception):
+                    await page.close()
+                with contextlib.suppress(Exception):
+                    await context.close()
+                await asyncio.sleep(0.5 + random.random())
+                continue
+            else:
+                print(f"[FAIL] {serial}/{product}: {e}")
+                async with writer_lock:
+                    writer.writerow(
+                        {
+                            "serial": serial,
+                            "product_code": product,
+                            "state": state,
+                            "opco": opco,
+                            "http_status_search": 0,
+                            "status_text_search": f"ERROR: {e}",
+                            "http_status_schedule": 0,
+                            "status_text_schedule": "",
+                            "scheduled_date": "",
+                            "scheduled_time": "",
+                            "timezone_value": "",
+                        }
+                    )
+        finally:
+            with contextlib.suppress(Exception):
+                await page.close()
+            with contextlib.suppress(Exception):
+                await context.close()
+
+
+# ---------- Main (concurrent) ----------
 async def main() -> None:
     out_path = INPUT_PATH.with_name(INPUT_PATH.stem + "_out.csv")
     browser_args = [
@@ -400,25 +600,18 @@ async def main() -> None:
         f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
     ]
 
+    rows = list(read_rows(INPUT_PATH))
+    if not rows:
+        print(f"No rows found in {INPUT_PATH}")
+        return
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=HEADLESS, channel=BROWSER_CHANNEL, args=browser_args
         )
-        context_kwargs: Dict[str, Any] = {}
-        if STORAGE_STATE_PATH.exists():
-            context_kwargs["storage_state"] = str(STORAGE_STATE_PATH)
-        context = await browser.new_context(**context_kwargs)
-        page = await context.new_page()
-        page.set_default_navigation_timeout(45_000)
-        page.set_default_timeout(45_000)
 
-        rows = list(read_rows(INPUT_PATH))
-        if not rows:
-            print(f"No rows found in {INPUT_PATH}")
-            await context.close()
-            await browser.close()
-            return
-
+        # open the CSV once; write rows as they finish
+        writer_lock = asyncio.Lock()
         with out_path.open("w", newline="", encoding="utf-8") as fout:
             fieldnames = [
                 "serial",
@@ -436,158 +629,22 @@ async def main() -> None:
             writer = csv.DictWriter(fout, fieldnames=fieldnames)
             writer.writeheader()
 
-            for item in rows:
-                serial = item["serial"]
-                product = item["product_code"]
-                if not serial or not product:
-                    continue
+            sem = asyncio.Semaphore(CONCURRENCY)
 
-                # 1) SEARCH via DOM (ensures UpdatePanel actually updates the page)
-                await fill_search_fields(
-                    page, item.get("opco") or DEFAULT_OPCO, product, serial
-                )
-                await click_search(page)
-                status_s = await wait_after_search(page)
-                # Skip devices already scheduled or ineligible
-                skip_phrases = [
-                    "pending fwud request exists",
-                    "device does not meet the firmware upgrade criteria",
-                ]
-                if any(p in (status_s or "").lower() for p in skip_phrases):
-                    writer.writerow(
-                        {
-                            "serial": serial,
-                            "product_code": product,
-                            "state": item.get("state", ""),
-                            "opco": item.get("opco", ""),
-                            "http_status_search": 200,
-                            "status_text_search": status_s,
-                            "http_status_schedule": 200,
-                            "status_text_schedule": "",  # intentionally skipped
-                            "scheduled_date": "",
-                            "scheduled_time": "",
-                            "timezone_value": "",
-                        }
-                    )
-                    print(f"[SKIP] {serial}/{product} -> {status_s}")
-                    continue
-                code_s = 200
-                print(f"[SEARCH] {serial}/{product} -> {status_s or '(no message)'}")
-
-                # If the page didn’t render schedule controls (e.g., not eligible), record and continue
-                has_controls = False
-                try:
-                    await page.wait_for_selector(
-                        "#MainContent_txtDateTime, #MainContent_ddlScheduleTime, #MainContent_ddlTimeZone",
-                        timeout=3000,
-                    )
-                    # at least one exists; check if all three exist:
-                    txt = await page.query_selector("#MainContent_txtDateTime")
-                    tim = await page.query_selector("#MainContent_ddlScheduleTime")
-                    tzz = await page.query_selector("#MainContent_ddlTimeZone")
-                    has_controls = bool(txt and tim and tzz)
-                except Exception:
-                    has_controls = False
-
-                if not has_controls:
-                    writer.writerow(
-                        {
-                            "serial": serial,
-                            "product_code": product,
-                            "state": item.get("state", ""),
-                            "opco": item.get("opco", ""),
-                            "http_status_search": code_s,
-                            "status_text_search": status_s,
-                            "http_status_schedule": 200,
-                            "status_text_schedule": "",  # no schedule possible
-                            "scheduled_date": "",
-                            "scheduled_time": "",
-                            "timezone_value": "",
-                        }
-                    )
-                    continue
-
-                # 2) SCHEDULE (controls exist)
-                await wait_for_schedule_controls(page)
-
-                date_iso = pick_schedule_date()
-                time_val = PREFERRED_TIME_VALUE
-                desired_tz_val = timezone_for_state(item.get("state", ""))
-
-                # Try selecting by value; give a helpful label hint for +11:00
-                label_hint = (
-                    "Canberra, Melbourne, Sydney"
-                    if desired_tz_val == "+11:00"
-                    else None
-                )
-                # Select tz in DOM (ensures ViewState tracks it)
-                await page.evaluate(
-                    """
-                    (val) => {
-                      const sel = document.querySelector('select#MainContent_ddlTimeZone');
-                      if (sel) { sel.value = val; sel.dispatchEvent(new Event('change', { bubbles: true })); }
-                    }
-                    """,
-                    desired_tz_val,
-                )
-                # If not applied, try a smarter selection routine
-                applied_val = (
-                    await page.eval_on_selector(
-                        "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
-                    )
-                    or ""
-                )
-                if not applied_val or applied_val != desired_tz_val:
-                    # Try matching by label
-                    await page.evaluate(
-                        """
-                        (needle) => {
-                          const sel = document.querySelector('select#MainContent_ddlTimeZone');
-                          if (!sel) return;
-                          const m = Array.from(sel.options).find(o => (o.text||'').toUpperCase().includes((needle||'').toUpperCase()));
-                          if (m) { sel.value = m.value; sel.dispatchEvent(new Event('change', { bubbles: true })); }
-                        }
-                        """,
-                        label_hint or "",
+            async def runner(item: dict):
+                async with sem:
+                    await process_one_device(
+                        browser,
+                        item,
+                        STORAGE_STATE_PATH if STORAGE_STATE_PATH.exists() else None,
+                        writer,
+                        writer_lock,
                     )
 
-                actual_tz_val = (
-                    await page.eval_on_selector(
-                        "select#MainContent_ddlTimeZone", "el => el ? el.value : ''"
-                    )
-                    or desired_tz_val
-                )
+            await asyncio.gather(*(runner(item) for item in rows))
 
-                if DEBUG_TZ:
-                    await debug_dump_timezone(page)
-
-                await fill_schedule_fields(page, date_iso, time_val, actual_tz_val)
-                await click_schedule(page)
-
-                status_c = await wait_after_schedule(page)
-                code_c = 200
-                print(f"[SCHEDULE] {serial}/{product} -> {status_c or '(no message)'}")
-
-                writer.writerow(
-                    {
-                        "serial": serial,
-                        "product_code": product,
-                        "state": item.get("state", ""),
-                        "opco": item.get("opco", ""),
-                        "http_status_search": code_s,
-                        "status_text_search": status_s,
-                        "http_status_schedule": code_c,
-                        "status_text_schedule": status_c,
-                        "scheduled_date": date_iso,
-                        "scheduled_time": time_val,
-                        "timezone_value": actual_tz_val,
-                    }
-                )
-
-        # Clean close—prevents “Task exception was never retrieved” noise
-        await page.close()
-        await context.close()
-        await browser.close()
+        with contextlib.suppress(Exception):
+            await browser.close()
 
     print(f"Done. Wrote: {out_path}")
 
