@@ -25,8 +25,9 @@ from __future__ import annotations
 import asyncio
 import csv
 import os
+import time
 from pathlib import Path
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, Tuple, List
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Error as PWError  # type: ignore
@@ -51,6 +52,9 @@ STORAGE_STATE_PATH = Path(os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.jso
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge") or None
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
+
+LOG_DIR = Path("logs")
+LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ---------- IO helpers ----------
@@ -112,7 +116,64 @@ def read_rows(path: Path) -> Iterable[dict]:
     raise ValueError(f"Unsupported input type: {path.suffix}")
 
 
+# ---------- MicrosoftAjax delta parsing ----------
+def _extract_from_msajax_delta(delta: str) -> str:
+    """
+    Parse ASP.NET ScriptManager pipe-delimited delta.
+    Look for 'updatePanel' entries and parse their HTML fragments for message labels.
+    """
+    # Defensive: ensure it's a delta
+    if not delta.startswith("|"):
+        return ""
+
+    tokens: List[str] = delta.split("|")
+    # Walk tokens looking for: ... | updatePanel | <id> | <len> | <html> | ...
+    i = 0
+    snippets: List[str] = []
+    while i < len(tokens):
+        if tokens[i] == "updatePanel" and i + 3 < len(tokens):
+            panel_id = tokens[i + 1]
+            length_str = tokens[i + 2]
+            html = tokens[i + 3]
+            # Sometimes the HTML may include more pipes; trust length if it looks numeric
+            try:
+                _ = int(length_str)
+                # html is supposed to be the next token, but if length doesn't match it's fine—we still try it.
+            except ValueError:
+                pass
+            snippets.append(html)
+            i += 4
+            continue
+        i += 1
+
+    # Parse any found fragments and scrape likely message nodes.
+    for html in snippets:
+        soup = BeautifulSoup(html, "html.parser")
+        for sel in [
+            "#MainContent_MessageLabel",
+            "#MainContent_lblMessage",
+            "#MainContent_lblStatus",
+        ]:
+            node = soup.select_one(sel)
+            if node:
+                text = " ".join(node.get_text(" ", strip=True).split())
+                if text:
+                    return text
+
+    # Fallback: return a short cleaned preview of the first sizable non-empty snippet
+    for html in snippets:
+        cleaned = " ".join(
+            BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split()
+        )
+        if cleaned:
+            return cleaned[:300]
+    return ""
+
+
 def parse_status_from_html(html: str) -> str:
+    if html.startswith("|"):  # MicrosoftAjax delta
+        return _extract_from_msajax_delta(html)
+
     soup = BeautifulSoup(html, "html.parser")
     for sel in [
         "#MainContent_MessageLabel",
@@ -122,11 +183,11 @@ def parse_status_from_html(html: str) -> str:
         node = soup.select_one(sel)
         if node:
             return " ".join(node.get_text(" ", strip=True).split())
-    if html.startswith("|"):  # MicrosoftAjax delta
-        upper = html.upper()
-        for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
-            if key in upper:
-                return key
+    # Very last resort: keyword sniff
+    upper = html.upper()
+    for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
+        if key in upper:
+            return key
     return ""
 
 
@@ -234,7 +295,7 @@ async def main() -> None:
             writer = csv.DictWriter(fout, fieldnames=fieldnames)
             writer.writeheader()
 
-            for item in rows:
+            for idx, item in enumerate(rows):
                 serial = item["serial"]
                 product = item["product_code"]
                 if not serial or not product:
@@ -245,6 +306,11 @@ async def main() -> None:
                     page, hidden, item.get("opco") or DEFAULT_OPCO, product, serial
                 )
                 status_text = parse_status_from_html(html)
+
+                # If we still can't parse, dump the raw response for inspection (only first 3 rows)
+                if not status_text and idx < 3:
+                    dump_path = LOG_DIR / f"search_response_{serial or idx}.txt"
+                    dump_path.write_text(html, encoding="utf-8")
 
                 writer.writerow(
                     {
@@ -262,6 +328,9 @@ async def main() -> None:
         await browser.close()
 
     print(f"Done. Wrote: {out_path}")
+    print(
+        "If any status_text is empty, check logs\\search_response_<serial>.txt for the raw delta/html."
+    )
 
 
 if __name__ == "__main__":
