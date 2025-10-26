@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 """
 WebForms replayer for SingleRequest.aspx (SEARCH only).
-- Reads devices from FIRMWARE_INPUT_XLSX (CSV or XLSX).
-- Posts WebForms UpdatePanel payloads (no visible browser).
-- Writes <input>_out.csv with HTTP/status columns.
+Uses Playwright's storage_state.json for cookies (no visible browser).
+Reads devices from FIRMWARE_INPUT_XLSX (CSV/XLSX), posts WebForms payloads,
+and writes <input>_out.csv with HTTP/status columns.
 
-Env you already have:
-  FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv   # or .xlsx
-Optional envs:
-  FIRMWARE_OPCO=FXAU
-  FIRMWARE_DRY_RUN=false
+Env:
+  FIRMWARE_INPUT_XLSX=data/firmware_schedule.csv
+  FIRMWARE_STORAGE_STATE=storage_state.json
 
 Requires:
-  pip install httpx beautifulsoup4
+  pip install httpx beautifulsoup4 truststore
   (and if using .xlsx) pip install openpyxl
-  (for Windows corp certs) pip install truststore
 """
 
 from __future__ import annotations
 
 import csv
+import json
 import os
 import time
 from pathlib import Path
@@ -40,7 +38,6 @@ from bs4 import BeautifulSoup, Tag
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
 URL = f"{BASE}/firmware/SingleRequest.aspx"
 
-# Search post had: ctl00$ScriptManager1=ctl00$MainContent$searchForm|ctl00$MainContent$btnSearch
 SEARCH_PANEL = "ctl00$MainContent$searchForm"
 SEARCH_TRIGGER = "ctl00$MainContent$btnSearch"
 
@@ -56,12 +53,11 @@ HEADERS = {
 DEFAULT_OPCO = os.getenv("FIRMWARE_OPCO", "FXAU")
 DRY_RUN = os.getenv("FIRMWARE_DRY_RUN", "false").lower() in {"1", "true", "yes"}
 
-# ----- Input handling -----
 INPUT_PATH = Path(os.getenv("FIRMWARE_INPUT_XLSX", "data/firmware_schedule.csv"))
+STORAGE_STATE_PATH = Path(os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.json"))
 
 
 def _as_str(value: Any) -> str:
-    """Coerce soup/get() results to a plain string for type-checkers."""
     if value is None:
         return ""
     if isinstance(value, list):
@@ -70,44 +66,42 @@ def _as_str(value: Any) -> str:
 
 
 def read_rows(path: Path) -> Iterable[dict]:
-    """
-    Yield dicts with keys: serial, product_code, state, opco
-    Accepts CSV (header) or XLSX (first sheet, header row).
-    """
+    """Yield dicts with serial, product_code, state, opco (CSV or XLSX)."""
     if not path.exists():
         raise FileNotFoundError(f"Input not found: {path}")
 
     if path.suffix.lower() == ".csv":
         with path.open(newline="", encoding="utf-8-sig") as f:
-            r = csv.DictReader(f)
-            for row in r:
+            for row in csv.DictReader(f):
                 yield normalize_row(row)
         return
 
     if path.suffix.lower() in {".xlsx", ".xlsm"}:
-        # On-demand import to avoid mypy “assignment” issues.
         try:
             from openpyxl import load_workbook  # type: ignore
-        except Exception as exc:  # pragma: no cover - import-time failure path
-            raise RuntimeError(
-                "openpyxl is required to read .xlsx files. Run: pip install openpyxl"
-            ) from exc
+        except Exception as exc:
+            raise RuntimeError("openpyxl is required for .xlsx files") from exc
 
         wb = load_workbook(path, read_only=True)
         try:
             ws = wb.active
             if ws is None:
-                return
-            # header row
-            header_cells = next(ws.iter_rows(min_row=1, max_row=1))
+                raise RuntimeError(f"No active worksheet in workbook: {path}")
+
+            # header row (guard StopIteration)
+            header_iter = ws.iter_rows(min_row=1, max_row=1)
+            try:
+                header_cells = next(header_iter)
+            except StopIteration:
+                return  # empty sheet
+
             headers = [
                 "" if c.value is None else str(c.value).strip() for c in header_cells
             ]
+
             for cells in ws.iter_rows(min_row=2, values_only=True):
                 row = {
-                    (headers[i] or f"col{i}").strip(): (
-                        "" if v is None else str(v).strip()
-                    )
+                    (headers[i] or f"col{i}"): ("" if v is None else str(v).strip())
                     for i, v in enumerate(cells)
                 }
                 yield normalize_row(row)
@@ -132,13 +126,29 @@ def normalize_row(raw: dict) -> dict:
 
     return {
         "serial": get("serial", "serialnumber", "serial_number"),
-        "product_code": get("product_code", "product", "productcode", "product_code "),
+        "product_code": get("product_code", "product", "productcode"),
         "state": get("state", "region"),
         "opco": get("opco", "opcoid", "opco_id") or DEFAULT_OPCO,
     }
 
 
-# ----- WebForms helpers -----
+# ----- Auth -----
+def import_cookies(client: httpx.Client) -> None:
+    """Load Playwright storage_state.json cookies into the client."""
+    if not STORAGE_STATE_PATH.exists():
+        raise FileNotFoundError(f"Missing storage_state.json: {STORAGE_STATE_PATH}")
+    payload = json.loads(STORAGE_STATE_PATH.read_text(encoding="utf-8"))
+    cookies = payload.get("cookies", [])
+    for c in cookies:
+        name = c.get("name")
+        value = c.get("value")
+        domain = c.get("domain") or "sgpaphq-epbbcs3.dc01.fujixerox.net"
+        path = c.get("path") or "/"
+        if name and value:
+            client.cookies.set(name, value, domain=domain, path=path)
+
+
+# ----- WebForms -----
 def extract_hidden(html: str) -> Dict[str, str]:
     soup = BeautifulSoup(html, "html.parser")
 
@@ -163,6 +173,8 @@ def extract_hidden(html: str) -> Dict[str, str]:
 
 def get_state(client: httpx.Client) -> Dict[str, str]:
     r = client.get(URL, headers={"User-Agent": HEADERS["User-Agent"]})
+    if r.status_code == 401:
+        raise PermissionError("Unauthorized (401): cookies may be expired or invalid.")
     r.raise_for_status()
     return extract_hidden(r.text)
 
@@ -171,7 +183,6 @@ def post_search(
     client: httpx.Client, opco: str, product_code: str, serial: str
 ) -> Tuple[int, str]:
     hidden = get_state(client)
-    # mirrors your captured names
     form = {
         "ctl00$ScriptManager1": f"{SEARCH_PANEL}|{SEARCH_TRIGGER}",
         "__EVENTTARGET": hidden.get("__EVENTTARGET", ""),
@@ -204,7 +215,6 @@ def parse_status(html: str) -> str:
         node = soup.select_one(sel)
         if node:
             return " ".join(node.get_text(" ", strip=True).split())
-    # MicrosoftAjax partial updates often return pipe-delimited fragments
     if html.startswith("|"):  # MS AJAX delta format
         upper = html.upper()
         for key in ("SUCCESS", "SCHEDULE", "NOT", "INVALID", "ERROR"):
@@ -217,11 +227,12 @@ def main() -> None:
     in_path = INPUT_PATH
     out_path = in_path.with_name(in_path.stem + "_out.csv")
 
-    # trust_env=True allows system proxy/cert settings to be used as well
     with (
         httpx.Client(follow_redirects=True, timeout=60.0, trust_env=True) as client,
         open(out_path, "w", newline="", encoding="utf-8") as fout,
     ):
+        import_cookies(client)
+
         rows = list(read_rows(in_path))
         if not rows:
             print(f"No rows found in {in_path}")
@@ -257,9 +268,9 @@ def main() -> None:
                     "status_text_search": status_text,
                 }
             )
-            time.sleep(0.2)  # small politeness delay
+            time.sleep(0.2)
 
-    print(f"Done. Wrote: {out_path}")
+    print(f"✅ Done. Wrote: {out_path}")
 
 
 if __name__ == "__main__":
