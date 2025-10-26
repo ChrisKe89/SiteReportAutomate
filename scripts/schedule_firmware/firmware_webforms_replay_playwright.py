@@ -40,12 +40,16 @@ import contextlib
 import csv
 import os
 import random
+import shutil
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv  # type: ignore[import-untyped]
 from playwright.async_api import async_playwright, Error as PWError  # type: ignore
+
+load_dotenv()
 
 # ---------- Constants & Env ----------
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
@@ -63,6 +67,82 @@ PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
 DAYS_MAX = int(os.getenv("FIRMWARE_DAYS_MAX", "6"))
 CONCURRENCY = max(1, int(os.getenv("FIRMWARE_CONCURRENCY", "10")))
+
+# ---------- Helpers for bookkeeping ----------
+def iso_now() -> str:
+    return datetime.now().astimezone().isoformat(timespec="seconds")
+
+
+def _rows_match(candidate: dict, target: dict) -> bool:
+    keys = ("serial", "product_code", "state", "opco")
+    return all((candidate.get(k, "") or "") == (target.get(k, "") or "") for k in keys)
+
+
+def _remove_row_from_csv_sync(path: Path, item: dict) -> bool:
+    if not path.exists():
+        return False
+    with path.open("r", newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        fieldnames = reader.fieldnames or []
+        rows = list(reader)
+
+    if not fieldnames:
+        return False
+
+    target = {
+        "serial": item.get("serial", ""),
+        "product_code": item.get("product_code", ""),
+        "state": item.get("state", ""),
+        "opco": item.get("opco", "") or DEFAULT_OPCO,
+    }
+
+    remaining: list[dict] = []
+    removed = False
+    for row in rows:
+        norm = normalize_row(row)
+        if not removed and _rows_match(norm, target):
+            removed = True
+            continue
+        remaining.append(row)
+
+    if not removed:
+        return False
+
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(remaining)
+
+    return True
+
+
+async def remove_row_from_input_csv(item: dict, lock: asyncio.Lock) -> None:
+    if INPUT_PATH.suffix.lower() != ".csv":
+        return
+    async with lock:
+        await asyncio.to_thread(_remove_row_from_csv_sync, INPUT_PATH, item)
+
+
+def _apply_run_completion_sync(path: Path, fieldnames: List[str], finished_at: str) -> None:
+    if not path.exists():
+        return
+    with path.open("r", newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+
+    if not rows:
+        return
+
+    if "run_completed_at" not in fieldnames:
+        fieldnames.append("run_completed_at")
+
+    for row in rows:
+        row["run_completed_at"] = finished_at
+
+    with path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
 
 # AU state → timezone dropdown value
 STATE_TZ = {
@@ -400,6 +480,8 @@ async def process_one_device(
     storage_state_path: Path | None,
     writer,
     writer_lock: asyncio.Lock,
+    input_lock: asyncio.Lock,
+    run_started_at: str,
     *,
     retries: int = 2,
 ):
@@ -408,6 +490,25 @@ async def process_one_device(
     product = item.get("product_code", "")
     state = item.get("state", "")
     if not serial or not product:
+        async with writer_lock:
+            writer.writerow(
+                {
+                    "serial": serial,
+                    "product_code": product,
+                    "state": state,
+                    "opco": opco,
+                    "http_status_search": 0,
+                    "status_text_search": "SKIPPED: Missing serial/product",
+                    "http_status_schedule": 0,
+                    "status_text_schedule": "",
+                    "scheduled_date": "",
+                    "scheduled_time": "",
+                    "timezone_value": "",
+                    "run_started_at": run_started_at,
+                    "run_completed_at": "",
+                }
+            )
+        await remove_row_from_input_csv(item, input_lock)
         return
 
     context_kwargs: Dict[str, Any] = {}
@@ -443,6 +544,8 @@ async def process_one_device(
                             "scheduled_date": "",
                             "scheduled_time": "",
                             "timezone_value": "",
+                            "run_started_at": run_started_at,
+                            "run_completed_at": "",
                         }
                     )
                 print(f"[SKIP] {serial}/{product} -> {status_s}")
@@ -477,6 +580,8 @@ async def process_one_device(
                             "scheduled_date": "",
                             "scheduled_time": "",
                             "timezone_value": "",
+                            "run_started_at": run_started_at,
+                            "run_completed_at": "",
                         }
                     )
                 print(
@@ -551,6 +656,8 @@ async def process_one_device(
                         "scheduled_date": date_iso,
                         "scheduled_time": time_val,
                         "timezone_value": actual_tz_val,
+                        "run_started_at": run_started_at,
+                        "run_completed_at": "",
                     }
                 )
             print(
@@ -583,18 +690,27 @@ async def process_one_device(
                             "scheduled_date": "",
                             "scheduled_time": "",
                             "timezone_value": "",
+                            "run_started_at": run_started_at,
+                            "run_completed_at": "",
                         }
                     )
+                break
         finally:
             with contextlib.suppress(Exception):
                 await page.close()
             with contextlib.suppress(Exception):
                 await context.close()
 
+    await remove_row_from_input_csv(item, input_lock)
 
 # ---------- Main (concurrent) ----------
 async def main() -> None:
+    run_started_dt = datetime.now().astimezone()
+    run_started_at = run_started_dt.isoformat(timespec="seconds")
+    run_token = run_started_dt.strftime("%Y%m%d-%H%M%S")
+
     out_path = INPUT_PATH.with_name(INPUT_PATH.stem + "_out.csv")
+    timestamped_out_path = out_path.with_name(f"{out_path.stem}_{run_token}.csv")
     browser_args = [
         f"--auth-server-allowlist={ALLOWLIST}",
         f"--auth-negotiate-delegate-allowlist={ALLOWLIST}",
@@ -605,40 +721,47 @@ async def main() -> None:
         print(f"No rows found in {INPUT_PATH}")
         return
 
+    writer_lock = asyncio.Lock()
+    input_lock = asyncio.Lock()
+    fieldnames = [
+        "serial",
+        "product_code",
+        "state",
+        "opco",
+        "http_status_search",
+        "status_text_search",
+        "http_status_schedule",
+        "status_text_schedule",
+        "scheduled_date",
+        "scheduled_time",
+        "timezone_value",
+        "run_started_at",
+        "run_completed_at",
+    ]
+
     async with async_playwright() as p:
         browser = await p.chromium.launch(
             headless=HEADLESS, channel=BROWSER_CHANNEL, args=browser_args
         )
 
         # open the CSV once; write rows as they finish
-        writer_lock = asyncio.Lock()
         with out_path.open("w", newline="", encoding="utf-8") as fout:
-            fieldnames = [
-                "serial",
-                "product_code",
-                "state",
-                "opco",
-                "http_status_search",
-                "status_text_search",
-                "http_status_schedule",
-                "status_text_schedule",
-                "scheduled_date",
-                "scheduled_time",
-                "timezone_value",
-            ]
             writer = csv.DictWriter(fout, fieldnames=fieldnames)
             writer.writeheader()
 
             sem = asyncio.Semaphore(CONCURRENCY)
+            storage_state = STORAGE_STATE_PATH if STORAGE_STATE_PATH.exists() else None
 
             async def runner(item: dict):
                 async with sem:
                     await process_one_device(
                         browser,
                         item,
-                        STORAGE_STATE_PATH if STORAGE_STATE_PATH.exists() else None,
+                        storage_state,
                         writer,
                         writer_lock,
+                        input_lock,
+                        run_started_at,
                     )
 
             await asyncio.gather(*(runner(item) for item in rows))
@@ -646,7 +769,12 @@ async def main() -> None:
         with contextlib.suppress(Exception):
             await browser.close()
 
+    run_finished_at = iso_now()
+    await asyncio.to_thread(_apply_run_completion_sync, out_path, fieldnames, run_finished_at)
+    shutil.copy2(out_path, timestamped_out_path)
+
     print(f"Done. Wrote: {out_path}")
+    print(f"Archived copy: {timestamped_out_path}")
 
 
 if __name__ == "__main__":

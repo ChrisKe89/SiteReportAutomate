@@ -34,6 +34,9 @@ from typing import Any, Dict, Iterable, Tuple, List
 
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright, Error as PWError  # type: ignore
+from dotenv import load_dotenv  # type: ignore[import-untyped]
+
+load_dotenv()
 
 # ---------- Constants ----------
 BASE = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"

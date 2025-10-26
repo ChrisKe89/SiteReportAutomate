@@ -31,14 +31,16 @@ def _env_path(var_name: str, default: str) -> Path:
 
 
 # --- Site config ---
-BASE_URL = "https://sgpaphq-epbbcs3.dc01.fujixerox.net"
-REPORT_URL = f"{BASE_URL}/firmware/DeviceList.aspx"
+BASE_URL = os.getenv("FETCH_BASE_URL", "https://sgpaphq-epbbcs3.dc01.fujixerox.net")
+REPORT_URL = os.getenv("FETCH_REPORT_URL", f"{BASE_URL}/firmware/DeviceList.aspx")
 
 # --- Paths ---
-DOWNLOAD_DIR = Path("downloads")
-DOWNLOAD_DIR.mkdir(exist_ok=True)
-USER_DATA_DIR = Path("user-data")  # persists browser profile (cookies, IWA trust, etc.)
-USER_DATA_DIR.mkdir(exist_ok=True)
+DOWNLOAD_DIR = _env_path("FETCH_DOWNLOAD_DIR", "downloads")
+DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+USER_DATA_DIR = _env_path(
+    "FETCH_USER_DATA_DIR", "user-data"
+)  # persists browser profile (cookies, IWA trust, etc.)
+USER_DATA_DIR.mkdir(parents=True, exist_ok=True)
 REPORT_OUTPUT_XLSX = _env_path("REPORT_OUTPUT_XLSX", "data/EPFirmwareReport.xlsx")
 
 # --- Selectors (from page) ---
@@ -47,10 +49,10 @@ BTN_SEARCH = "#MainContent_btnSearch"
 BTN_EXPORT = "#MainContent_btnExport"
 
 # --- Options ---
-HEADLESS = False  # flip to True after headed works reliably
-ALLOWLIST = "*.fujixerox.net"  # for Windows Integrated Auth
-NAV_TIMEOUT_MS = 45000
-AFTER_SEARCH_WAIT_MS = 3000  # cushion for slow grids; tweak as needed
+HEADLESS = os.getenv("FETCH_HEADLESS", "false").lower() in {"1", "true", "yes"}
+ALLOWLIST = os.getenv("FETCH_AUTH_ALLOWLIST", "*.fujixerox.net")
+NAV_TIMEOUT_MS = int(os.getenv("FETCH_NAV_TIMEOUT_MS", "45000"))
+AFTER_SEARCH_WAIT_MS = int(os.getenv("FETCH_AFTER_SEARCH_WAIT_MS", "3000"))
 
 # =========================
 # HTML .xls -> clean .xlsx
