@@ -1,2 +1,1 @@
-serial,product_code,state,opco,http_status_search,status_text_search,http_status_schedule,status_text_schedule,scheduled_date,scheduled_time,timezone_value,run_started_at,run_completed_at
-152244,TC101639,VIC,FXAU,200,A pending FWUD request exists.,200,,,,,2025-10-26T20:16:17+11:00,2025-10-26T20:17:15+11:00
+serial,product_code,state,opco,http_status_search,status_text_search,http_status_schedule,status_text_schedule,scheduled_date,scheduled_time,timezone_value

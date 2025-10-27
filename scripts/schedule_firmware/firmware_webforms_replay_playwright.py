@@ -29,6 +29,7 @@ ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
 DEBUG_TZ = os.getenv("FIRMWARE_DEBUG_TZ", "0").lower() in {"1", "true", "yes"}
 
+
 def _time_choices() -> List[str]:
     values_raw = os.getenv("FIRMWARE_TIME_VALUES")
     if values_raw:
@@ -703,6 +704,8 @@ async def main() -> None:
     if not rows:
         print(f"No rows found in {INPUT_PATH}")
         return
+
+    print(f"Running with concurrency={CONCURRENCY}")
 
     writer_lock = asyncio.Lock()
     input_lock = asyncio.Lock()
