@@ -38,6 +38,11 @@ STORAGE_STATE_PATH = Path(os.getenv("FIRMWARE_STORAGE_STATE", "storage_state.jso
 BROWSER_CHANNEL = os.getenv("FIRMWARE_BROWSER_CHANNEL", "msedge") or None
 ALLOWLIST = os.getenv("FIRMWARE_AUTH_ALLOWLIST", "*.fujixerox.net,*.xerox.com")
 HEADLESS = os.getenv("FIRMWARE_HEADLESS", "true").lower() in {"1", "true", "yes"}
+IGNORE_HTTPS_ERRORS = os.getenv("FIRMWARE_IGNORE_HTTPS_ERRORS", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+}
 
 PREFERRED_TIME_VALUE = (os.getenv("FIRMWARE_TIME_VALUE", "03") or "03").strip()
 DAYS_MIN = int(os.getenv("FIRMWARE_DAYS_MIN", "3"))
@@ -403,6 +408,8 @@ async def main() -> None:
         context_kwargs: Dict[str, Any] = {}
         if STORAGE_STATE_PATH.exists():
             context_kwargs["storage_state"] = str(STORAGE_STATE_PATH)
+        if "ignore_https_errors" not in context_kwargs:
+            context_kwargs["ignore_https_errors"] = IGNORE_HTTPS_ERRORS
         context = await browser.new_context(**context_kwargs)
         page = await context.new_page()
         page.set_default_navigation_timeout(45_000)
