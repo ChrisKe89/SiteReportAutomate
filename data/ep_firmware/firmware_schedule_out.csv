@@ -1,1 +1,52 @@
-serial,product_code,state,opco,http_status_search,status_text_search,http_status_schedule,status_text_schedule,scheduled_date,scheduled_time,timezone_value
+serial,product_code,state,opco,http_status_search,status_text_search,http_status_schedule,status_text_schedule,scheduled_date,scheduled_time,timezone_value,run_started_at,run_completed_at
+221275,TC101326,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+430423,TC101330,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+223021,TC101325,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+110197,TC101310,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+371170,TC101316,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+370335,TC101315,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+113775,TC101310,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+400430,TC101323,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+360259,TC101309,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+114700,TC101309,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+117316,TC101307,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+363131,TC101311,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+360747,TC101307,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+221276,TC101326,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+221218,TC101326,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+116377,TC101307,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+362451,TC101307,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+108460,TC101307,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+108468,TC101307,VIC,FXAU,200,Device is in non-communicating state.,200,,,,,2025-10-30T16:29:06+11:00,
+102464,TC101307,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+103951,TC101312,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+101699,TC101309,VIC,FXAU,200,Device does not meet the firmware upgrade criteria.,200,,,,,2025-10-30T16:29:06+11:00,
+224645,TC101324,VIC,FXAU,200,Device is not EP Registered.,200,,,,,2025-10-30T16:29:06+11:00,
+371098,TC101316,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+371176,TC101313,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+161540,TC101313,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+107935,TC101310,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+108683,TC101310,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+222678,TC101326,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
+223282,TC101326,VIC,FXAU,0,"ERROR: Page.goto: net::ERR_NETWORK_ACCESS_DENIED at https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx
+Call log:
+  - navigating to ""https://sgpaphq-epbbcs3.dc01.fujixerox.net/firmware/SingleRequest.aspx"", waiting until ""domcontentloaded""
+",0,,,,,2025-10-30T16:29:06+11:00,
